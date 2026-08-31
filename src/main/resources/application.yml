@@ -1,0 +1,110 @@
+spring:
+  application:
+    name: medclinic-system
+  profiles:
+    active: dev
+
+  jpa:
+    open-in-view: false
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+        jdbc:
+          batch_size: 25
+
+  thymeleaf:
+    cache: false
+    mode: HTML
+    encoding: UTF-8
+
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 15MB
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME:medclinic.demo@gmail.com}
+    password: ${MAIL_PASSWORD:demopassword123}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+server:
+  port: 8080
+  error:
+    include-message: always
+    include-binding-errors: always
+
+app:
+  name: MedClinic - Phòng Khám Đa Khoa Tư Nhân
+  address: 123 Đường Nguyễn Trãi, Quận 5, TP. Hồ Chí Minh
+  hotline: 1900 6868
+  email: support@medclinic.vn
+  website: http://localhost:8080
+
+---
+# Development Profile (H2 In-Memory for Instant Zero-Config Run)
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+  datasource:
+    url: jdbc:h2:mem:medclinic_db;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: 
+
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+      settings:
+        web-allow-others: true
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    defer-datasource-initialization: true
+
+---
+# MySQL Production / Local Profile
+spring:
+  config:
+    activate:
+      on-profile: mysql
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/medclinic_db?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=Asia/Ho_Chi_Minh&characterEncoding=UTF-8
+    username: root
+    password: ${DB_PASSWORD:root}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    database-platform: org.hibernate.dialect.MySQLDialect
+
+---
+# SQL Server Profile (Optional)
+spring:
+  config:
+    activate:
+      on-profile: sqlserver
+
+  datasource:
+    url: jdbc:sqlserver://localhost:1433;databaseName=medclinic_db;encrypt=false;trustServerCertificate=true;
+    username: sa
+    password: ${DB_PASSWORD:YourPassword123}
+    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    database-platform: org.hibernate.dialect.SQLServerDialect

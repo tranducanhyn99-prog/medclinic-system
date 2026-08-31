@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/main}">
+<head>
+    <title>Trang Chủ - MedClinic</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="container py-5">
+        <div class="card card-custom p-5 text-center bg-white shadow-sm border-0">
+            <div class="rounded-circle bg-primary bg-opacity-10 text-primary p-4 d-inline-flex align-items-center justify-content-center mx-auto mb-4" style="width: 90px; height: 90px;">
+                <i class="bi bi-hospital-fill fs-1"></i>
+            </div>
+            <h2 class="fw-bold text-dark mb-2">Hệ Thống Quản Lý & Đặt Lịch Khám MedClinic</h2>
+            <p class="lead text-muted mb-4">Dự án Đồ án Lập trình Web & Công nghệ Phần mềm</p>
+
+            <div class="alert alert-info d-inline-block text-start p-4 rounded-3 border mb-4" style="max-width: 600px;">
+                <h6 class="fw-bold mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i> Giai Đoạn 1 (WEEK 1) - Hoàn Thành:</h6>
+                <ul class="mb-0 small text-secondary">
+                    <li>Đặc tả yêu cầu phần mềm SRS (IEEE 830) trong <code>docs/01_SRS_IEEE830.md</code></li>
+                    <li>Sơ đồ thiết kế UML (Use Case, Sequence, Class) trong <code>docs/02_UML_DESIGN.md</code></li>
+                    <li>Thiết kế CSDL & Chứng minh chuẩn hóa 3NF trong <code>docs/03_DATABASE_DESIGN_3NF.md</code></li>
+                    <li>Ma trận truy vết yêu cầu RTM trong <code>docs/04_RTM_MATRIX.md</code></li>
+                    <li>Tài liệu kiến trúc hệ thống trong <code>docs/05_SYSTEM_ARCHITECTURE.md</code></li>
+                    <li>Khởi tạo Spring Boot 3.3 skeleton & Git Repository</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
