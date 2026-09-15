@@ -33,6 +33,19 @@ out/
 ### VS Code ###
 .vscode/
 
-### OS ###
+### OS & Temp ###
 .DS_Store
 Thumbs.db
+*.log
+*.tmp
+
+### Enterprise Architect locks ###
+*.ldb
+~$*.docx
+
+### Local overrides ###
+application-local.properties
+
+### University template directories (reports are centralized in docs/) ###
+Mau_Mo_Hinh_Hoa_Yeu_cau/
+Mau_Thiet_Ke_Du_Lieu/

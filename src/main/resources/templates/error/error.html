@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/main}">
+<head>
+    <title>Thông Báo Lỗi - MedClinic</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="container py-5 text-center">
+        <div class="card card-custom p-5 mx-auto border-0 shadow-sm" style="max-width: 600px;">
+            <div class="text-danger mb-3">
+                <i class="bi bi-exclamation-triangle-fill display-1"></i>
+            </div>
+            <h3 class="fw-bold mb-2" th:text="${errorCode != null ? errorCode : 'Đã Xảy Ra Lỗi'}">Lỗi</h3>
+            <p class="text-muted mb-4" th:text="${errorMessage != null ? errorMessage : 'Hệ thống gặp sự cố trong quá trình xử lý yêu cầu.'}">Chi tiết lỗi</p>
+            <div>
+                <a th:href="@{/}" class="btn btn-med-primary px-4 py-2">
+                    <i class="bi bi-house-fill me-1"></i> Về Trang Chủ
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+

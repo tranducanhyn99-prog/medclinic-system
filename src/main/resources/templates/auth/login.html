@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/main}">
+<head>
+    <title>Đăng Nhập - MedClinic</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-5">
+                <div class="card card-custom p-4 p-md-5 border-0 shadow">
+                    <div class="text-center mb-4">
+                        <div class="rounded-circle bg-primary bg-opacity-10 text-primary p-3 d-inline-flex align-items-center justify-content-center mb-2" style="width: 70px; height: 70px;">
+                            <i class="bi bi-person-fill-lock fs-1"></i>
+                        </div>
+                        <h3 class="fw-bold text-dark mb-1">Đăng Nhập MedClinic</h3>
+                        <p class="text-muted small">Truy cập cổng thông tin và dịch vụ khám chữa bệnh</p>
+                    </div>
+
+                    <form th:action="@{/login}" method="post">
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold text-muted">Tên đăng nhập hoặc Email</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light"><i class="bi bi-person"></i></span>
+                                <input type="text" id="usernameInput" name="username" class="form-control form-control-lg" placeholder="Nhập username/email..." required autofocus>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold text-muted">Mật khẩu</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light"><i class="bi bi-lock"></i></span>
+                                <input type="password" id="passwordInput" name="password" class="form-control form-control-lg" placeholder="Nhập mật khẩu..." required>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="remember-me" id="rememberMe">
+                                <label class="form-check-label small text-muted" for="rememberMe">
+                                    Ghi nhớ đăng nhập
+                                </label>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-med-primary w-100 py-3 fw-bold mb-3">
+                            <i class="bi bi-box-arrow-in-right me-2"></i> Đăng Nhập
+                        </button>
+
+                        <div class="text-center small text-muted mb-4">
+                            Chưa có tài khoản? <a th:href="@{/register}" class="text-primary fw-semibold">Đăng ký khám ngay</a>
+                        </div>
+                    </form>
+
+                    <!-- Quick Demo Credentials Box -->
+                    <div class="p-3 bg-light rounded-3 border">
+                        <div class="small fw-bold text-dark mb-2 text-center">
+                            <i class="bi bi-lightning-charge-fill text-warning me-1"></i> Tài khoản Demo Nhanh (Click để tự điền):
+                        </div>
+                        <div class="d-flex flex-wrap gap-1 justify-content-center">
+                            <button type="button" class="btn btn-sm btn-outline-danger py-1 px-2" onclick="fillLogin('admin', '123456')">Admin</button>
+                            <button type="button" class="btn btn-sm btn-outline-success py-1 px-2" onclick="fillLogin('doctor', '123456')">Bác sĩ</button>
+                            <button type="button" class="btn btn-sm btn-outline-warning text-dark py-1 px-2" onclick="fillLogin('staff', '123456')">Lễ tân</button>
+                            <button type="button" class="btn btn-sm btn-outline-primary py-1 px-2" onclick="fillLogin('patient', '123456')">Bệnh nhân</button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div layout:fragment="scripts">
+    <script>
+        function fillLogin(user, pass) {
+            document.getElementById('usernameInput').value = user;
+            document.getElementById('passwordInput').value = pass;
+        }
+    </script>
+</div>
+</body>
+</html>
+

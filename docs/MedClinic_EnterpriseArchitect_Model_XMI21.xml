@@ -1,0 +1,443 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xmi:XMI xmi:version="2.1" xmlns:uml="http://schema.omg.org/spec/UML/2.1" xmlns:xmi="http://schema.omg.org/spec/XMI/2.1">
+	<xmi:Documentation exporter="Enterprise Architect" exporterVersion="6.5"/>
+	<uml:Model xmi:type="uml:Model" name="EA_Model" visibility="public">
+		<packagedElement xmi:type="uml:Package" xmi:id="EAPK_00000001_1111_4444_8888_000000000001" name="MedClinic System" visibility="public">
+			<packagedElement xmi:type="uml:Package" xmi:id="EAPK_00000002_2222_4444_8888_000000000002" name="Use Case Model" visibility="public">
+				<packagedElement xmi:type="uml:Actor" xmi:id="EAID_ACT00001_1111_4444_8888_000000000001" name="Khách (Guest)" visibility="public"/>
+				<packagedElement xmi:type="uml:Actor" xmi:id="EAID_ACT00002_1111_4444_8888_000000000002" name="Bệnh nhân (Patient)" visibility="public"/>
+				<packagedElement xmi:type="uml:Actor" xmi:id="EAID_ACT00003_1111_4444_8888_000000000003" name="Bác sĩ (Doctor)" visibility="public"/>
+				<packagedElement xmi:type="uml:Actor" xmi:id="EAID_ACT00004_1111_4444_8888_000000000004" name="Lễ tân (Staff)" visibility="public"/>
+				<packagedElement xmi:type="uml:Actor" xmi:id="EAID_ACT00005_1111_4444_8888_000000000005" name="Quản trị viên (Admin)" visibility="public"/>
+				<packagedElement xmi:type="uml:UseCase" xmi:id="EAID_U0000001_1111_4444_8888_000000000001" name="UC_001: Đăng ký tài khoản (Sign up)" visibility="public"/>
+				<packagedElement xmi:type="uml:UseCase" xmi:id="EAID_U0000002_1111_4444_8888_000000000002" name="UC_002: Đăng nhập hệ thống (Sign in)" visibility="public"/>
+				<packagedElement xmi:type="uml:UseCase" xmi:id="EAID_U0000003_1111_4444_8888_000000000003" name="UC_003: Đăng xuất khỏi hệ thống (Sign out)" visibility="public"/>
+				<packagedElement xmi:type="uml:UseCase" xmi:id="EAID_U0000004_1111_4444_8888_000000000004" name="UC_004: Khôi phục mật khẩu (Password Recovery)" visibility="public"/>
+				<packagedElement xmi:type="uml:UseCase" xmi:id="EAID_U0000005_1111_4444_8888_000000000005" name="UC_005: Quản lý thông tin cá nhân &amp; Đổi mật khẩu" visibility="public"/>
+				<packagedElement xmi:type="uml:UseCase" xmi:id="EAID_U0000006_1111_4444_8888_000000000006" name="UC_006: Tìm kiếm và lọc bác sĩ" visibility="public"/>
+				<packagedElement xmi:type="uml:UseCase" xmi:id="EAID_U0000007_1111_4444_8888_000000000007" name="UC_007: Xem chi tiết bác sĩ &amp; chuyên khoa" visibility="public"/>
+				<packagedElement xmi:type="uml:UseCase" xmi:id="EAID_U0000008_1111_4444_8888_000000000008" name="UC_008: Đặt lịch khám trực tuyến (Optimistic Lock)" visibility="public"/>
+				<packagedElement xmi:type="uml:UseCase" xmi:id="EAID_U0000009_1111_4444_8888_000000000009" name="UC_009: Quản lý lịch hẹn &amp; Hủy lịch" visibility="public"/>
+				<packagedElement xmi:type="uml:UseCase" xmi:id="EAID_U0000010_1111_4444_8888_000000000010" name="UC_010: Xem hồ sơ bệnh án &amp; Đơn thuốc cũ" visibility="public"/>
+				<packagedElement xmi:type="uml:UseCase" xmi:id="EAID_U0000011_1111_4444_8888_000000000011" name="UC_011: Quầy tiếp nhận &amp; Tra cứu lịch hẹn" visibility="public"/>
+				<packagedElement xmi:type="uml:UseCase" xmi:id="EAID_U0000012_1111_4444_8888_000000000012" name="UC_012: Quét QR Check-in &amp; Cấp STT tiếp nhận" visibility="public"/>
+				<packagedElement xmi:type="uml:UseCase" xmi:id="EAID_U0000013_1111_4444_8888_000000000013" name="UC_013: Tiếp nhận bệnh nhân vãng lai (Walk-in)" visibility="public"/>
+				<packagedElement xmi:type="uml:UseCase" xmi:id="EAID_U0000014_1111_4444_8888_000000000014" name="UC_014: Bàn khám bác sĩ &amp; Hàng chờ khám" visibility="public"/>
+				<packagedElement xmi:type="uml:UseCase" xmi:id="EAID_U0000015_1111_4444_8888_000000000015" name="UC_015: Khám bệnh &amp; Ghi bệnh án điện tử" visibility="public"/>
+				<packagedElement xmi:type="uml:UseCase" xmi:id="EAID_U0000016_1111_4444_8888_000000000016" name="UC_016: Kê đơn thuốc &amp; Trừ kho dược tự động" visibility="public"/>
+				<packagedElement xmi:type="uml:UseCase" xmi:id="EAID_U0000017_1111_4444_8888_000000000017" name="UC_017: Xuất Đơn thuốc ra file PDF" visibility="public"/>
+				<packagedElement xmi:type="uml:UseCase" xmi:id="EAID_U0000018_1111_4444_8888_000000000018" name="UC_018: Tự động sinh Hóa đơn viện phí" visibility="public"/>
+				<packagedElement xmi:type="uml:UseCase" xmi:id="EAID_U0000019_1111_4444_8888_000000000019" name="UC_019: Thu viện phí &amp; Xác nhận thanh toán" visibility="public"/>
+				<packagedElement xmi:type="uml:UseCase" xmi:id="EAID_U0000020_1111_4444_8888_000000000020" name="UC_020: Xuất Hóa đơn viện phí ra file PDF" visibility="public"/>
+				<packagedElement xmi:type="uml:UseCase" xmi:id="EAID_U0000021_1111_4444_8888_000000000021" name="UC_021: Đánh giá &amp; Phản hồi bác sĩ" visibility="public"/>
+				<packagedElement xmi:type="uml:UseCase" xmi:id="EAID_U0000022_1111_4444_8888_000000000022" name="UC_022: Quản lý Chuyên khoa (Specialty CRUD)" visibility="public"/>
+				<packagedElement xmi:type="uml:UseCase" xmi:id="EAID_U0000023_1111_4444_8888_000000000023" name="UC_023: Quản lý Bác sĩ &amp; Lịch trực" visibility="public"/>
+				<packagedElement xmi:type="uml:UseCase" xmi:id="EAID_U0000024_1111_4444_8888_000000000024" name="UC_024: Quản lý Kho dược phẩm &amp; Thuốc" visibility="public"/>
+				<packagedElement xmi:type="uml:UseCase" xmi:id="EAID_U0000025_1111_4444_8888_000000000025" name="UC_025: Quản lý Tài khoản người dùng" visibility="public"/>
+				<packagedElement xmi:type="uml:UseCase" xmi:id="EAID_U0000026_1111_4444_8888_000000000026" name="UC_026: Thống kê Doanh thu &amp; KPI phòng khám" visibility="public"/>
+				<packagedElement xmi:type="uml:Association" xmi:id="EAID_ASU00001_1111_4444_8888_000000000001" name="Khách (Guest) - UC_001: Đăng ký tài khoản (Sign up)" memberEnd="EAID_ASU00001_1111_4444_8888_000000000001_src EAID_ASU00001_1111_4444_8888_000000000001_dst">
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASU00001_1111_4444_8888_000000000001_src" type="EAID_ACT00001_1111_4444_8888_000000000001" association="EAID_ASU00001_1111_4444_8888_000000000001"/>
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASU00001_1111_4444_8888_000000000001_dst" type="EAID_U0000001_1111_4444_8888_000000000001" association="EAID_ASU00001_1111_4444_8888_000000000001"/>
+				</packagedElement>
+				<packagedElement xmi:type="uml:Association" xmi:id="EAID_ASU00002_1111_4444_8888_000000000002" name="Khách (Guest) - UC_002: Đăng nhập hệ thống (Sign in)" memberEnd="EAID_ASU00002_1111_4444_8888_000000000002_src EAID_ASU00002_1111_4444_8888_000000000002_dst">
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASU00002_1111_4444_8888_000000000002_src" type="EAID_ACT00001_1111_4444_8888_000000000001" association="EAID_ASU00002_1111_4444_8888_000000000002"/>
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASU00002_1111_4444_8888_000000000002_dst" type="EAID_U0000002_1111_4444_8888_000000000002" association="EAID_ASU00002_1111_4444_8888_000000000002"/>
+				</packagedElement>
+				<packagedElement xmi:type="uml:Association" xmi:id="EAID_ASU00003_1111_4444_8888_000000000003" name="Khách (Guest) - UC_004: Khôi phục mật khẩu (Password Recovery)" memberEnd="EAID_ASU00003_1111_4444_8888_000000000003_src EAID_ASU00003_1111_4444_8888_000000000003_dst">
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASU00003_1111_4444_8888_000000000003_src" type="EAID_ACT00001_1111_4444_8888_000000000001" association="EAID_ASU00003_1111_4444_8888_000000000003"/>
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASU00003_1111_4444_8888_000000000003_dst" type="EAID_U0000004_1111_4444_8888_000000000004" association="EAID_ASU00003_1111_4444_8888_000000000003"/>
+				</packagedElement>
+				<packagedElement xmi:type="uml:Association" xmi:id="EAID_ASU00004_1111_4444_8888_000000000004" name="Khách (Guest) - UC_006: Tìm kiếm và lọc bác sĩ" memberEnd="EAID_ASU00004_1111_4444_8888_000000000004_src EAID_ASU00004_1111_4444_8888_000000000004_dst">
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASU00004_1111_4444_8888_000000000004_src" type="EAID_ACT00001_1111_4444_8888_000000000001" association="EAID_ASU00004_1111_4444_8888_000000000004"/>
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASU00004_1111_4444_8888_000000000004_dst" type="EAID_U0000006_1111_4444_8888_000000000006" association="EAID_ASU00004_1111_4444_8888_000000000004"/>
+				</packagedElement>
+				<packagedElement xmi:type="uml:Association" xmi:id="EAID_ASU00005_1111_4444_8888_000000000005" name="Khách (Guest) - UC_007: Xem chi tiết bác sĩ &amp; chuyên khoa" memberEnd="EAID_ASU00005_1111_4444_8888_000000000005_src EAID_ASU00005_1111_4444_8888_000000000005_dst">
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASU00005_1111_4444_8888_000000000005_src" type="EAID_ACT00001_1111_4444_8888_000000000001" association="EAID_ASU00005_1111_4444_8888_000000000005"/>
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASU00005_1111_4444_8888_000000000005_dst" type="EAID_U0000007_1111_4444_8888_000000000007" association="EAID_ASU00005_1111_4444_8888_000000000005"/>
+				</packagedElement>
+				<packagedElement xmi:type="uml:Association" xmi:id="EAID_ASU00006_1111_4444_8888_000000000006" name="Bệnh nhân (Patient) - UC_002: Đăng nhập hệ thống (Sign in)" memberEnd="EAID_ASU00006_1111_4444_8888_000000000006_src EAID_ASU00006_1111_4444_8888_000000000006_dst">
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASU00006_1111_4444_8888_000000000006_src" type="EAID_ACT00002_1111_4444_8888_000000000002" association="EAID_ASU00006_1111_4444_8888_000000000006"/>
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASU00006_1111_4444_8888_000000000006_dst" type="EAID_U0000002_1111_4444_8888_000000000002" association="EAID_ASU00006_1111_4444_8888_000000000006"/>
+				</packagedElement>
+				<packagedElement xmi:type="uml:Association" xmi:id="EAID_ASU00007_1111_4444_8888_000000000007" name="Bệnh nhân (Patient) - UC_003: Đăng xuất khỏi hệ thống (Sign out)" memberEnd="EAID_ASU00007_1111_4444_8888_000000000007_src EAID_ASU00007_1111_4444_8888_000000000007_dst">
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASU00007_1111_4444_8888_000000000007_src" type="EAID_ACT00002_1111_4444_8888_000000000002" association="EAID_ASU00007_1111_4444_8888_000000000007"/>
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASU00007_1111_4444_8888_000000000007_dst" type="EAID_U0000003_1111_4444_8888_000000000003" association="EAID_ASU00007_1111_4444_8888_000000000007"/>
+				</packagedElement>
+				<packagedElement xmi:type="uml:Association" xmi:id="EAID_ASU00008_1111_4444_8888_000000000008" name="Bệnh nhân (Patient) - UC_004: Khôi phục mật khẩu (Password Recovery)" memberEnd="EAID_ASU00008_1111_4444_8888_000000000008_src EAID_ASU00008_1111_4444_8888_000000000008_dst">
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASU00008_1111_4444_8888_000000000008_src" type="EAID_ACT00002_1111_4444_8888_000000000002" association="EAID_ASU00008_1111_4444_8888_000000000008"/>
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASU00008_1111_4444_8888_000000000008_dst" type="EAID_U0000004_1111_4444_8888_000000000004" association="EAID_ASU00008_1111_4444_8888_000000000008"/>
+				</packagedElement>
+				<packagedElement xmi:type="uml:Association" xmi:id="EAID_ASU00009_1111_4444_8888_000000000009" name="Bệnh nhân (Patient) - UC_005: Quản lý thông tin cá nhân &amp; Đổi mật khẩu" memberEnd="EAID_ASU00009_1111_4444_8888_000000000009_src EAID_ASU00009_1111_4444_8888_000000000009_dst">
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASU00009_1111_4444_8888_000000000009_src" type="EAID_ACT00002_1111_4444_8888_000000000002" association="EAID_ASU00009_1111_4444_8888_000000000009"/>
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASU00009_1111_4444_8888_000000000009_dst" type="EAID_U0000005_1111_4444_8888_000000000005" association="EAID_ASU00009_1111_4444_8888_000000000009"/>
+				</packagedElement>
+				<packagedElement xmi:type="uml:Association" xmi:id="EAID_ASU00010_1111_4444_8888_000000000010" name="Bệnh nhân (Patient) - UC_006: Tìm kiếm và lọc bác sĩ" memberEnd="EAID_ASU00010_1111_4444_8888_000000000010_src EAID_ASU00010_1111_4444_8888_000000000010_dst">
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASU00010_1111_4444_8888_000000000010_src" type="EAID_ACT00002_1111_4444_8888_000000000002" association="EAID_ASU00010_1111_4444_8888_000000000010"/>
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASU00010_1111_4444_8888_000000000010_dst" type="EAID_U0000006_1111_4444_8888_000000000006" association="EAID_ASU00010_1111_4444_8888_000000000010"/>
+				</packagedElement>
+				<packagedElement xmi:type="uml:Association" xmi:id="EAID_ASU00011_1111_4444_8888_000000000011" name="Bệnh nhân (Patient) - UC_007: Xem chi tiết bác sĩ &amp; chuyên khoa" memberEnd="EAID_ASU00011_1111_4444_8888_000000000011_src EAID_ASU00011_1111_4444_8888_000000000011_dst">
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASU00011_1111_4444_8888_000000000011_src" type="EAID_ACT00002_1111_4444_8888_000000000002" association="EAID_ASU00011_1111_4444_8888_000000000011"/>
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASU00011_1111_4444_8888_000000000011_dst" type="EAID_U0000007_1111_4444_8888_000000000007" association="EAID_ASU00011_1111_4444_8888_000000000011"/>
+				</packagedElement>
+				<packagedElement xmi:type="uml:Association" xmi:id="EAID_ASU00012_1111_4444_8888_000000000012" name="Bệnh nhân (Patient) - UC_008: Đặt lịch khám trực tuyến (Optimistic Lock)" memberEnd="EAID_ASU00012_1111_4444_8888_000000000012_src EAID_ASU00012_1111_4444_8888_000000000012_dst">
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASU00012_1111_4444_8888_000000000012_src" type="EAID_ACT00002_1111_4444_8888_000000000002" association="EAID_ASU00012_1111_4444_8888_000000000012"/>
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASU00012_1111_4444_8888_000000000012_dst" type="EAID_U0000008_1111_4444_8888_000000000008" association="EAID_ASU00012_1111_4444_8888_000000000012"/>
+				</packagedElement>
+				<packagedElement xmi:type="uml:Association" xmi:id="EAID_ASU00013_1111_4444_8888_000000000013" name="Bệnh nhân (Patient) - UC_009: Quản lý lịch hẹn &amp; Hủy lịch" memberEnd="EAID_ASU00013_1111_4444_8888_000000000013_src EAID_ASU00013_1111_4444_8888_000000000013_dst">
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASU00013_1111_4444_8888_000000000013_src" type="EAID_ACT00002_1111_4444_8888_000000000002" association="EAID_ASU00013_1111_4444_8888_000000000013"/>
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASU00013_1111_4444_8888_000000000013_dst" type="EAID_U0000009_1111_4444_8888_000000000009" association="EAID_ASU00013_1111_4444_8888_000000000013"/>
+				</packagedElement>
+				<packagedElement xmi:type="uml:Association" xmi:id="EAID_ASU00014_1111_4444_8888_000000000014" name="Bệnh nhân (Patient) - UC_010: Xem hồ sơ bệnh án &amp; Đơn thuốc cũ" memberEnd="EAID_ASU00014_1111_4444_8888_000000000014_src EAID_ASU00014_1111_4444_8888_000000000014_dst">
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASU00014_1111_4444_8888_000000000014_src" type="EAID_ACT00002_1111_4444_8888_000000000002" association="EAID_ASU00014_1111_4444_8888_000000000014"/>
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASU00014_1111_4444_8888_000000000014_dst" type="EAID_U0000010_1111_4444_8888_000000000010" association="EAID_ASU00014_1111_4444_8888_000000000014"/>
+				</packagedElement>
+				<packagedElement xmi:type="uml:Association" xmi:id="EAID_ASU00015_1111_4444_8888_000000000015" name="Bệnh nhân (Patient) - UC_012: Quét QR Check-in &amp; Cấp STT tiếp nhận" memberEnd="EAID_ASU00015_1111_4444_8888_000000000015_src EAID_ASU00015_1111_4444_8888_000000000015_dst">
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASU00015_1111_4444_8888_000000000015_src" type="EAID_ACT00002_1111_4444_8888_000000000002" association="EAID_ASU00015_1111_4444_8888_000000000015"/>
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASU00015_1111_4444_8888_000000000015_dst" type="EAID_U0000012_1111_4444_8888_000000000012" association="EAID_ASU00015_1111_4444_8888_000000000015"/>
+				</packagedElement>
+				<packagedElement xmi:type="uml:Association" xmi:id="EAID_ASU00016_1111_4444_8888_000000000016" name="Bệnh nhân (Patient) - UC_021: Đánh giá &amp; Phản hồi bác sĩ" memberEnd="EAID_ASU00016_1111_4444_8888_000000000016_src EAID_ASU00016_1111_4444_8888_000000000016_dst">
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASU00016_1111_4444_8888_000000000016_src" type="EAID_ACT00002_1111_4444_8888_000000000002" association="EAID_ASU00016_1111_4444_8888_000000000016"/>
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASU00016_1111_4444_8888_000000000016_dst" type="EAID_U0000021_1111_4444_8888_000000000021" association="EAID_ASU00016_1111_4444_8888_000000000016"/>
+				</packagedElement>
+				<packagedElement xmi:type="uml:Association" xmi:id="EAID_ASU00017_1111_4444_8888_000000000017" name="Bác sĩ (Doctor) - UC_002: Đăng nhập hệ thống (Sign in)" memberEnd="EAID_ASU00017_1111_4444_8888_000000000017_src EAID_ASU00017_1111_4444_8888_000000000017_dst">
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASU00017_1111_4444_8888_000000000017_src" type="EAID_ACT00003_1111_4444_8888_000000000003" association="EAID_ASU00017_1111_4444_8888_000000000017"/>
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASU00017_1111_4444_8888_000000000017_dst" type="EAID_U0000002_1111_4444_8888_000000000002" association="EAID_ASU00017_1111_4444_8888_000000000017"/>
+				</packagedElement>
+				<packagedElement xmi:type="uml:Association" xmi:id="EAID_ASU00018_1111_4444_8888_000000000018" name="Bác sĩ (Doctor) - UC_003: Đăng xuất khỏi hệ thống (Sign out)" memberEnd="EAID_ASU00018_1111_4444_8888_000000000018_src EAID_ASU00018_1111_4444_8888_000000000018_dst">
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASU00018_1111_4444_8888_000000000018_src" type="EAID_ACT00003_1111_4444_8888_000000000003" association="EAID_ASU00018_1111_4444_8888_000000000018"/>
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASU00018_1111_4444_8888_000000000018_dst" type="EAID_U0000003_1111_4444_8888_000000000003" association="EAID_ASU00018_1111_4444_8888_000000000018"/>
+				</packagedElement>
+				<packagedElement xmi:type="uml:Association" xmi:id="EAID_ASU00019_1111_4444_8888_000000000019" name="Bác sĩ (Doctor) - UC_005: Quản lý thông tin cá nhân &amp; Đổi mật khẩu" memberEnd="EAID_ASU00019_1111_4444_8888_000000000019_src EAID_ASU00019_1111_4444_8888_000000000019_dst">
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASU00019_1111_4444_8888_000000000019_src" type="EAID_ACT00003_1111_4444_8888_000000000003" association="EAID_ASU00019_1111_4444_8888_000000000019"/>
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASU00019_1111_4444_8888_000000000019_dst" type="EAID_U0000005_1111_4444_8888_000000000005" association="EAID_ASU00019_1111_4444_8888_000000000019"/>
+				</packagedElement>
+				<packagedElement xmi:type="uml:Association" xmi:id="EAID_ASU00020_1111_4444_8888_000000000020" name="Bác sĩ (Doctor) - UC_014: Bàn khám bác sĩ &amp; Hàng chờ khám" memberEnd="EAID_ASU00020_1111_4444_8888_000000000020_src EAID_ASU00020_1111_4444_8888_000000000020_dst">
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASU00020_1111_4444_8888_000000000020_src" type="EAID_ACT00003_1111_4444_8888_000000000003" association="EAID_ASU00020_1111_4444_8888_000000000020"/>
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASU00020_1111_4444_8888_000000000020_dst" type="EAID_U0000014_1111_4444_8888_000000000014" association="EAID_ASU00020_1111_4444_8888_000000000020"/>
+				</packagedElement>
+				<packagedElement xmi:type="uml:Association" xmi:id="EAID_ASU00021_1111_4444_8888_000000000021" name="Bác sĩ (Doctor) - UC_015: Khám bệnh &amp; Ghi bệnh án điện tử" memberEnd="EAID_ASU00021_1111_4444_8888_000000000021_src EAID_ASU00021_1111_4444_8888_000000000021_dst">
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASU00021_1111_4444_8888_000000000021_src" type="EAID_ACT00003_1111_4444_8888_000000000003" association="EAID_ASU00021_1111_4444_8888_000000000021"/>
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASU00021_1111_4444_8888_000000000021_dst" type="EAID_U0000015_1111_4444_8888_000000000015" association="EAID_ASU00021_1111_4444_8888_000000000021"/>
+				</packagedElement>
+				<packagedElement xmi:type="uml:Association" xmi:id="EAID_ASU00022_1111_4444_8888_000000000022" name="Bác sĩ (Doctor) - UC_016: Kê đơn thuốc &amp; Trừ kho dược tự động" memberEnd="EAID_ASU00022_1111_4444_8888_000000000022_src EAID_ASU00022_1111_4444_8888_000000000022_dst">
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASU00022_1111_4444_8888_000000000022_src" type="EAID_ACT00003_1111_4444_8888_000000000003" association="EAID_ASU00022_1111_4444_8888_000000000022"/>
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASU00022_1111_4444_8888_000000000022_dst" type="EAID_U0000016_1111_4444_8888_000000000016" association="EAID_ASU00022_1111_4444_8888_000000000022"/>
+				</packagedElement>
+				<packagedElement xmi:type="uml:Association" xmi:id="EAID_ASU00023_1111_4444_8888_000000000023" name="Bác sĩ (Doctor) - UC_017: Xuất Đơn thuốc ra file PDF" memberEnd="EAID_ASU00023_1111_4444_8888_000000000023_src EAID_ASU00023_1111_4444_8888_000000000023_dst">
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASU00023_1111_4444_8888_000000000023_src" type="EAID_ACT00003_1111_4444_8888_000000000003" association="EAID_ASU00023_1111_4444_8888_000000000023"/>
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASU00023_1111_4444_8888_000000000023_dst" type="EAID_U0000017_1111_4444_8888_000000000017" association="EAID_ASU00023_1111_4444_8888_000000000023"/>
+				</packagedElement>
+				<packagedElement xmi:type="uml:Association" xmi:id="EAID_ASU00024_1111_4444_8888_000000000024" name="Bác sĩ (Doctor) - UC_018: Tự động sinh Hóa đơn viện phí" memberEnd="EAID_ASU00024_1111_4444_8888_000000000024_src EAID_ASU00024_1111_4444_8888_000000000024_dst">
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASU00024_1111_4444_8888_000000000024_src" type="EAID_ACT00003_1111_4444_8888_000000000003" association="EAID_ASU00024_1111_4444_8888_000000000024"/>
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASU00024_1111_4444_8888_000000000024_dst" type="EAID_U0000018_1111_4444_8888_000000000018" association="EAID_ASU00024_1111_4444_8888_000000000024"/>
+				</packagedElement>
+				<packagedElement xmi:type="uml:Association" xmi:id="EAID_ASU00025_1111_4444_8888_000000000025" name="Lễ tân (Staff) - UC_002: Đăng nhập hệ thống (Sign in)" memberEnd="EAID_ASU00025_1111_4444_8888_000000000025_src EAID_ASU00025_1111_4444_8888_000000000025_dst">
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASU00025_1111_4444_8888_000000000025_src" type="EAID_ACT00004_1111_4444_8888_000000000004" association="EAID_ASU00025_1111_4444_8888_000000000025"/>
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASU00025_1111_4444_8888_000000000025_dst" type="EAID_U0000002_1111_4444_8888_000000000002" association="EAID_ASU00025_1111_4444_8888_000000000025"/>
+				</packagedElement>
+				<packagedElement xmi:type="uml:Association" xmi:id="EAID_ASU00026_1111_4444_8888_000000000026" name="Lễ tân (Staff) - UC_003: Đăng xuất khỏi hệ thống (Sign out)" memberEnd="EAID_ASU00026_1111_4444_8888_000000000026_src EAID_ASU00026_1111_4444_8888_000000000026_dst">
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASU00026_1111_4444_8888_000000000026_src" type="EAID_ACT00004_1111_4444_8888_000000000004" association="EAID_ASU00026_1111_4444_8888_000000000026"/>
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASU00026_1111_4444_8888_000000000026_dst" type="EAID_U0000003_1111_4444_8888_000000000003" association="EAID_ASU00026_1111_4444_8888_000000000026"/>
+				</packagedElement>
+				<packagedElement xmi:type="uml:Association" xmi:id="EAID_ASU00027_1111_4444_8888_000000000027" name="Lễ tân (Staff) - UC_005: Quản lý thông tin cá nhân &amp; Đổi mật khẩu" memberEnd="EAID_ASU00027_1111_4444_8888_000000000027_src EAID_ASU00027_1111_4444_8888_000000000027_dst">
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASU00027_1111_4444_8888_000000000027_src" type="EAID_ACT00004_1111_4444_8888_000000000004" association="EAID_ASU00027_1111_4444_8888_000000000027"/>
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASU00027_1111_4444_8888_000000000027_dst" type="EAID_U0000005_1111_4444_8888_000000000005" association="EAID_ASU00027_1111_4444_8888_000000000027"/>
+				</packagedElement>
+				<packagedElement xmi:type="uml:Association" xmi:id="EAID_ASU00028_1111_4444_8888_000000000028" name="Lễ tân (Staff) - UC_011: Quầy tiếp nhận &amp; Tra cứu lịch hẹn" memberEnd="EAID_ASU00028_1111_4444_8888_000000000028_src EAID_ASU00028_1111_4444_8888_000000000028_dst">
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASU00028_1111_4444_8888_000000000028_src" type="EAID_ACT00004_1111_4444_8888_000000000004" association="EAID_ASU00028_1111_4444_8888_000000000028"/>
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASU00028_1111_4444_8888_000000000028_dst" type="EAID_U0000011_1111_4444_8888_000000000011" association="EAID_ASU00028_1111_4444_8888_000000000028"/>
+				</packagedElement>
+				<packagedElement xmi:type="uml:Association" xmi:id="EAID_ASU00029_1111_4444_8888_000000000029" name="Lễ tân (Staff) - UC_012: Quét QR Check-in &amp; Cấp STT tiếp nhận" memberEnd="EAID_ASU00029_1111_4444_8888_000000000029_src EAID_ASU00029_1111_4444_8888_000000000029_dst">
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASU00029_1111_4444_8888_000000000029_src" type="EAID_ACT00004_1111_4444_8888_000000000004" association="EAID_ASU00029_1111_4444_8888_000000000029"/>
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASU00029_1111_4444_8888_000000000029_dst" type="EAID_U0000012_1111_4444_8888_000000000012" association="EAID_ASU00029_1111_4444_8888_000000000029"/>
+				</packagedElement>
+				<packagedElement xmi:type="uml:Association" xmi:id="EAID_ASU00030_1111_4444_8888_000000000030" name="Lễ tân (Staff) - UC_013: Tiếp nhận bệnh nhân vãng lai (Walk-in)" memberEnd="EAID_ASU00030_1111_4444_8888_000000000030_src EAID_ASU00030_1111_4444_8888_000000000030_dst">
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASU00030_1111_4444_8888_000000000030_src" type="EAID_ACT00004_1111_4444_8888_000000000004" association="EAID_ASU00030_1111_4444_8888_000000000030"/>
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASU00030_1111_4444_8888_000000000030_dst" type="EAID_U0000013_1111_4444_8888_000000000013" association="EAID_ASU00030_1111_4444_8888_000000000030"/>
+				</packagedElement>
+				<packagedElement xmi:type="uml:Association" xmi:id="EAID_ASU00031_1111_4444_8888_000000000031" name="Lễ tân (Staff) - UC_019: Thu viện phí &amp; Xác nhận thanh toán" memberEnd="EAID_ASU00031_1111_4444_8888_000000000031_src EAID_ASU00031_1111_4444_8888_000000000031_dst">
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASU00031_1111_4444_8888_000000000031_src" type="EAID_ACT00004_1111_4444_8888_000000000004" association="EAID_ASU00031_1111_4444_8888_000000000031"/>
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASU00031_1111_4444_8888_000000000031_dst" type="EAID_U0000019_1111_4444_8888_000000000019" association="EAID_ASU00031_1111_4444_8888_000000000031"/>
+				</packagedElement>
+				<packagedElement xmi:type="uml:Association" xmi:id="EAID_ASU00032_1111_4444_8888_000000000032" name="Lễ tân (Staff) - UC_020: Xuất Hóa đơn viện phí ra file PDF" memberEnd="EAID_ASU00032_1111_4444_8888_000000000032_src EAID_ASU00032_1111_4444_8888_000000000032_dst">
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASU00032_1111_4444_8888_000000000032_src" type="EAID_ACT00004_1111_4444_8888_000000000004" association="EAID_ASU00032_1111_4444_8888_000000000032"/>
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASU00032_1111_4444_8888_000000000032_dst" type="EAID_U0000020_1111_4444_8888_000000000020" association="EAID_ASU00032_1111_4444_8888_000000000032"/>
+				</packagedElement>
+				<packagedElement xmi:type="uml:Association" xmi:id="EAID_ASU00033_1111_4444_8888_000000000033" name="Quản trị viên (Admin) - UC_002: Đăng nhập hệ thống (Sign in)" memberEnd="EAID_ASU00033_1111_4444_8888_000000000033_src EAID_ASU00033_1111_4444_8888_000000000033_dst">
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASU00033_1111_4444_8888_000000000033_src" type="EAID_ACT00005_1111_4444_8888_000000000005" association="EAID_ASU00033_1111_4444_8888_000000000033"/>
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASU00033_1111_4444_8888_000000000033_dst" type="EAID_U0000002_1111_4444_8888_000000000002" association="EAID_ASU00033_1111_4444_8888_000000000033"/>
+				</packagedElement>
+				<packagedElement xmi:type="uml:Association" xmi:id="EAID_ASU00034_1111_4444_8888_000000000034" name="Quản trị viên (Admin) - UC_003: Đăng xuất khỏi hệ thống (Sign out)" memberEnd="EAID_ASU00034_1111_4444_8888_000000000034_src EAID_ASU00034_1111_4444_8888_000000000034_dst">
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASU00034_1111_4444_8888_000000000034_src" type="EAID_ACT00005_1111_4444_8888_000000000005" association="EAID_ASU00034_1111_4444_8888_000000000034"/>
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASU00034_1111_4444_8888_000000000034_dst" type="EAID_U0000003_1111_4444_8888_000000000003" association="EAID_ASU00034_1111_4444_8888_000000000034"/>
+				</packagedElement>
+				<packagedElement xmi:type="uml:Association" xmi:id="EAID_ASU00035_1111_4444_8888_000000000035" name="Quản trị viên (Admin) - UC_005: Quản lý thông tin cá nhân &amp; Đổi mật khẩu" memberEnd="EAID_ASU00035_1111_4444_8888_000000000035_src EAID_ASU00035_1111_4444_8888_000000000035_dst">
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASU00035_1111_4444_8888_000000000035_src" type="EAID_ACT00005_1111_4444_8888_000000000005" association="EAID_ASU00035_1111_4444_8888_000000000035"/>
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASU00035_1111_4444_8888_000000000035_dst" type="EAID_U0000005_1111_4444_8888_000000000005" association="EAID_ASU00035_1111_4444_8888_000000000035"/>
+				</packagedElement>
+				<packagedElement xmi:type="uml:Association" xmi:id="EAID_ASU00036_1111_4444_8888_000000000036" name="Quản trị viên (Admin) - UC_022: Quản lý Chuyên khoa (Specialty CRUD)" memberEnd="EAID_ASU00036_1111_4444_8888_000000000036_src EAID_ASU00036_1111_4444_8888_000000000036_dst">
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASU00036_1111_4444_8888_000000000036_src" type="EAID_ACT00005_1111_4444_8888_000000000005" association="EAID_ASU00036_1111_4444_8888_000000000036"/>
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASU00036_1111_4444_8888_000000000036_dst" type="EAID_U0000022_1111_4444_8888_000000000022" association="EAID_ASU00036_1111_4444_8888_000000000036"/>
+				</packagedElement>
+				<packagedElement xmi:type="uml:Association" xmi:id="EAID_ASU00037_1111_4444_8888_000000000037" name="Quản trị viên (Admin) - UC_023: Quản lý Bác sĩ &amp; Lịch trực" memberEnd="EAID_ASU00037_1111_4444_8888_000000000037_src EAID_ASU00037_1111_4444_8888_000000000037_dst">
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASU00037_1111_4444_8888_000000000037_src" type="EAID_ACT00005_1111_4444_8888_000000000005" association="EAID_ASU00037_1111_4444_8888_000000000037"/>
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASU00037_1111_4444_8888_000000000037_dst" type="EAID_U0000023_1111_4444_8888_000000000023" association="EAID_ASU00037_1111_4444_8888_000000000037"/>
+				</packagedElement>
+				<packagedElement xmi:type="uml:Association" xmi:id="EAID_ASU00038_1111_4444_8888_000000000038" name="Quản trị viên (Admin) - UC_024: Quản lý Kho dược phẩm &amp; Thuốc" memberEnd="EAID_ASU00038_1111_4444_8888_000000000038_src EAID_ASU00038_1111_4444_8888_000000000038_dst">
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASU00038_1111_4444_8888_000000000038_src" type="EAID_ACT00005_1111_4444_8888_000000000005" association="EAID_ASU00038_1111_4444_8888_000000000038"/>
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASU00038_1111_4444_8888_000000000038_dst" type="EAID_U0000024_1111_4444_8888_000000000024" association="EAID_ASU00038_1111_4444_8888_000000000038"/>
+				</packagedElement>
+				<packagedElement xmi:type="uml:Association" xmi:id="EAID_ASU00039_1111_4444_8888_000000000039" name="Quản trị viên (Admin) - UC_025: Quản lý Tài khoản người dùng" memberEnd="EAID_ASU00039_1111_4444_8888_000000000039_src EAID_ASU00039_1111_4444_8888_000000000039_dst">
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASU00039_1111_4444_8888_000000000039_src" type="EAID_ACT00005_1111_4444_8888_000000000005" association="EAID_ASU00039_1111_4444_8888_000000000039"/>
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASU00039_1111_4444_8888_000000000039_dst" type="EAID_U0000025_1111_4444_8888_000000000025" association="EAID_ASU00039_1111_4444_8888_000000000039"/>
+				</packagedElement>
+				<packagedElement xmi:type="uml:Association" xmi:id="EAID_ASU00040_1111_4444_8888_000000000040" name="Quản trị viên (Admin) - UC_026: Thống kê Doanh thu &amp; KPI phòng khám" memberEnd="EAID_ASU00040_1111_4444_8888_000000000040_src EAID_ASU00040_1111_4444_8888_000000000040_dst">
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASU00040_1111_4444_8888_000000000040_src" type="EAID_ACT00005_1111_4444_8888_000000000005" association="EAID_ASU00040_1111_4444_8888_000000000040"/>
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASU00040_1111_4444_8888_000000000040_dst" type="EAID_U0000026_1111_4444_8888_000000000026" association="EAID_ASU00040_1111_4444_8888_000000000040"/>
+				</packagedElement>
+			</packagedElement>
+			<packagedElement xmi:type="uml:Package" xmi:id="EAPK_00000003_3333_4444_8888_000000000003" name="Domain Class Model (3NF)" visibility="public">
+				<packagedElement xmi:type="uml:Class" xmi:id="EAID_C0000001_1111_4444_8888_000000000001" name="User" visibility="public">
+					<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_ATT01_0000_1111_4444_8888_000000000000" name="id: Long" visibility="private"/>
+					<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_ATT01_0001_1111_4444_8888_000000000001" name="username: String" visibility="private"/>
+					<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_ATT01_0002_1111_4444_8888_000000000002" name="password: String" visibility="private"/>
+					<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_ATT01_0003_1111_4444_8888_000000000003" name="fullName: String" visibility="private"/>
+					<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_ATT01_0004_1111_4444_8888_000000000004" name="email: String" visibility="private"/>
+					<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_ATT01_0005_1111_4444_8888_000000000005" name="phone: String" visibility="private"/>
+					<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_ATT01_0006_1111_4444_8888_000000000006" name="gender: Gender" visibility="private"/>
+					<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_ATT01_0007_1111_4444_8888_000000000007" name="dateOfBirth: LocalDate" visibility="private"/>
+					<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_ATT01_0008_1111_4444_8888_000000000008" name="address: String" visibility="private"/>
+					<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_ATT01_0009_1111_4444_8888_000000000009" name="isActive: Boolean" visibility="private"/>
+					<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_ATT01_0010_1111_4444_8888_000000000010" name="createdAt: LocalDateTime" visibility="private"/>
+				</packagedElement>
+				<packagedElement xmi:type="uml:Class" xmi:id="EAID_C0000002_1111_4444_8888_000000000002" name="Role" visibility="public">
+					<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_ATT02_0000_1111_4444_8888_000000000000" name="id: Long" visibility="private"/>
+					<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_ATT02_0001_1111_4444_8888_000000000001" name="name: RoleType" visibility="private"/>
+					<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_ATT02_0002_1111_4444_8888_000000000002" name="description: String" visibility="private"/>
+				</packagedElement>
+				<packagedElement xmi:type="uml:Class" xmi:id="EAID_C0000003_1111_4444_8888_000000000003" name="Specialty" visibility="public">
+					<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_ATT03_0000_1111_4444_8888_000000000000" name="id: Long" visibility="private"/>
+					<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_ATT03_0001_1111_4444_8888_000000000001" name="name: String" visibility="private"/>
+					<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_ATT03_0002_1111_4444_8888_000000000002" name="description: String" visibility="private"/>
+					<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_ATT03_0003_1111_4444_8888_000000000003" name="icon: String" visibility="private"/>
+					<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_ATT03_0004_1111_4444_8888_000000000004" name="isActive: Boolean" visibility="private"/>
+				</packagedElement>
+				<packagedElement xmi:type="uml:Class" xmi:id="EAID_C0000004_1111_4444_8888_000000000004" name="DoctorProfile" visibility="public">
+					<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_ATT04_0000_1111_4444_8888_000000000000" name="id: Long" visibility="private"/>
+					<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_ATT04_0001_1111_4444_8888_000000000001" name="title: String" visibility="private"/>
+					<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_ATT04_0002_1111_4444_8888_000000000002" name="experienceYears: Integer" visibility="private"/>
+					<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_ATT04_0003_1111_4444_8888_000000000003" name="consultationFee: BigDecimal" visibility="private"/>
+					<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_ATT04_0004_1111_4444_8888_000000000004" name="bio: String" visibility="private"/>
+				</packagedElement>
+				<packagedElement xmi:type="uml:Class" xmi:id="EAID_C0000005_1111_4444_8888_000000000005" name="DoctorSchedule" visibility="public">
+					<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_ATT05_0000_1111_4444_8888_000000000000" name="id: Long" visibility="private"/>
+					<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_ATT05_0001_1111_4444_8888_000000000001" name="workDate: LocalDate" visibility="private"/>
+					<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_ATT05_0002_1111_4444_8888_000000000002" name="shift: ShiftType" visibility="private"/>
+					<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_ATT05_0003_1111_4444_8888_000000000003" name="maxPatients: Integer" visibility="private"/>
+				</packagedElement>
+				<packagedElement xmi:type="uml:Class" xmi:id="EAID_C0000006_1111_4444_8888_000000000006" name="TimeSlot" visibility="public">
+					<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_ATT06_0000_1111_4444_8888_000000000000" name="id: Long" visibility="private"/>
+					<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_ATT06_0001_1111_4444_8888_000000000001" name="startTime: LocalTime" visibility="private"/>
+					<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_ATT06_0002_1111_4444_8888_000000000002" name="endTime: LocalTime" visibility="private"/>
+					<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_ATT06_0003_1111_4444_8888_000000000003" name="status: SlotStatus" visibility="private"/>
+					<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_ATT06_0004_1111_4444_8888_000000000004" name="version: Long" visibility="private"/>
+				</packagedElement>
+				<packagedElement xmi:type="uml:Class" xmi:id="EAID_C0000007_1111_4444_8888_000000000007" name="Appointment" visibility="public">
+					<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_ATT07_0000_1111_4444_8888_000000000000" name="id: Long" visibility="private"/>
+					<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_ATT07_0001_1111_4444_8888_000000000001" name="bookingCode: String" visibility="private"/>
+					<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_ATT07_0002_1111_4444_8888_000000000002" name="appointmentDate: LocalDate" visibility="private"/>
+					<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_ATT07_0003_1111_4444_8888_000000000003" name="reason: String" visibility="private"/>
+					<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_ATT07_0004_1111_4444_8888_000000000004" name="status: AppointmentStatus" visibility="private"/>
+					<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_ATT07_0005_1111_4444_8888_000000000005" name="queueNumber: String" visibility="private"/>
+					<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_ATT07_0006_1111_4444_8888_000000000006" name="createdAt: LocalDateTime" visibility="private"/>
+				</packagedElement>
+				<packagedElement xmi:type="uml:Class" xmi:id="EAID_C0000008_1111_4444_8888_000000000008" name="MedicalRecord" visibility="public">
+					<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_ATT08_0000_1111_4444_8888_000000000000" name="id: Long" visibility="private"/>
+					<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_ATT08_0001_1111_4444_8888_000000000001" name="symptoms: String" visibility="private"/>
+					<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_ATT08_0002_1111_4444_8888_000000000002" name="diagnosis: String" visibility="private"/>
+					<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_ATT08_0003_1111_4444_8888_000000000003" name="doctorNotes: String" visibility="private"/>
+					<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_ATT08_0004_1111_4444_8888_000000000004" name="reExamDate: LocalDate" visibility="private"/>
+					<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_ATT08_0005_1111_4444_8888_000000000005" name="createdAt: LocalDateTime" visibility="private"/>
+				</packagedElement>
+				<packagedElement xmi:type="uml:Class" xmi:id="EAID_C0000009_1111_4444_8888_000000000009" name="Medicine" visibility="public">
+					<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_ATT09_0000_1111_4444_8888_000000000000" name="id: Long" visibility="private"/>
+					<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_ATT09_0001_1111_4444_8888_000000000001" name="name: String" visibility="private"/>
+					<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_ATT09_0002_1111_4444_8888_000000000002" name="unit: String" visibility="private"/>
+					<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_ATT09_0003_1111_4444_8888_000000000003" name="unitPrice: BigDecimal" visibility="private"/>
+					<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_ATT09_0004_1111_4444_8888_000000000004" name="usageGuide: String" visibility="private"/>
+					<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_ATT09_0005_1111_4444_8888_000000000005" name="stockQuantity: Integer" visibility="private"/>
+					<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_ATT09_0006_1111_4444_8888_000000000006" name="isActive: Boolean" visibility="private"/>
+				</packagedElement>
+				<packagedElement xmi:type="uml:Class" xmi:id="EAID_C0000010_1111_4444_8888_000000000010" name="Prescription" visibility="public">
+					<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_ATT10_0000_1111_4444_8888_000000000000" name="id: Long" visibility="private"/>
+					<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_ATT10_0001_1111_4444_8888_000000000001" name="doctorNotes: String" visibility="private"/>
+					<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_ATT10_0002_1111_4444_8888_000000000002" name="createdAt: LocalDateTime" visibility="private"/>
+				</packagedElement>
+				<packagedElement xmi:type="uml:Class" xmi:id="EAID_C0000011_1111_4444_8888_000000000011" name="PrescriptionItem" visibility="public">
+					<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_ATT11_0000_1111_4444_8888_000000000000" name="id: Long" visibility="private"/>
+					<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_ATT11_0001_1111_4444_8888_000000000001" name="quantity: Integer" visibility="private"/>
+					<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_ATT11_0002_1111_4444_8888_000000000002" name="dosage: String" visibility="private"/>
+					<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_ATT11_0003_1111_4444_8888_000000000003" name="frequency: String" visibility="private"/>
+					<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_ATT11_0004_1111_4444_8888_000000000004" name="instructions: String" visibility="private"/>
+				</packagedElement>
+				<packagedElement xmi:type="uml:Class" xmi:id="EAID_C0000012_1111_4444_8888_000000000012" name="Invoice" visibility="public">
+					<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_ATT12_0000_1111_4444_8888_000000000000" name="id: Long" visibility="private"/>
+					<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_ATT12_0001_1111_4444_8888_000000000001" name="invoiceCode: String" visibility="private"/>
+					<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_ATT12_0002_1111_4444_8888_000000000002" name="consultationFee: BigDecimal" visibility="private"/>
+					<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_ATT12_0003_1111_4444_8888_000000000003" name="medicineFee: BigDecimal" visibility="private"/>
+					<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_ATT12_0004_1111_4444_8888_000000000004" name="totalAmount: BigDecimal" visibility="private"/>
+					<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_ATT12_0005_1111_4444_8888_000000000005" name="paymentMethod: PaymentMethod" visibility="private"/>
+					<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_ATT12_0006_1111_4444_8888_000000000006" name="paymentStatus: PaymentStatus" visibility="private"/>
+					<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_ATT12_0007_1111_4444_8888_000000000007" name="paidAt: LocalDateTime" visibility="private"/>
+				</packagedElement>
+				<packagedElement xmi:type="uml:Class" xmi:id="EAID_C0000013_1111_4444_8888_000000000013" name="Notification" visibility="public">
+					<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_ATT13_0000_1111_4444_8888_000000000000" name="id: Long" visibility="private"/>
+					<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_ATT13_0001_1111_4444_8888_000000000001" name="title: String" visibility="private"/>
+					<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_ATT13_0002_1111_4444_8888_000000000002" name="content: String" visibility="private"/>
+					<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_ATT13_0003_1111_4444_8888_000000000003" name="type: String" visibility="private"/>
+					<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_ATT13_0004_1111_4444_8888_000000000004" name="isRead: Boolean" visibility="private"/>
+					<ownedAttribute xmi:type="uml:Property" xmi:id="EAID_ATT13_0005_1111_4444_8888_000000000005" name="createdAt: LocalDateTime" visibility="private"/>
+				</packagedElement>
+				<packagedElement xmi:type="uml:Association" xmi:id="EAID_ASC00001_1111_4444_8888_000000000001" name="User_Role_FK" memberEnd="EAID_ASC00001_1111_4444_8888_000000000001_src EAID_ASC00001_1111_4444_8888_000000000001_dst">
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASC00001_1111_4444_8888_000000000001_src" type="EAID_C0000001_1111_4444_8888_000000000001" association="EAID_ASC00001_1111_4444_8888_000000000001"/>
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASC00001_1111_4444_8888_000000000001_dst" type="EAID_C0000002_1111_4444_8888_000000000002" association="EAID_ASC00001_1111_4444_8888_000000000001"/>
+				</packagedElement>
+				<packagedElement xmi:type="uml:Association" xmi:id="EAID_ASC00002_1111_4444_8888_000000000002" name="Doctor_User_FK" memberEnd="EAID_ASC00002_1111_4444_8888_000000000002_src EAID_ASC00002_1111_4444_8888_000000000002_dst">
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASC00002_1111_4444_8888_000000000002_src" type="EAID_C0000004_1111_4444_8888_000000000004" association="EAID_ASC00002_1111_4444_8888_000000000002"/>
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASC00002_1111_4444_8888_000000000002_dst" type="EAID_C0000001_1111_4444_8888_000000000001" association="EAID_ASC00002_1111_4444_8888_000000000002"/>
+				</packagedElement>
+				<packagedElement xmi:type="uml:Association" xmi:id="EAID_ASC00003_1111_4444_8888_000000000003" name="Doctor_Specialty_FK" memberEnd="EAID_ASC00003_1111_4444_8888_000000000003_src EAID_ASC00003_1111_4444_8888_000000000003_dst">
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASC00003_1111_4444_8888_000000000003_src" type="EAID_C0000004_1111_4444_8888_000000000004" association="EAID_ASC00003_1111_4444_8888_000000000003"/>
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASC00003_1111_4444_8888_000000000003_dst" type="EAID_C0000003_1111_4444_8888_000000000003" association="EAID_ASC00003_1111_4444_8888_000000000003"/>
+				</packagedElement>
+				<packagedElement xmi:type="uml:Association" xmi:id="EAID_ASC00004_1111_4444_8888_000000000004" name="Schedule_Doctor_FK" memberEnd="EAID_ASC00004_1111_4444_8888_000000000004_src EAID_ASC00004_1111_4444_8888_000000000004_dst">
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASC00004_1111_4444_8888_000000000004_src" type="EAID_C0000005_1111_4444_8888_000000000005" association="EAID_ASC00004_1111_4444_8888_000000000004"/>
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASC00004_1111_4444_8888_000000000004_dst" type="EAID_C0000004_1111_4444_8888_000000000004" association="EAID_ASC00004_1111_4444_8888_000000000004"/>
+				</packagedElement>
+				<packagedElement xmi:type="uml:Association" xmi:id="EAID_ASC00005_1111_4444_8888_000000000005" name="TimeSlot_Schedule_FK" memberEnd="EAID_ASC00005_1111_4444_8888_000000000005_src EAID_ASC00005_1111_4444_8888_000000000005_dst">
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASC00005_1111_4444_8888_000000000005_src" type="EAID_C0000006_1111_4444_8888_000000000006" association="EAID_ASC00005_1111_4444_8888_000000000005"/>
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASC00005_1111_4444_8888_000000000005_dst" type="EAID_C0000005_1111_4444_8888_000000000005" association="EAID_ASC00005_1111_4444_8888_000000000005"/>
+				</packagedElement>
+				<packagedElement xmi:type="uml:Association" xmi:id="EAID_ASC00006_1111_4444_8888_000000000006" name="Appointment_Patient_FK" memberEnd="EAID_ASC00006_1111_4444_8888_000000000006_src EAID_ASC00006_1111_4444_8888_000000000006_dst">
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASC00006_1111_4444_8888_000000000006_src" type="EAID_C0000007_1111_4444_8888_000000000007" association="EAID_ASC00006_1111_4444_8888_000000000006"/>
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASC00006_1111_4444_8888_000000000006_dst" type="EAID_C0000001_1111_4444_8888_000000000001" association="EAID_ASC00006_1111_4444_8888_000000000006"/>
+				</packagedElement>
+				<packagedElement xmi:type="uml:Association" xmi:id="EAID_ASC00007_1111_4444_8888_000000000007" name="Appointment_Doctor_FK" memberEnd="EAID_ASC00007_1111_4444_8888_000000000007_src EAID_ASC00007_1111_4444_8888_000000000007_dst">
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASC00007_1111_4444_8888_000000000007_src" type="EAID_C0000007_1111_4444_8888_000000000007" association="EAID_ASC00007_1111_4444_8888_000000000007"/>
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASC00007_1111_4444_8888_000000000007_dst" type="EAID_C0000004_1111_4444_8888_000000000004" association="EAID_ASC00007_1111_4444_8888_000000000007"/>
+				</packagedElement>
+				<packagedElement xmi:type="uml:Association" xmi:id="EAID_ASC00008_1111_4444_8888_000000000008" name="Appointment_Slot_FK" memberEnd="EAID_ASC00008_1111_4444_8888_000000000008_src EAID_ASC00008_1111_4444_8888_000000000008_dst">
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASC00008_1111_4444_8888_000000000008_src" type="EAID_C0000007_1111_4444_8888_000000000007" association="EAID_ASC00008_1111_4444_8888_000000000008"/>
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASC00008_1111_4444_8888_000000000008_dst" type="EAID_C0000006_1111_4444_8888_000000000006" association="EAID_ASC00008_1111_4444_8888_000000000008"/>
+				</packagedElement>
+				<packagedElement xmi:type="uml:Association" xmi:id="EAID_ASC00009_1111_4444_8888_000000000009" name="Record_Appointment_FK" memberEnd="EAID_ASC00009_1111_4444_8888_000000000009_src EAID_ASC00009_1111_4444_8888_000000000009_dst">
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASC00009_1111_4444_8888_000000000009_src" type="EAID_C0000008_1111_4444_8888_000000000008" association="EAID_ASC00009_1111_4444_8888_000000000009"/>
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASC00009_1111_4444_8888_000000000009_dst" type="EAID_C0000007_1111_4444_8888_000000000007" association="EAID_ASC00009_1111_4444_8888_000000000009"/>
+				</packagedElement>
+				<packagedElement xmi:type="uml:Association" xmi:id="EAID_ASC00010_1111_4444_8888_000000000010" name="Prescription_Record_FK" memberEnd="EAID_ASC00010_1111_4444_8888_000000000010_src EAID_ASC00010_1111_4444_8888_000000000010_dst">
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASC00010_1111_4444_8888_000000000010_src" type="EAID_C0000010_1111_4444_8888_000000000010" association="EAID_ASC00010_1111_4444_8888_000000000010"/>
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASC00010_1111_4444_8888_000000000010_dst" type="EAID_C0000008_1111_4444_8888_000000000008" association="EAID_ASC00010_1111_4444_8888_000000000010"/>
+				</packagedElement>
+				<packagedElement xmi:type="uml:Association" xmi:id="EAID_ASC00011_1111_4444_8888_000000000011" name="Item_Prescription_FK" memberEnd="EAID_ASC00011_1111_4444_8888_000000000011_src EAID_ASC00011_1111_4444_8888_000000000011_dst">
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASC00011_1111_4444_8888_000000000011_src" type="EAID_C0000011_1111_4444_8888_000000000011" association="EAID_ASC00011_1111_4444_8888_000000000011"/>
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASC00011_1111_4444_8888_000000000011_dst" type="EAID_C0000010_1111_4444_8888_000000000010" association="EAID_ASC00011_1111_4444_8888_000000000011"/>
+				</packagedElement>
+				<packagedElement xmi:type="uml:Association" xmi:id="EAID_ASC00012_1111_4444_8888_000000000012" name="Item_Medicine_FK" memberEnd="EAID_ASC00012_1111_4444_8888_000000000012_src EAID_ASC00012_1111_4444_8888_000000000012_dst">
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASC00012_1111_4444_8888_000000000012_src" type="EAID_C0000011_1111_4444_8888_000000000011" association="EAID_ASC00012_1111_4444_8888_000000000012"/>
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASC00012_1111_4444_8888_000000000012_dst" type="EAID_C0000009_1111_4444_8888_000000000009" association="EAID_ASC00012_1111_4444_8888_000000000012"/>
+				</packagedElement>
+				<packagedElement xmi:type="uml:Association" xmi:id="EAID_ASC00013_1111_4444_8888_000000000013" name="Invoice_Appointment_FK" memberEnd="EAID_ASC00013_1111_4444_8888_000000000013_src EAID_ASC00013_1111_4444_8888_000000000013_dst">
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASC00013_1111_4444_8888_000000000013_src" type="EAID_C0000012_1111_4444_8888_000000000012" association="EAID_ASC00013_1111_4444_8888_000000000013"/>
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASC00013_1111_4444_8888_000000000013_dst" type="EAID_C0000007_1111_4444_8888_000000000007" association="EAID_ASC00013_1111_4444_8888_000000000013"/>
+				</packagedElement>
+				<packagedElement xmi:type="uml:Association" xmi:id="EAID_ASC00014_1111_4444_8888_000000000014" name="Notification_User_FK" memberEnd="EAID_ASC00014_1111_4444_8888_000000000014_src EAID_ASC00014_1111_4444_8888_000000000014_dst">
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASC00014_1111_4444_8888_000000000014_src" type="EAID_C0000013_1111_4444_8888_000000000013" association="EAID_ASC00014_1111_4444_8888_000000000014"/>
+					<ownedEnd xmi:type="uml:Property" xmi:id="EAID_ASC00014_1111_4444_8888_000000000014_dst" type="EAID_C0000001_1111_4444_8888_000000000001" association="EAID_ASC00014_1111_4444_8888_000000000014"/>
+				</packagedElement>
+			</packagedElement>
+		</packagedElement>
+	</uml:Model>
+	<xmi:Extension extender="Enterprise Architect" extenderID="6.5">
+		<elements>
+			<element xmi:idref="EAPK_00000001_1111_4444_8888_000000000001" xmi:type="uml:Package" name="MedClinic System" scope="public">
+				<model package2="EAID_00000001_1111_4444_8888_000000000001" tpos="0" ea_localid="1" ea_eleType="package"/>
+				<properties isSpecification="false" sType="Package" nType="0" scope="public"/>
+				<project author="MedClinic Team" version="1.0" created="2026-09-05 15:00:00" modified="2026-09-05 15:00:00"/>
+			</element>
+			<element xmi:idref="EAPK_00000002_2222_4444_8888_000000000002" xmi:type="uml:Package" name="Use Case Model" scope="public">
+				<model package2="EAID_00000002_2222_4444_8888_000000000002" package="EAPK_00000001_1111_4444_8888_000000000001" tpos="0" ea_localid="2" ea_eleType="package"/>
+				<properties isSpecification="false" sType="Package" nType="0" scope="public"/>
+				<project author="MedClinic Team" version="1.0" created="2026-09-05 15:00:00" modified="2026-09-05 15:00:00"/>
+			</element>
+			<element xmi:idref="EAPK_00000003_3333_4444_8888_000000000003" xmi:type="uml:Package" name="Domain Class Model (3NF)" scope="public">
+				<model package2="EAID_00000003_3333_4444_8888_000000000003" package="EAPK_00000001_1111_4444_8888_000000000001" tpos="0" ea_localid="3" ea_eleType="package"/>
+				<properties isSpecification="false" sType="Package" nType="0" scope="public"/>
+				<project author="MedClinic Team" version="1.0" created="2026-09-05 15:00:00" modified="2026-09-05 15:00:00"/>
+			</element>
+		</elements>
+		<diagrams>
+			<diagram xmi:id="EAID_D0000001_1111_4444_8888_000000000001">
+				<model package="EAPK_00000002_2222_4444_8888_000000000002" localID="2" ea_localid="2"/>
+				<properties name="Sơ đồ Use Case Tổng quan" type="Use Case"/>
+				<project author="MedClinic Team" version="1.0" created="2026-09-05 15:00:00" modified="2026-09-05 15:00:00"/>
+				<style1 value="ShowPrivate=1;ShowProtected=1;ShowPublic=1;HideRelationships=0;Locked=0;Border=1;HighlightForeign=1;PackageContents=1;DocSize.cx=1600;DocSize.cy=1300;Orientation=L;Zoom=100;"/>
+				<style2 value="SaveTag=22338634;ExcludeRTF=0;DocAll=0;HideQuals=0;AttPkg=1;ShowTags=0;ShowReqs=0;ShowCons=0;OpPkg=1;ShowFinds=0;ShowAtts=1;"/>
+				<elements>
+					<element geometry="Left=30;Top=80;Right=120;Bottom=170;" subject="EAID_ACT00001_1111_4444_8888_000000000001" seqno="1" style="DUID=A1;"/>
+					<element geometry="Left=30;Top=340;Right=120;Bottom=430;" subject="EAID_ACT00002_1111_4444_8888_000000000002" seqno="2" style="DUID=A2;"/>
+					<element geometry="Left=30;Top=690;Right=120;Bottom=780;" subject="EAID_ACT00003_1111_4444_8888_000000000003" seqno="3" style="DUID=A3;"/>
+					<element geometry="Left=1140;Top=340;Right=1230;Bottom=430;" subject="EAID_ACT00004_1111_4444_8888_000000000004" seqno="4" style="DUID=A4;"/>
+					<element geometry="Left=1140;Top=715;Right=1230;Bottom=805;" subject="EAID_ACT00005_1111_4444_8888_000000000005" seqno="5" style="DUID=A5;"/>
+					<element geometry="Left=220;Top=40;Right=480;Bottom=95;" subject="EAID_U0000001_1111_4444_8888_000000000001" seqno="6" style="DUID=U1;"/>
+					<element geometry="Left=560;Top=40;Right=820;Bottom=95;" subject="EAID_U0000002_1111_4444_8888_000000000002" seqno="7" style="DUID=U2;"/>
+					<element geometry="Left=560;Top=120;Right=820;Bottom=175;" subject="EAID_U0000003_1111_4444_8888_000000000003" seqno="8" style="DUID=U3;"/>
+					<element geometry="Left=220;Top=120;Right=480;Bottom=175;" subject="EAID_U0000004_1111_4444_8888_000000000004" seqno="9" style="DUID=U4;"/>
+					<element geometry="Left=560;Top=200;Right=820;Bottom=255;" subject="EAID_U0000005_1111_4444_8888_000000000005" seqno="10" style="DUID=U5;"/>
+					<element geometry="Left=220;Top=200;Right=480;Bottom=255;" subject="EAID_U0000006_1111_4444_8888_000000000006" seqno="11" style="DUID=U6;"/>
+					<element geometry="Left=220;Top=280;Right=480;Bottom=335;" subject="EAID_U0000007_1111_4444_8888_000000000007" seqno="12" style="DUID=U7;"/>
+					<element geometry="Left=220;Top=360;Right=480;Bottom=415;" subject="EAID_U0000008_1111_4444_8888_000000000008" seqno="13" style="DUID=U8;"/>
+					<element geometry="Left=220;Top=440;Right=480;Bottom=495;" subject="EAID_U0000009_1111_4444_8888_000000000009" seqno="14" style="DUID=U9;"/>
+					<element geometry="Left=220;Top=520;Right=480;Bottom=575;" subject="EAID_U0000010_1111_4444_8888_000000000010" seqno="15" style="DUID=U10;"/>
+					<element geometry="Left=920;Top=280;Right=1180;Bottom=335;" subject="EAID_U0000011_1111_4444_8888_000000000011" seqno="16" style="DUID=U11;"/>
+					<element geometry="Left=920;Top=360;Right=1180;Bottom=415;" subject="EAID_U0000012_1111_4444_8888_000000000012" seqno="17" style="DUID=U12;"/>
+					<element geometry="Left=920;Top=440;Right=1180;Bottom=495;" subject="EAID_U0000013_1111_4444_8888_000000000013" seqno="18" style="DUID=U13;"/>
+					<element geometry="Left=220;Top=720;Right=480;Bottom=775;" subject="EAID_U0000014_1111_4444_8888_000000000014" seqno="19" style="DUID=U14;"/>
+					<element geometry="Left=220;Top=800;Right=480;Bottom=855;" subject="EAID_U0000015_1111_4444_8888_000000000015" seqno="20" style="DUID=U15;"/>
+					<element geometry="Left=220;Top=880;Right=480;Bottom=935;" subject="EAID_U0000016_1111_4444_8888_000000000016" seqno="21" style="DUID=U16;"/>
+					<element geometry="Left=540;Top=800;Right=800;Bottom=855;" subject="EAID_U0000017_1111_4444_8888_000000000017" seqno="22" style="DUID=U17;"/>
+					<element geometry="Left=540;Top=880;Right=800;Bottom=935;" subject="EAID_U0000018_1111_4444_8888_000000000018" seqno="23" style="DUID=U18;"/>
+					<element geometry="Left=920;Top=520;Right=1180;Bottom=575;" subject="EAID_U0000019_1111_4444_8888_000000000019" seqno="24" style="DUID=U19;"/>
+					<element geometry="Left=920;Top=600;Right=1180;Bottom=655;" subject="EAID_U0000020_1111_4444_8888_000000000020" seqno="25" style="DUID=U20;"/>
+					<element geometry="Left=220;Top=600;Right=480;Bottom=655;" subject="EAID_U0000021_1111_4444_8888_000000000021" seqno="26" style="DUID=U21;"/>
+					<element geometry="Left=1040;Top=720;Right=1300;Bottom=775;" subject="EAID_U0000022_1111_4444_8888_000000000022" seqno="27" style="DUID=U22;"/>
+					<element geometry="Left=1040;Top=800;Right=1300;Bottom=855;" subject="EAID_U0000023_1111_4444_8888_000000000023" seqno="28" style="DUID=U23;"/>
+					<element geometry="Left=1040;Top=880;Right=1300;Bottom=935;" subject="EAID_U0000024_1111_4444_8888_000000000024" seqno="29" style="DUID=U24;"/>
+					<element geometry="Left=1040;Top=960;Right=1300;Bottom=1015;" subject="EAID_U0000025_1111_4444_8888_000000000025" seqno="30" style="DUID=U25;"/>
+					<element geometry="Left=1040;Top=1040;Right=1300;Bottom=1095;" subject="EAID_U0000026_1111_4444_8888_000000000026" seqno="31" style="DUID=U26;"/>
+				</elements>
+			</diagram>
+			<diagram xmi:id="EAID_D0000002_1111_4444_8888_000000000002">
+				<model package="EAPK_00000003_3333_4444_8888_000000000003" localID="3" ea_localid="3"/>
+				<properties name="Sơ đồ Lớp Thực thể (Domain Class Diagram 3NF)" type="Logical"/>
+				<project author="MedClinic Team" version="1.0" created="2026-09-05 15:00:00" modified="2026-09-05 15:00:00"/>
+				<style1 value="ShowPrivate=1;ShowProtected=1;ShowPublic=1;HideRelationships=0;Locked=0;Border=1;HighlightForeign=1;PackageContents=1;DocSize.cx=1500;DocSize.cy=1200;Orientation=L;Zoom=100;"/>
+				<style2 value="SaveTag=32438634;ExcludeRTF=0;DocAll=0;HideQuals=0;AttPkg=1;ShowTags=0;ShowReqs=0;ShowCons=0;OpPkg=1;ShowFinds=0;ShowAtts=1;"/>
+				<elements>
+					<element geometry="Left=360;Top=40;Right=640;Bottom=270;" subject="EAID_C0000001_1111_4444_8888_000000000001" seqno="1" style="DUID=C1;"/>
+					<element geometry="Left=60;Top=40;Right=240;Bottom=150;" subject="EAID_C0000002_1111_4444_8888_000000000002" seqno="2" style="DUID=C2;"/>
+					<element geometry="Left=60;Top=340;Right=260;Bottom=470;" subject="EAID_C0000003_1111_4444_8888_000000000003" seqno="3" style="DUID=C3;"/>
+					<element geometry="Left=360;Top=340;Right=640;Bottom=480;" subject="EAID_C0000004_1111_4444_8888_000000000004" seqno="4" style="DUID=C4;"/>
+					<element geometry="Left=760;Top=340;Right=1020;Bottom=480;" subject="EAID_C0000005_1111_4444_8888_000000000005" seqno="5" style="DUID=C5;"/>
+					<element geometry="Left=1120;Top=340;Right=1340;Bottom=480;" subject="EAID_C0000006_1111_4444_8888_000000000006" seqno="6" style="DUID=C6;"/>
+					<element geometry="Left=360;Top=580;Right=640;Bottom=780;" subject="EAID_C0000007_1111_4444_8888_000000000007" seqno="7" style="DUID=C7;"/>
+					<element geometry="Left=760;Top=580;Right=1020;Bottom=760;" subject="EAID_C0000008_1111_4444_8888_000000000008" seqno="8" style="DUID=C8;"/>
+					<element geometry="Left=1120;Top=600;Right=1360;Bottom=780;" subject="EAID_C0000009_1111_4444_8888_000000000009" seqno="9" style="DUID=C9;"/>
+					<element geometry="Left=760;Top=860;Right=1020;Bottom=1000;" subject="EAID_C0000010_1111_4444_8888_000000000010" seqno="10" style="DUID=C10;"/>
+					<element geometry="Left=1120;Top=860;Right=1380;Bottom=1020;" subject="EAID_C0000011_1111_4444_8888_000000000011" seqno="11" style="DUID=C11;"/>
+					<element geometry="Left=60;Top=600;Right=300;Bottom=800;" subject="EAID_C0000012_1111_4444_8888_000000000012" seqno="12" style="DUID=C12;"/>
+					<element geometry="Left=760;Top=40;Right=1020;Bottom=200;" subject="EAID_C0000013_1111_4444_8888_000000000013" seqno="13" style="DUID=C13;"/>
+				</elements>
+			</diagram>
+		</diagrams>
+	</xmi:Extension>
+</xmi:XMI>

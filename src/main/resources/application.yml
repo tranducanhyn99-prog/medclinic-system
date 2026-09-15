@@ -92,14 +92,14 @@ spring:
     database-platform: org.hibernate.dialect.MySQLDialect
 
 ---
-# SQL Server Profile (Optional)
+# SQL Server Profile (Primary Production / Local Database)
 spring:
   config:
     activate:
       on-profile: sqlserver
 
   datasource:
-    url: jdbc:sqlserver://localhost:1433;databaseName=medclinic_db;encrypt=false;trustServerCertificate=true;
+    url: jdbc:sqlserver://localhost:1433;databaseName=medclinic_db;encrypt=false;trustServerCertificate=true;sendStringParametersAsUnicode=true;
     username: sa
     password: ${DB_PASSWORD:YourPassword123}
     driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
@@ -108,3 +108,4 @@ spring:
     hibernate:
       ddl-auto: update
     database-platform: org.hibernate.dialect.SQLServerDialect
+    defer-datasource-initialization: true
