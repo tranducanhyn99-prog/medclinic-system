@@ -96,3 +96,91 @@ Trạng thái lịch hẹn luôn gồm chữ, badge/icon và màu; không dùng 
 ## 8. Bằng chứng triển khai
 
 Template được tổ chức theo role tại `src/main/resources/templates/{patient,doctor,staff,admin}`; hai layout dùng chung là `layout/main.html` và `layout/dashboard.html`. Các thay đổi UX được theo dõi trong `tasklist.md` và lịch sử commit theo từng nhánh review.
+## 9. Figma handoff — cấu trúc file thiết kế
+
+Khi dựng trên Figma, tạo file `MedClinic UI Kit & Screens` với các Pages sau. Không đặt toàn bộ màn hình và component trên một canvas.
+
+| Page Figma | Nội dung | Quy ước |
+|---|---|---|
+| `00 · Cover & Notes` | Mục tiêu, vai trò, link tài liệu và phiên bản | Chỉ đọc, ghi ngày cập nhật |
+| `01 · Foundations` | Màu sắc, chữ, khoảng cách, elevation, icon | Dùng Variables/Styles, không tô màu rời rạc |
+| `02 · Components` | Button, input, select, badge, alert, card, modal, bảng | Tạo component + variant trước khi ghép màn hình |
+| `03 · Public & Auth` | Trang chủ, danh sách bác sĩ, đăng nhập, đăng ký | Frame độc lập theo breakpoint |
+| `04 · Patient Flow` | Đặt lịch, lịch hẹn, QR, bệnh án | Có prototype flow hoàn chỉnh |
+| `05 · Internal Portal` | Bác sĩ, lễ tân, thu ngân, admin | Desktop-first, kèm trạng thái bảng |
+| `06 · States & Prototype` | Loading, empty, error, disabled, success | Liên kết từ màn hình chính tới state tương ứng |
+
+### Quy tắc đặt tên layer
+
+- Frame: `Role / Screen / Breakpoint`, ví dụ `Patient / Booking / Mobile`.
+- Section: `Header`, `Primary action`, `Search & filter`, `Content`, `Feedback`.
+- Component instance: `Button / Primary / Default`, `Badge / Appointment / Confirmed`.
+- Không dùng các tên mặc định như `Frame 123`, `Group 8` hoặc `Rectangle 4`.
+
+## 10. Foundations và design tokens
+
+### 10.1. Màu
+
+| Token | Giá trị | Mục đích |
+|---|---:|---|
+| `color/primary/600` | `#0284C7` | CTA chính, focus, liên kết quan trọng |
+| `color/primary/700` | `#0369A1` | Hover CTA |
+| `color/navy/900` | `#0F172A` | Sidebar, footer |
+| `color/surface/default` | `#FFFFFF` | Card, modal, input |
+| `color/background/subtle` | `#F8FAFC` | Nền trang |
+| `color/text/primary` | `#1E293B` | Nội dung chính |
+| `color/text/secondary` | `#64748B` | Nội dung phụ |
+| `color/border/default` | `#E2E8F0` | Viền input, card, table |
+| `color/success/600` | `#16A34A` | Thành công/hoàn thành |
+| `color/warning/600` | `#CA8A04` | Cảnh báo/chờ xử lý |
+| `color/danger/600` | `#DC2626` | Lỗi/hủy/khóa |
+
+Không truyền đạt trạng thái chỉ bằng màu: badge trạng thái luôn có icon và nhãn chữ.
+
+### 10.2. Typography, spacing và frame
+
+- Font: `Inter`; heading: 700–800, body: 400–500.
+- Cỡ: `Display 32/40`, `H1 28/36`, `H2 22/30`, `H3 18/26`, `Body 16/24`, `Small 14/20`, `Caption 12/16`.
+- Spacing scale: `4, 8, 12, 16, 24, 32, 48` px; radius: `8` px cho button/input, `12–14` px cho card.
+- Frame cần dựng: Desktop `1440`, Tablet `768`, Mobile `390` px. Nội dung desktop tối đa `1140` px; portal có sidebar `260` px.
+- Dùng Auto Layout cho mọi card, form group, toolbar, header, sidebar item và danh sách; không dùng tọa độ tuyệt đối trừ overlay/modal.
+
+## 11. Component specification
+
+| Component | Variants tối thiểu | Nội dung/accessibility |
+|---|---|---|
+| `Button` | Primary, Secondary, Outline, Danger; Default/Hover/Disabled/Loading | Cao tối thiểu 44 px trên mobile; icon có tooltip/label nếu không có text |
+| `Text field` | Default, Focus, Filled, Error, Disabled | Label luôn hiển thị, helper/error ở dưới field |
+| `Select & date picker` | Default, Open, Selected, Disabled, Error | Không dùng ID kỹ thuật làm giá trị hiển thị |
+| `Badge / Status` | Appointment, Payment, Account, Inventory | Icon + text + màu; có variant trạng thái domain |
+| `Alert` | Success, Warning, Error, Info | Thông điệp ngắn và action thử lại khi phù hợp |
+| `Empty state` | Booking, Table, Search | Illustration/icon, tiêu đề, mô tả, một CTA rõ ràng |
+| `Modal` | Add, Confirm, Payment, QR scanner | Title, close label, secondary action, primary action |
+| `Data table` | Default, Loading, Empty, Filtered, Paginated | Search/filter ở trên; action mỗi hàng dễ nhận biết |
+| `Navigation item` | Default, Hover, Active, Focus | Active có nền + `aria-current`, không chỉ đổi màu chữ |
+
+## 12. Brief dựng màn hình và prototype trong Figma
+
+### 12.1. Patient / Booking
+
+Dựng ba frame: `Mobile`, `Tablet`, `Desktop`. Giữ thứ tự thông tin: chuyên khoa → bác sĩ → ngày → khung giờ → lý do khám → xác nhận. Tạo component `Time slot` với variants `Available`, `Selected`, `Unavailable`, `Loading`. Prototype: chọn bác sĩ/ngày mở danh sách slot; chọn slot mở tóm tắt; xác nhận dẫn tới `Appointment detail / Success` có mã QR.
+
+### 12.2. Staff / Reception
+
+Dựng desktop frame với tiêu chí tra cứu ở đầu, KPI trạng thái ngắn ở giữa và danh sách hẹn ở dưới. Prototype nối `Search` → `Appointment result` → `Check-in success` → `Queue ticket`. Thêm empty state cho kết quả không khớp và modal scanner QR.
+
+### 12.3. Doctor / Examine
+
+Dựng desktop hai cột: trái là thông tin bệnh nhân/tiền sử, phải là chẩn đoán và đơn thuốc. Component dòng thuốc phải có thêm/xóa, cảnh báo tồn kho và trạng thái validation. Prototype nối hàng chờ → ca khám → hoàn tất ca khám.
+
+### 12.4. Admin / Management table
+
+Dựng `Dashboard` và một bảng mẫu cho chuyên khoa/thuốc/tài khoản. Trên bảng có search/filter, pagination, row action; bên trong canvas đặt variants `Data`, `Empty`, `No search result`, `Loading`. CTA của empty state mở modal tạo mới.
+
+### 12.5. Kiểm tra trước khi review Figma
+
+- Auto Layout không vỡ ở 390, 768, 1440 px.
+- Có state Focus và Disabled cho button/input trọng yếu.
+- Prototype bao phủ success, empty và error của đặt lịch/check-in.
+- Text, màu, spacing đều lấy từ Variables/Styles.
+- Không có layer chưa đặt tên hoặc component bị detach không cần thiết.
