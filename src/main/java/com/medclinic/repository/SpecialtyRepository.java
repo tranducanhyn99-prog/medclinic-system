@@ -1,6 +1,8 @@
 package com.medclinic.repository;
 
 import com.medclinic.entity.Specialty;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -17,5 +19,8 @@ public interface SpecialtyRepository extends JpaRepository<Specialty, Long> {
     @EntityGraph(attributePaths = "doctors")
     @Query("select distinct specialty from Specialty specialty")
     List<Specialty> findAllWithDoctors();
+
+    Page<Specialty> findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCase(
+            String name, String description, Pageable pageable);
 }
 

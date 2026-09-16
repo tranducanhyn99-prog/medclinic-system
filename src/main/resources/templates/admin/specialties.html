@@ -28,10 +28,32 @@
         </div>
     </div>
 
+    <!-- Search Toolbar -->
+    <div class="card card-portal p-3 mb-4 shadow-sm">
+        <form th:action="@{/admin/specialties}" method="get" class="row g-2 align-items-center">
+            <div class="col-md-9">
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
+                    <input type="text" class="form-control border-start-0 ps-0" name="keyword" th:value="${keyword}"
+                           placeholder="Tìm theo tên hoặc mô tả chuyên khoa...">
+                </div>
+            </div>
+            <div class="col-md-3 d-flex gap-2">
+                <button type="submit" class="btn btn-primary w-100 fw-semibold"><i class="bi bi-filter me-1"></i> Tìm kiếm</button>
+                <a th:if="${keyword != null}" th:href="@{/admin/specialties}" class="btn btn-outline-secondary" title="Xóa tìm kiếm"><i class="bi bi-x-lg"></i></a>
+            </div>
+        </form>
+    </div>
     <!-- Specialties Table Card -->
     <div class="card card-portal shadow-sm">
         <div class="card-body p-0">
-            <div class="table-responsive">
+            <div th:if="${#lists.isEmpty(specialties)}" class="p-5 text-center text-muted">
+                <i class="bi bi-diagram-3 fs-1 text-primary d-block mb-3"></i>
+                <h6 class="fw-bold text-dark">Chưa có chuyên khoa nào</h6>
+                <p class="small mb-3">Tạo chuyên khoa đầu tiên để bắt đầu tổ chức đội ngũ bác sĩ.</p>
+                <button type="button" class="btn btn-sm btn-med-primary" data-bs-toggle="modal" data-bs-target="#addSpecialtyModal"><i class="bi bi-plus-circle me-1"></i> Thêm chuyên khoa</button>
+            </div>
+            <div th:unless="${#lists.isEmpty(specialties)}" class="table-responsive">
                 <table class="table table-hover align-middle mb-0 small">
                     <thead class="table-light text-uppercase">
                         <tr>
@@ -45,7 +67,7 @@
                     </thead>
                     <tbody>
                         <tr th:each="spec, stat : ${specialties}">
-                            <td class="text-center text-muted fw-semibold" th:text="${stat.count}">1</td>
+                            <td class="text-center text-muted fw-semibold" th:text="${stat.index + 1 + resultPage.number * resultPage.size}">1</td>
                             <td>
                                 <div class="d-flex align-items-center gap-2">
                                     <i class="bi fs-5 text-primary" th:classappend="${spec.icon != null and !spec.icon.isEmpty() ? spec.icon : 'bi-hospital'}"></i>
@@ -81,6 +103,13 @@
             </div>
         </div>
     </div>
+        <nav th:if="${resultPage.totalPages > 1}" class="px-3 py-3 border-top" aria-label="Phân trang chuyên khoa">
+            <ul class="pagination pagination-sm justify-content-center mb-0">
+                <li class="page-item" th:classappend="${resultPage.first ? 'disabled' : ''}"><a class="page-link" th:href="@{/admin/specialties(keyword=${keyword},page=${resultPage.number - 1})}">Trước</a></li>
+                <li class="page-item" th:each="pageNumber : ${#numbers.sequence(0, resultPage.totalPages - 1)}" th:classappend="${pageNumber == resultPage.number ? 'active' : ''}"><a class="page-link" th:href="@{/admin/specialties(keyword=${keyword},page=${pageNumber})}" th:text="${pageNumber + 1}">1</a></li>
+                <li class="page-item" th:classappend="${resultPage.last ? 'disabled' : ''}"><a class="page-link" th:href="@{/admin/specialties(keyword=${keyword},page=${resultPage.number + 1})}">Sau</a></li>
+            </ul>
+        </nav>
 
     <!-- Modal Add Specialty -->
     <div class="modal fade" id="addSpecialtyModal" tabindex="-1">

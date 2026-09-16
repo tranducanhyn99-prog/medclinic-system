@@ -6,6 +6,8 @@ import com.medclinic.exception.ResourceNotFoundException;
 import com.medclinic.repository.SpecialtyRepository;
 import com.medclinic.service.SpecialtyService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,6 +30,14 @@ public class SpecialtyServiceImpl implements SpecialtyService {
     @Transactional(readOnly = true)
     public List<Specialty> findAllActive() {
         return specialtyRepository.findByIsActiveTrue();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<Specialty> searchSpecialties(String keyword, Pageable pageable) {
+        String normalizedKeyword = keyword == null ? "" : keyword.trim();
+        return specialtyRepository.findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCase(
+                normalizedKeyword, normalizedKeyword, pageable);
     }
 
     @Override

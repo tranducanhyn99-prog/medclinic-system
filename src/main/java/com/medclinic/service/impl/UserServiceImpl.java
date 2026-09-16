@@ -10,6 +10,8 @@ import com.medclinic.repository.RoleRepository;
 import com.medclinic.repository.UserRepository;
 import com.medclinic.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -90,6 +92,15 @@ public class UserServiceImpl implements UserService {
             return userRepository.findAll();
         }
         return userRepository.searchUsers(keyword.trim());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<User> searchUsers(String keyword, Pageable pageable) {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return userRepository.findAll(pageable);
+        }
+        return userRepository.searchUsers(keyword.trim(), pageable);
     }
 
     @Override

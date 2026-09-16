@@ -57,11 +57,19 @@
             <h6 class="fw-bold text-dark mb-0">
                 <i class="bi bi-person-lines-fill text-primary me-2"></i>Danh Sách Tài Khoản Người Dùng
             </h6>
-            <span class="badge bg-light text-dark border" th:text="${#lists.size(users) + ' tài khoản'}">0 tài khoản</span>
+            <span class="badge bg-light text-dark border" th:text="${resultPage.totalElements + ' tài khoản'}">0 tài khoản</span>
         </div>
 
         <div class="card-body p-0">
-            <div class="table-responsive">
+            <div th:if="${#lists.isEmpty(users)}" class="p-5 text-center text-muted">
+                <i class="bi bi-person-x fs-1 text-primary d-block mb-3"></i>
+                <h6 class="fw-bold text-dark">Không tìm thấy tài khoản phù hợp</h6>
+                <p class="small mb-3">Hãy thử từ khóa khác hoặc xóa điều kiện tìm kiếm để xem toàn bộ tài khoản.</p>
+                <a th:if="${keyword != null}" th:href="@{/admin/users}" class="btn btn-sm btn-med-primary">
+                    <i class="bi bi-arrow-counterclockwise me-1"></i> Xóa tìm kiếm
+                </a>
+            </div>
+            <div th:unless="${#lists.isEmpty(users)}" class="table-responsive">
                 <table class="table table-hover align-middle mb-0 small">
                     <thead class="table-light text-uppercase">
                         <tr>
@@ -126,6 +134,13 @@
             </div>
         </div>
     </div>
+        <nav th:if="${resultPage.totalPages > 1}" class="px-3 py-3 border-top" aria-label="Phân trang tài khoản">
+            <ul class="pagination pagination-sm justify-content-center mb-0">
+                <li class="page-item" th:classappend="${resultPage.first ? 'disabled' : ''}"><a class="page-link" th:href="@{/admin/users(keyword=${keyword},page=${resultPage.number - 1})}">Trước</a></li>
+                <li class="page-item" th:each="pageNumber : ${#numbers.sequence(0, resultPage.totalPages - 1)}" th:classappend="${pageNumber == resultPage.number ? 'active' : ''}"><a class="page-link" th:href="@{/admin/users(keyword=${keyword},page=${pageNumber})}" th:text="${pageNumber + 1}">1</a></li>
+                <li class="page-item" th:classappend="${resultPage.last ? 'disabled' : ''}"><a class="page-link" th:href="@{/admin/users(keyword=${keyword},page=${resultPage.number + 1})}">Sau</a></li>
+            </ul>
+        </nav>
 
 </div>
 </body>

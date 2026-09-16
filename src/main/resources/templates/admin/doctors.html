@@ -28,10 +28,26 @@
         </div>
     </div>
 
+    <!-- Search and filter toolbar -->
+    <div class="card card-portal p-3 mb-4 shadow-sm">
+        <form th:action="@{/admin/doctors}" method="get" class="row g-2 align-items-center">
+            <div class="col-lg-6"><div class="input-group"><span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span><input type="text" class="form-control border-start-0 ps-0" name="keyword" th:value="${keyword}" placeholder="Tìm theo tên, học vị hoặc email bác sĩ..."></div></div>
+            <div class="col-lg-3"><select class="form-select" name="specialtyId"><option value="">Tất cả chuyên khoa</option><option th:each="spec : ${specialties}" th:value="${spec.id}" th:selected="${spec.id == selectedSpecialtyId}" th:text="${spec.name}">Nội tổng quát</option></select></div>
+            <div class="col-lg-3 d-flex gap-2"><button type="submit" class="btn btn-primary w-100 fw-semibold"><i class="bi bi-filter me-1"></i> Lọc</button><a th:if="${keyword != null or selectedSpecialtyId != null}" th:href="@{/admin/doctors}" class="btn btn-outline-secondary" title="Xóa bộ lọc"><i class="bi bi-x-lg"></i></a></div>
+        </form>
+    </div>
     <!-- Doctors Table Card -->
     <div class="card card-portal shadow-sm">
         <div class="card-body p-0">
-            <div class="table-responsive">
+            <div th:if="${#lists.isEmpty(doctors)}" class="p-5 text-center text-muted">
+                <i class="bi bi-person-badge fs-1 text-success d-block mb-3"></i>
+                <h6 class="fw-bold text-dark">Chưa có hồ sơ bác sĩ</h6>
+                <p class="small mb-3">Tạo hồ sơ bác sĩ để bắt đầu phân công lịch khám.</p>
+                <button type="button" class="btn btn-sm btn-med-primary" data-bs-toggle="modal" data-bs-target="#addDoctorModal">
+                    <i class="bi bi-person-plus me-1"></i> Thêm hồ sơ bác sĩ
+                </button>
+            </div>
+            <div th:unless="${#lists.isEmpty(doctors)}" class="table-responsive">
                 <table class="table table-hover align-middle mb-0 small">
                     <thead class="table-light text-uppercase">
                         <tr>
@@ -45,7 +61,7 @@
                     </thead>
                     <tbody>
                         <tr th:each="doc, stat : ${doctors}">
-                            <td class="text-center text-muted fw-semibold" th:text="${stat.count}">1</td>
+                            <td class="text-center text-muted fw-semibold" th:text="${stat.index + 1 + resultPage.number * resultPage.size}">1</td>
                             <td>
                                 <div class="d-flex align-items-center gap-2">
                                     <div class="rounded-circle bg-primary bg-opacity-10 text-primary p-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
@@ -78,6 +94,13 @@
             </div>
         </div>
     </div>
+        <nav th:if="${resultPage.totalPages > 1}" class="px-3 py-3 border-top" aria-label="Phân trang bác sĩ">
+            <ul class="pagination pagination-sm justify-content-center mb-0">
+                <li class="page-item" th:classappend="${resultPage.first ? 'disabled' : ''}"><a class="page-link" th:href="@{/admin/doctors(keyword=${keyword},specialtyId=${selectedSpecialtyId},page=${resultPage.number - 1})}">Trước</a></li>
+                <li class="page-item" th:each="pageNumber : ${#numbers.sequence(0, resultPage.totalPages - 1)}" th:classappend="${pageNumber == resultPage.number ? 'active' : ''}"><a class="page-link" th:href="@{/admin/doctors(keyword=${keyword},specialtyId=${selectedSpecialtyId},page=${pageNumber})}" th:text="${pageNumber + 1}">1</a></li>
+                <li class="page-item" th:classappend="${resultPage.last ? 'disabled' : ''}"><a class="page-link" th:href="@{/admin/doctors(keyword=${keyword},specialtyId=${selectedSpecialtyId},page=${resultPage.number + 1})}">Sau</a></li>
+            </ul>
+        </nav>
 
     <!-- Modal Add Doctor Profile -->
     <div class="modal fade" id="addDoctorModal" tabindex="-1">

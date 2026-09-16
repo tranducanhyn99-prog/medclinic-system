@@ -8,6 +8,10 @@ import com.medclinic.service.MedicineService;
 import com.medclinic.service.SpecialtyService;
 import com.medclinic.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -19,6 +23,8 @@ import java.math.BigDecimal;
 @RequestMapping("/admin")
 @RequiredArgsConstructor
 public class AdminController {
+
+    private static final int ADMIN_PAGE_SIZE = 10;
 
     private final DashboardService dashboardService;
     private final SpecialtyService specialtyService;
@@ -41,8 +47,13 @@ public class AdminController {
     }
 
     @GetMapping("/specialties")
-    public String listSpecialties(Model model) {
-        model.addAttribute("specialties", specialtyService.findAll());
+    public String listSpecialties(@RequestParam(value = "keyword", required = false) String keyword,
+                                  @RequestParam(value = "page", defaultValue = "0") int page,
+                                  Model model) {
+        Page<?> resultPage = specialtyService.searchSpecialties(keyword, adminPageable(page));
+        model.addAttribute("specialties", resultPage.getContent());
+        addPaginationAttributes(model, resultPage);
+        model.addAttribute("keyword", keyword);
         return "admin/specialties";
     }
 
@@ -64,9 +75,16 @@ public class AdminController {
     }
 
     @GetMapping("/doctors")
-    public String listDoctors(Model model) {
-        model.addAttribute("doctors", doctorService.findAll());
+    public String listDoctors(@RequestParam(value = "keyword", required = false) String keyword,
+                              @RequestParam(value = "specialtyId", required = false) Long specialtyId,
+                              @RequestParam(value = "page", defaultValue = "0") int page,
+                              Model model) {
+        Page<?> resultPage = doctorService.searchForAdmin(specialtyId, keyword, adminPageable(page));
+        model.addAttribute("doctors", resultPage.getContent());
         model.addAttribute("specialties", specialtyService.findAllActive());
+        addPaginationAttributes(model, resultPage);
+        model.addAttribute("keyword", keyword);
+        model.addAttribute("selectedSpecialtyId", specialtyId);
         return "admin/doctors";
     }
 
@@ -84,8 +102,13 @@ public class AdminController {
     }
 
     @GetMapping("/medicines")
-    public String listMedicines(Model model) {
-        model.addAttribute("medicines", medicineService.findAll());
+    public String listMedicines(@RequestParam(value = "keyword", required = false) String keyword,
+                                @RequestParam(value = "page", defaultValue = "0") int page,
+                                Model model) {
+        Page<?> resultPage = medicineService.searchMedicines(keyword, adminPageable(page));
+        model.addAttribute("medicines", resultPage.getContent());
+        addPaginationAttributes(model, resultPage);
+        model.addAttribute("keyword", keyword);
         return "admin/medicines";
     }
 
@@ -114,8 +137,12 @@ public class AdminController {
     }
 
     @GetMapping("/users")
-    public String listUsers(@RequestParam(value = "keyword", required = false) String keyword, Model model) {
-        model.addAttribute("users", userService.searchUsers(keyword));
+    public String listUsers(@RequestParam(value = "keyword", required = false) String keyword,
+                            @RequestParam(value = "page", defaultValue = "0") int page,
+                            Model model) {
+        Page<?> resultPage = userService.searchUsers(keyword, adminPageable(page));
+        model.addAttribute("users", resultPage.getContent());
+        addPaginationAttributes(model, resultPage);
         model.addAttribute("keyword", keyword);
         return "admin/users";
     }
@@ -125,5 +152,13 @@ public class AdminController {
         userService.toggleUserStatus(id);
         redirectAttributes.addFlashAttribute("successMessage", "Đã cập nhật trạng thái người dùng");
         return "redirect:/admin/users";
+    }
+
+    private Pageable adminPageable(int page) {
+        return PageRequest.of(Math.max(page, 0), ADMIN_PAGE_SIZE, Sort.by(Sort.Direction.ASC, "id"));
+    }
+
+    private void addPaginationAttributes(Model model, Page<?> resultPage) {
+        model.addAttribute("resultPage", resultPage);
     }
 }

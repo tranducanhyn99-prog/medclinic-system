@@ -10,6 +10,8 @@ import com.medclinic.repository.SpecialtyRepository;
 import com.medclinic.repository.UserRepository;
 import com.medclinic.service.DoctorService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -67,6 +69,13 @@ public class DoctorServiceImpl implements DoctorService {
                     return matchName || matchTitle;
                 })
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<DoctorProfile> searchForAdmin(Long specialtyId, String keyword, Pageable pageable) {
+        return doctorProfileRepository.searchForAdmin(
+                specialtyId, keyword == null ? "" : keyword.trim(), pageable);
     }
 
     @Override

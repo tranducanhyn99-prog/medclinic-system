@@ -6,6 +6,8 @@ import com.medclinic.exception.ResourceNotFoundException;
 import com.medclinic.repository.MedicineRepository;
 import com.medclinic.service.MedicineService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,6 +31,14 @@ public class MedicineServiceImpl implements MedicineService {
     @Transactional(readOnly = true)
     public List<Medicine> findAllActive() {
         return medicineRepository.findByIsActiveTrue();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<Medicine> searchMedicines(String keyword, Pageable pageable) {
+        String normalizedKeyword = keyword == null ? "" : keyword.trim();
+        return medicineRepository.findByNameContainingIgnoreCaseOrUsageGuideContainingIgnoreCase(
+                normalizedKeyword, normalizedKeyword, pageable);
     }
 
     @Override

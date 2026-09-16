@@ -1,6 +1,8 @@
 package com.medclinic.repository;
 
 import com.medclinic.entity.DoctorProfile;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -28,5 +30,19 @@ public interface DoctorProfileRepository extends JpaRepository<DoctorProfile, Lo
     List<DoctorProfile> filterDoctors(@Param("specialtyId") Long specialtyId,
                                       @Param("maxFee") BigDecimal maxFee,
                                       @Param("keyword") String keyword);
+
+    @Query(value = "SELECT d FROM DoctorProfile d JOIN d.user u JOIN d.specialty s " +
+                   "WHERE (:specialtyId IS NULL OR s.id = :specialtyId) " +
+                   "AND (:keyword = '' OR LOWER(u.fullName) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
+                   "OR LOWER(u.email) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
+                   "OR LOWER(d.title) LIKE LOWER(CONCAT('%', :keyword, '%')))",
+           countQuery = "SELECT COUNT(d) FROM DoctorProfile d JOIN d.user u JOIN d.specialty s " +
+                        "WHERE (:specialtyId IS NULL OR s.id = :specialtyId) " +
+                        "AND (:keyword = '' OR LOWER(u.fullName) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
+                        "OR LOWER(u.email) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
+                        "OR LOWER(d.title) LIKE LOWER(CONCAT('%', :keyword, '%')))")
+    Page<DoctorProfile> searchForAdmin(@Param("specialtyId") Long specialtyId,
+                                       @Param("keyword") String keyword,
+                                       Pageable pageable);
 }
 
