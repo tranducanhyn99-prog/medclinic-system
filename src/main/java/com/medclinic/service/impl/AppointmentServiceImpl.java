@@ -39,6 +39,14 @@ public class AppointmentServiceImpl implements AppointmentService {
         TimeSlot slot = timeSlotRepository.findById(timeSlotId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy khung giờ"));
 
+
+        if (!slot.getSchedule().getDoctor().getId().equals(doctorId)
+                || !slot.getSchedule().getWorkDate().equals(date)) {
+            throw new BusinessLogicException("Khung giờ không thuộc bác sĩ hoặc ngày khám đã chọn.");
+        }
+        if (date.isBefore(LocalDate.now())) {
+            throw new BusinessLogicException("Ngày khám không thể ở quá khứ.");
+        }
         if (slot.getStatus() != SlotStatus.AVAILABLE) {
             throw new BusinessLogicException("Khung giờ này đã được đặt hoặc không khả dụng.");
         }

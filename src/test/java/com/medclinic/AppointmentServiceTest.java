@@ -63,8 +63,12 @@ class AppointmentServiceTest {
                 .id(1L)
                 .title("BS.CKI")
                 .build();
+        DoctorSchedule schedule = DoctorSchedule.builder()
+                .doctor(doctor)
+                .workDate(LocalDate.now().plusDays(1)).build();
 
         timeSlot = TimeSlot.builder()
+                .schedule(schedule)
                 .id(100L)
                 .startTime(LocalTime.of(8, 0))
                 .endTime(LocalTime.of(8, 30))
@@ -96,6 +100,24 @@ class AppointmentServiceTest {
         assertEquals(SlotStatus.BOOKED, timeSlot.getStatus());
         verify(timeSlotRepository, times(1)).saveAndFlush(timeSlot);
         verify(appointmentRepository, times(1)).save(any(Appointment.class));
+    }
+
+    @Test
+    @DisplayName("Đặt lịch thất bại khi slot không thuộc bác sĩ đã chọn")
+    void testBookAppointmentSlotDoesNotBelongToDoctor() {
+        DoctorProfile anotherDoctor = DoctorProfile.builder().id(2L).build();
+        timeSlot.setSchedule(DoctorSchedule.builder()
+                .doctor(anotherDoctor)
+                .workDate(LocalDate.now().plusDays(1)).build());
+        when(userRepository.findById(1L)).thenReturn(Optional.of(patient));
+        when(doctorProfileRepository.findById(1L)).thenReturn(Optional.of(doctor));
+        when(timeSlotRepository.findById(100L)).thenReturn(Optional.of(timeSlot));
+
+        BusinessLogicException ex = assertThrows(BusinessLogicException.class, () ->
+                appointmentService.bookAppointment(1L, 1L, LocalDate.now().plusDays(1), 100L, "Đau đầu"));
+
+        assertTrue(ex.getMessage().contains("không thuộc"));
+        verify(timeSlotRepository, never()).saveAndFlush(any(TimeSlot.class));
     }
 
     @Test
