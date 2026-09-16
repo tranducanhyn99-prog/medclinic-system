@@ -11,6 +11,7 @@ public interface InvoiceService {
     Invoice createInvoiceForAppointment(Long appointmentId, BigDecimal medicineFee);
     Invoice processPayment(Long invoiceId, PaymentMethod paymentMethod);
     Invoice findByAppointmentId(Long appointmentId);
+    Invoice findById(Long invoiceId);
     List<Invoice> findAllByStatus(PaymentStatus status);
     List<Invoice> findAll();
 }

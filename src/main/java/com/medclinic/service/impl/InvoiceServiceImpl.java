@@ -65,6 +65,13 @@ public class InvoiceServiceImpl implements InvoiceService {
 
     @Override
     @Transactional(readOnly = true)
+    public Invoice findById(Long invoiceId) {
+        return invoiceRepository.findById(invoiceId)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy hóa đơn"));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public Invoice findByAppointmentId(Long appointmentId) {
         return invoiceRepository.findByAppointmentId(appointmentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy hóa đơn cho cuộc hẹn này"));

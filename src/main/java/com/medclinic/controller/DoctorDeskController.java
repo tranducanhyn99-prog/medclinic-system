@@ -88,6 +88,7 @@ public class DoctorDeskController {
         }
         
         com.medclinic.entity.MedicalRecord record = medicalRecordService.saveMedicalRecordAndPrescription(
+                userDetails.getId(),
                 appointmentId, 
                 formDto.getSymptoms(), 
                 formDto.getDiagnosis(), 

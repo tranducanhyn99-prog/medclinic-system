@@ -7,7 +7,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 public interface MedicalRecordService {
-    MedicalRecord saveMedicalRecordAndPrescription(Long appointmentId, String symptoms, String diagnosis, String doctorNotes, LocalDate reExamDate, List<PrescriptionItemDto> prescriptionItems);
+    MedicalRecord saveMedicalRecordAndPrescription(Long appointmentId, Long doctorUserId, String symptoms, String diagnosis, String doctorNotes, LocalDate reExamDate, List<PrescriptionItemDto> prescriptionItems);
     List<MedicalRecord> getPatientMedicalHistory(Long patientId);
     MedicalRecord findByAppointmentId(Long appointmentId);
 }

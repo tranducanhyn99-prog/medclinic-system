@@ -27,9 +27,21 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
 
     @Override
     @Transactional
-    public MedicalRecord saveMedicalRecordAndPrescription(Long appointmentId, String symptoms, String diagnosis, String doctorNotes, LocalDate reExamDate, List<PrescriptionItemDto> prescriptionItems) {
+    public MedicalRecord saveMedicalRecordAndPrescription(Long appointmentId, Long doctorUserId, String symptoms, String diagnosis, String doctorNotes, LocalDate reExamDate, List<PrescriptionItemDto> prescriptionItems) {
         Appointment appointment = appointmentRepository.findById(appointmentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy cuộc hẹn"));
+
+        if (!appointment.getDoctor().getUser().getId().equals(doctorUserId)) {
+            throw new BusinessLogicException("Bạn không có quyền hoàn tất ca khám này");
+        }
+        if (appointment.getStatus() != AppointmentStatus.CHECKED_IN
+                && appointment.getStatus() != AppointmentStatus.IN_PROGRESS) {
+            throw new BusinessLogicException("Chỉ có thể khám bệnh nhân đã check-in");
+        }
+        if (medicalRecordRepository.findByAppointmentId(appointmentId).isPresent()) {
+            throw new BusinessLogicException("Ca khám này đã có bệnh án");
+        }
+
 
         appointment.setStatus(AppointmentStatus.COMPLETED);
         appointmentRepository.save(appointment);
