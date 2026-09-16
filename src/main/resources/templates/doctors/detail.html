@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/main}">
+<head><title th:text="${doctor.title + ' ' + doctor.user.fullName + ' - MedClinic'}">Hồ sơ bác sĩ - MedClinic</title></head>
+<body>
+<div layout:fragment="content">
+    <div class="container py-4">
+        <nav aria-label="breadcrumb" class="mb-4"><ol class="breadcrumb small mb-0"><li class="breadcrumb-item"><a th:href="@{/}" class="text-decoration-none">Trang chủ</a></li><li class="breadcrumb-item"><a th:href="@{/doctors}" class="text-decoration-none">Tìm bác sĩ</a></li><li class="breadcrumb-item active" th:text="${doctor.user.fullName}">Bác sĩ</li></ol></nav>
+        <div class="row g-4">
+            <div class="col-lg-8"><section class="card card-custom p-4 p-md-5"><div class="d-flex flex-column flex-sm-row gap-4 align-items-sm-center"><div class="rounded-circle bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center flex-shrink-0" style="width: 88px; height: 88px;"><i class="bi bi-person-badge fs-1"></i></div><div><span class="badge bg-info-subtle text-info-emphasis mb-2" th:text="${doctor.specialty.name}">Nội khoa</span><h1 class="h2 fw-bold mb-2" th:text="${doctor.title + ' ' + doctor.user.fullName}">BS. Nguyễn Văn A</h1><p class="text-muted mb-0"><i class="bi bi-award me-1"></i><span th:text="${doctor.experienceYears + ' năm kinh nghiệm'}">5 năm kinh nghiệm</span></p></div></div><hr class="my-4"><h2 class="h5 fw-bold mb-3">Giới thiệu chuyên môn</h2><p class="text-muted mb-0" style="white-space: pre-line;" th:text="${doctor.bio != null && !doctor.bio.isBlank() ? doctor.bio : 'Thông tin giới thiệu của bác sĩ đang được cập nhật.'}">Thông tin giới thiệu</p></section></div>
+            <aside class="col-lg-4"><section class="card card-custom p-4 border-primary border-opacity-25"><h2 class="h5 fw-bold mb-3">Thông tin tư vấn</h2><div class="d-flex justify-content-between align-items-center py-2 border-bottom"><span class="text-muted small">Chuyên khoa</span><span class="fw-semibold text-end" th:text="${doctor.specialty.name}">Nội khoa</span></div><div class="d-flex justify-content-between align-items-center py-2 border-bottom"><span class="text-muted small">Kinh nghiệm</span><span class="fw-semibold" th:text="${doctor.experienceYears + ' năm'}">5 năm</span></div><div class="d-flex justify-content-between align-items-center py-3"><span class="text-muted small">Phí khám</span><span class="fw-bold text-primary fs-5" th:text="${#numbers.formatDecimal(doctor.consultationFee, 0, 'COMMA', 0, 'POINT') + ' đ'}">300.000 đ</span></div><a th:href="@{/patient/booking}" class="btn btn-med-primary w-100 justify-content-center"><i class="bi bi-calendar2-check"></i> Đặt lịch với bác sĩ</a><a th:href="@{/doctors}" class="btn btn-link text-decoration-none w-100 mt-2">Quay lại danh sách</a></section></aside>
+        </div>
+    </div>
+</div>
+</body>
+</html>
