@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/dashboard}">
+<head>
+    <title>Đăng Ký Khám Vãng Lai (Walk-in) - MedClinic</title>
+    <style>
+        .slot-btn {
+            border: 1.5px solid #cbd5e1;
+            background-color: #ffffff;
+            color: #334155;
+            font-weight: 600;
+            padding: 0.5rem 0.65rem;
+            border-radius: 0.4rem;
+            font-size: 0.85rem;
+            cursor: pointer;
+        }
+        .slot-btn.selected {
+            background-color: #0284c7 !important;
+            color: #ffffff !important;
+            border-color: #0284c7 !important;
+        }
+        .slot-btn:disabled {
+            background-color: #f1f5f9;
+            color: #94a3b8;
+            cursor: not-allowed;
+            text-decoration: line-through;
+        }
+    </style>
+</head>
+<body>
+<div layout:fragment="content">
+
+    <!-- Top Header -->
+    <div class="d-flex flex-wrap align-items-center justify-content-between mb-4 pb-2 border-bottom">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-1 small">
+                    <li class="breadcrumb-item"><a th:href="@{/staff/reception}" class="text-decoration-none">Bàn tiếp nhận</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Tiếp nhận vãng lai</li>
+                </ol>
+            </nav>
+            <h3 class="fw-bold text-dark mb-0">
+                <i class="bi bi-person-plus-fill text-primary me-2"></i>Đăng Ký Khám Trực Tiếp Tại Quầy (Walk-in)
+            </h3>
+        </div>
+        <div>
+            <a th:href="@{/staff/reception}" class="btn btn-sm btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i> Quay lại Tiếp Nhận
+            </a>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+            <div class="card card-portal p-4 p-md-5 shadow-sm">
+
+                <form th:action="@{/staff/walk-in}" method="post" id="walkInForm">
+
+                    <!-- Patient Info Section -->
+                    <h5 class="fw-bold text-dark mb-3 pb-2 border-bottom">
+                        <i class="bi bi-person-vcard text-primary me-2"></i>1. Thông Tin Bệnh Nhân
+                    </h5>
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label for="fullName" class="form-label fw-semibold small">Họ và tên bệnh nhân <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="fullName" name="fullName" placeholder="Nhập họ tên đầy đủ..." required autofocus>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="phone" class="form-label fw-semibold small">Số điện thoại liên hệ <span class="text-danger">*</span></label>
+                            <input type="tel" class="form-control" id="phone" name="phone" placeholder="Nhập số điện thoại (10 số)..." required>
+                        </div>
+                    </div>
+
+                    <!-- Medical Assignment Section -->
+                    <h5 class="fw-bold text-dark mb-3 pb-2 border-bottom">
+                        <i class="bi bi-hospital text-success me-2"></i>2. Chỉ Định Khám & Khung Giờ
+                    </h5>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label for="specialtySelect" class="form-label fw-semibold small">Chuyên khoa <span class="text-danger">*</span></label>
+                            <select class="form-select" id="specialtySelect" required>
+                                <option value="">-- Chọn chuyên khoa --</option>
+                                <option th:each="spec : ${specialties}" th:value="${spec.id}" th:text="${spec.name}">Nội tổng quát</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="doctorSelect" class="form-label fw-semibold small">Bác sĩ khám <span class="text-danger">*</span></label>
+                            <select class="form-select" id="doctorSelect" name="doctorId" required disabled>
+                                <option value="">-- Chọn chuyên khoa trước --</option>
+                                <option th:each="doc : ${doctors}"
+                                        th:value="${doc.id}"
+                                        th:data-specialty-id="${doc.specialty.id}"
+                                        th:text="${doc.title + ' ' + doc.user.fullName + ' (' + doc.specialty.name + ')'}">BS. Nguyễn Văn A</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="appointmentDate" class="form-label fw-semibold small">Ngày khám <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" id="appointmentDate" name="date" required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="reason" class="form-label fw-semibold small">Lý do khám / Triệu chứng</label>
+                            <input type="text" class="form-control" id="reason" name="reason" placeholder="Triệu chứng sơ bộ...">
+                        </div>
+                    </div>
+
+                    <!-- Slots Selection -->
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold small mb-2">Chọn khung giờ còn trống <span class="text-danger">*</span></label>
+
+                        <div id="slotStatePrompt" class="alert alert-light border small text-muted text-center py-2">
+                            Vui lòng chọn Bác sĩ và Ngày khám để hiển thị khung giờ.
+                        </div>
+
+                        <div id="slotStateLoading" class="text-center py-3 d-none">
+                            <div class="spinner-border spinner-border-sm text-primary"></div>
+                            <span class="small text-muted ms-2">Đang tải slot...</span>
+                        </div>
+
+                        <div id="slotStateEmpty" class="alert alert-warning small py-2 d-none">
+                            Không có khung giờ trống nào cho bác sĩ trong ngày này.
+                        </div>
+
+                        <div id="slotGrid" class="row row-cols-2 row-cols-sm-4 g-2 d-none">
+                            <!-- Dynamic buttons -->
+                        </div>
+
+                        <input type="hidden" name="slotId" id="selectedSlotId" required>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+                        <a th:href="@{/staff/reception}" class="btn btn-outline-secondary">Hủy bỏ</a>
+                        <button type="submit" class="btn btn-med-primary px-4 py-2" id="btnSubmitWalkIn" disabled>
+                            <i class="bi bi-check2-circle fs-5 me-1"></i> Đăng Ký Khám & Cấp STT Ngay
+                        </button>
+                    </div>
+
+                </form>
+
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<div layout:fragment="scripts">
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const specialtySelect = document.getElementById('specialtySelect');
+    const doctorSelect = document.getElementById('doctorSelect');
+    const appointmentDate = document.getElementById('appointmentDate');
+    const slotGrid = document.getElementById('slotGrid');
+    const selectedSlotId = document.getElementById('selectedSlotId');
+    const submitBtn = document.getElementById('btnSubmitWalkIn');
+
+    const slotStatePrompt = document.getElementById('slotStatePrompt');
+    const slotStateLoading = document.getElementById('slotStateLoading');
+    const slotStateEmpty = document.getElementById('slotStateEmpty');
+
+    // Default date = today
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+    appointmentDate.value = `${yyyy}-${mm}-${dd}`;
+    appointmentDate.min = `${yyyy}-${mm}-${dd}`;
+
+    const allDoctorOptions = Array.from(doctorSelect.querySelectorAll('option[data-specialty-id]'));
+
+    specialtySelect.addEventListener('change', function () {
+        const specId = this.value;
+        doctorSelect.innerHTML = '<option value="">-- Chọn bác sĩ --</option>';
+        clearSlots();
+
+        if (specId) {
+            const filtered = allDoctorOptions.filter(opt => opt.dataset.specialtyId === specId);
+            filtered.forEach(opt => doctorSelect.appendChild(opt.cloneNode(true)));
+            doctorSelect.disabled = false;
+        } else {
+            doctorSelect.disabled = true;
+        }
+    });
+
+    doctorSelect.addEventListener('change', loadTimeSlots);
+    appointmentDate.addEventListener('change', loadTimeSlots);
+
+    function clearSlots() {
+        slotGrid.innerHTML = '';
+        slotGrid.classList.add('d-none');
+        slotStatePrompt.classList.remove('d-none');
+        slotStateLoading.classList.add('d-none');
+        slotStateEmpty.classList.add('d-none');
+        selectedSlotId.value = '';
+        submitBtn.disabled = true;
+    }
+
+    function loadTimeSlots() {
+        const docId = doctorSelect.value;
+        const dateVal = appointmentDate.value;
+
+        if (!docId || !dateVal) {
+            clearSlots();
+            return;
+        }
+
+        slotStatePrompt.classList.add('d-none');
+        slotStateEmpty.classList.add('d-none');
+        slotGrid.classList.add('d-none');
+        slotStateLoading.classList.remove('d-none');
+        selectedSlotId.value = '';
+        submitBtn.disabled = true;
+
+        fetch(`/api/public/doctors/${docId}/slots?date=${dateVal}`)
+            .then(res => res.json())
+            .then(slots => {
+                slotStateLoading.classList.add('d-none');
+                slotGrid.innerHTML = '';
+
+                if (!slots || slots.length === 0) {
+                    slotStateEmpty.classList.remove('d-none');
+                    return;
+                }
+
+                slotGrid.classList.remove('d-none');
+                slots.forEach(slot => {
+                    const col = document.createElement('div');
+                    col.className = 'col';
+
+                    const isAvailable = slot.status === 'AVAILABLE';
+                    const timeText = `${slot.startTime.substring(0, 5)} - ${slot.endTime.substring(0, 5)}`;
+
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'slot-btn w-100';
+                    btn.textContent = timeText;
+                    btn.dataset.slotId = slot.id;
+
+                    if (!isAvailable) {
+                        btn.disabled = true;
+                    } else {
+                        btn.addEventListener('click', function () {
+                            document.querySelectorAll('.slot-btn.selected').forEach(el => el.classList.remove('selected'));
+                            this.classList.add('selected');
+                            selectedSlotId.value = this.dataset.slotId;
+                            submitBtn.disabled = false;
+                        });
+                    }
+
+                    col.appendChild(btn);
+                    slotGrid.appendChild(col);
+                });
+            })
+            .catch(err => {
+                slotStateLoading.classList.add('d-none');
+                slotStateEmpty.classList.remove('d-none');
+            });
+    }
+});
+</script>
+</div>
+</body>
+</html>

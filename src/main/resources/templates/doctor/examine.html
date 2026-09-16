@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/dashboard}">
+<head>
+    <title>Bàn Khám Bệnh & Kê Đơn Thuốc - MedClinic</title>
+    <style>
+        .patient-sticky-card {
+            position: sticky;
+            top: 80px;
+        }
+        .medicine-row:hover {
+            background-color: #f8fafc;
+        }
+    </style>
+</head>
+<body>
+<div layout:fragment="content">
+
+    <!-- Top Header -->
+    <div class="d-flex flex-wrap align-items-center justify-content-between mb-4 pb-2 border-bottom">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-1 small">
+                    <li class="breadcrumb-item"><a th:href="@{/doctor/desk}" class="text-decoration-none">Bàn khám hôm nay</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Hồ sơ khám bệnh</li>
+                </ol>
+            </nav>
+            <h3 class="fw-bold text-dark mb-0">
+                <i class="bi bi-clipboard2-pulse-fill text-primary me-2"></i>Bàn Khám Lâm Sàng & Kê Đơn Thuốc
+            </h3>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <span class="badge bg-primary fs-6 px-3 py-2" th:text="${appointment.queueNumber != null ? appointment.queueNumber : 'STT Khám'}">STT-01</span>
+            <a th:href="@{/doctor/desk}" class="btn btn-sm btn-outline-secondary">
+                <i class="bi bi-x-lg me-1"></i> Thoát
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-4">
+
+        <!-- Left Column: Patient Profile & History (1/3) -->
+        <div class="col-lg-4">
+            <div class="patient-sticky-card">
+
+                <!-- Patient Card -->
+                <div class="card card-portal p-4 mb-3 shadow-sm border-top border-4 border-primary">
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <div class="rounded-circle bg-primary bg-opacity-10 text-primary p-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                            <i class="bi bi-person-fill fs-4"></i>
+                        </div>
+                        <div>
+                            <h5 class="fw-bold text-dark mb-0" th:text="${appointment.patient.fullName}">Nguyễn Văn Bệnh Nhân</h5>
+                            <span class="text-secondary small" th:text="${appointment.patient.gender != null ? appointment.patient.gender.displayName : 'Chưa rõ giới tính'}">Nam</span>
+                            <span class="text-secondary small" th:if="${appointment.patient.dateOfBirth != null}" th:text="${' • ' + #temporals.format(appointment.patient.dateOfBirth, 'dd/MM/yyyy')}"> • 1990</span>
+                        </div>
+                    </div>
+
+                    <div class="small text-secondary mb-3">
+                        <div><i class="bi bi-telephone me-2 text-primary"></i> SĐT: <strong class="text-dark" th:text="${appointment.patient.phone != null ? appointment.patient.phone : 'Chưa có'}">0901234567</strong></div>
+                        <div class="mt-1"><i class="bi bi-qr-code me-2 text-primary"></i> Mã hẹn: <strong class="text-dark" th:text="${appointment.bookingCode}">MED-xxxx</strong></div>
+                        <div class="mt-1"><i class="bi bi-clock me-2 text-primary"></i> Giờ hẹn: <span class="text-dark fw-semibold" th:text="${appointment.timeSlot.timeRangeFormatted}">08:00 - 08:30</span></div>
+                    </div>
+
+                    <div class="alert alert-warning p-2.5 rounded-2 small mb-0">
+                        <div class="fw-bold text-dark mb-1"><i class="bi bi-chat-square-dots-fill text-warning me-1"></i> Lý do khám / Triệu chứng bệnh nhân báo:</div>
+                        <div class="text-dark fst-italic" th:text="${appointment.reason}">Đau đầu, sốt nhẹ...</div>
+                    </div>
+                </div>
+
+                <!-- Previous Medical History Accordion -->
+                <div class="card card-portal p-3 shadow-sm">
+                    <h6 class="fw-bold text-dark mb-2 d-flex align-items-center justify-content-between">
+                        <span><i class="bi bi-clock-history text-secondary me-2"></i>Tiền Sử Khám Bệnh</span>
+                        <span class="badge bg-secondary rounded-pill" th:text="${#lists.size(patientHistory)}">0</span>
+                    </h6>
+
+                    <div th:if="${#lists.isEmpty(patientHistory)}" class="text-muted small text-center py-3">
+                        Bệnh nhân chưa có tiền sử khám tại phòng khám.
+                    </div>
+
+                    <div th:unless="${#lists.isEmpty(patientHistory)}" class="accordion accordion-flush" id="historyAccordion">
+                        <div th:each="hist, histStat : ${patientHistory}" class="accordion-item border-bottom">
+                            <h2 class="accordion-header" th:id="${'heading' + histStat.index}">
+                                <button class="accordion-button collapsed py-2 px-0 small fw-semibold" type="button"
+                                        data-bs-toggle="collapse" th:data-bs-target="${'#collapse' + histStat.index}">
+                                    <span th:text="${#temporals.format(hist.createdAt, 'dd/MM/yyyy') + ' - ' + hist.diagnosis}">10/08/2026 - Viêm phế quản</span>
+                                </button>
+                            </h2>
+                            <div th:id="${'collapse' + histStat.index}" class="accordion-collapse collapse" data-bs-parent="#historyAccordion">
+                                <div class="accordion-body px-0 py-2 small text-secondary">
+                                    <div><strong>Triệu chứng:</strong> <span th:text="${hist.symptoms}">Ho, sốt</span></div>
+                                    <div class="mt-1"><strong>Lời dặn:</strong> <span th:text="${hist.doctorNotes != null ? hist.doctorNotes : 'Không có'}">Nghỉ ngơi</span></div>
+                                    <div th:if="${hist.prescription != null}" class="mt-2">
+                                        <strong>Đơn thuốc:</strong>
+                                        <ul class="ps-3 mb-0">
+                                            <li th:each="it : ${hist.prescription.items}"
+                                                th:text="${it.medicine.name + ' (' + it.quantity + ' ' + it.medicine.unit + ') - ' + it.dosage}"></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Right Column: Clinical Examination & Prescription Form (2/3) -->
+        <div class="col-lg-8">
+            <form th:action="@{/doctor/examine/{appointmentId}(appointmentId=${appointment.id})}" method="post" id="examinationForm">
+
+                <!-- Section 1: Clinical Diagnosis -->
+                <div class="card card-portal p-4 mb-4 shadow-sm">
+                    <h5 class="fw-bold text-dark mb-3 d-flex align-items-center">
+                        <i class="bi bi-file-earmark-medical-fill text-primary me-2"></i>
+                        1. Khám Lâm Sàng & Chẩn Đoán Y Khoa
+                    </h5>
+
+                    <div class="mb-3">
+                        <label for="symptoms" class="form-label fw-semibold small">
+                            Triệu chứng lâm sàng ghi nhận <span class="text-danger">*</span>
+                        </label>
+                        <textarea class="form-control" id="symptoms" name="symptoms" rows="2"
+                                  placeholder="Ghi nhận triệu chứng thực thể, huyết áp, nhịp tim, thân nhiệt..." required></textarea>
+                    </div>
+
+                    <div class="mb-2">
+                        <label for="diagnosis" class="form-label fw-semibold small">
+                            Kết luận chẩn đoán bệnh <span class="text-danger">*</span>
+                        </label>
+                        <input type="text" class="form-control" id="diagnosis" name="diagnosis"
+                               placeholder="Ví dụ: Viêm họng cấp tính / Viêm dạ dày HP (+)..." required>
+                    </div>
+                </div>
+
+                <!-- Section 2: Dynamic Prescription Table -->
+                <div class="card card-portal p-4 mb-4 shadow-sm">
+                    <div class="d-flex flex-wrap align-items-center justify-content-between mb-3">
+                        <h5 class="fw-bold text-dark mb-0 d-flex align-items-center">
+                            <i class="bi bi-capsule-fill text-success me-2"></i>
+                            2. Kê Đơn Thuốc Điện Tử
+                        </h5>
+                        <button type="button" class="btn btn-sm btn-outline-success fw-semibold" id="btnAddMedicine">
+                            <i class="bi bi-plus-circle me-1"></i> Thêm Thuốc
+                        </button>
+                    </div>
+
+                    <div class="table-responsive mb-3">
+                        <table class="table table-bordered align-middle small" id="medicineTable">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="min-width: 200px;">Tên Thuốc / Dược Phẩm</th>
+                                    <th style="width: 90px;">Số Lượng</th>
+                                    <th style="width: 80px;" class="text-center">ĐVT</th>
+                                    <th style="min-width: 140px;">Liều Dùng</th>
+                                    <th style="min-width: 140px;">Tần Suất / HDSD</th>
+                                    <th style="width: 110px;" class="text-end">Đơn Giá</th>
+                                    <th style="width: 50px;" class="text-center">Xóa</th>
+                                </tr>
+                            </thead>
+                            <tbody id="medicineTableBody">
+                                <!-- Dynamic rows added here -->
+                            </tbody>
+                            <tfoot>
+                                <tr class="table-light">
+                                    <td colspan="5" class="text-end fw-bold">Tổng Tiền Thuốc Dự Kiến:</td>
+                                    <td colspan="2" class="text-end fw-bold text-primary fs-6" id="totalMedicinePrice">0 đ</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                    <div class="form-text small text-muted">
+                        <i class="bi bi-info-circle me-1"></i> Hệ thống tự động kiểm tra tồn kho dược phẩm và tính tiền thuốc vào viện phí của bệnh nhân.
+                    </div>
+                </div>
+
+                <!-- Section 3: Notes & Re-examination -->
+                <div class="card card-portal p-4 mb-4 shadow-sm">
+                    <h5 class="fw-bold text-dark mb-3 d-flex align-items-center">
+                        <i class="bi bi-calendar-event-fill text-warning me-2"></i>
+                        3. Lời Dặn & Hẹn Ngày Tái Khám
+                    </h5>
+
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            <label for="doctorNotes" class="form-label fw-semibold small">Lời dặn của Bác sĩ</label>
+                            <textarea class="form-control" id="doctorNotes" name="doctorNotes" rows="2"
+                                      placeholder="Lời dặn ăn uống kiêng cữ, chế độ vận động hoặc dặn dò khi dùng thuốc..."></textarea>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="reExamDate" class="form-label fw-semibold small">Ngày hẹn tái khám (nếu có)</label>
+                            <input type="date" class="form-control" id="reExamDate" name="reExamDate">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bottom Action Bar -->
+                <div class="card card-portal p-3 shadow-sm d-flex flex-row align-items-center justify-content-between">
+                    <a th:href="@{/doctor/desk}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-1"></i> Quay lại Hàng Chờ
+                    </a>
+                    <button type="submit" class="btn btn-med-primary px-4 py-2" id="btnSubmitExamine">
+                        <i class="bi bi-check2-all fs-5"></i> Hoàn Tất Ca Khám & Lưu Bệnh Án
+                    </button>
+                </div>
+
+            </form>
+        </div>
+
+    </div>
+
+</div>
+
+<div layout:fragment="scripts">
+<script th:inline="javascript">
+/*<![CDATA[*/
+const activeMedicines = /*[[${activeMedicines}]]*/ [];
+/*]]>*/
+
+document.addEventListener('DOMContentLoaded', function () {
+    const tableBody = document.getElementById('medicineTableBody');
+    const btnAddMedicine = document.getElementById('btnAddMedicine');
+    const totalMedicinePriceEl = document.getElementById('totalMedicinePrice');
+    const reExamDateInput = document.getElementById('reExamDate');
+
+    // Set min re-exam date = tomorrow
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const yyyy = tomorrow.getFullYear();
+    const mm = String(tomorrow.getMonth() + 1).padStart(2, '0');
+    const dd = String(tomorrow.getDate()).padStart(2, '0');
+    reExamDateInput.min = `${yyyy}-${mm}-${dd}`;
+
+    // Add first row by default
+    addMedicineRow();
+
+    btnAddMedicine.addEventListener('click', function () {
+        addMedicineRow();
+    });
+
+    function addMedicineRow() {
+        const tr = document.createElement('tr');
+        tr.className = 'medicine-row';
+
+        let optionsHtml = '<option value="">-- Chọn thuốc --</option>';
+        activeMedicines.forEach(m => {
+            optionsHtml += `<option value="${m.id}" data-unit="${m.unit}" data-price="${m.unitPrice}" data-stock="${m.stockQuantity}">
+                ${m.name} (Còn: ${m.stockQuantity} ${m.unit})
+            </option>`;
+        });
+
+        tr.innerHTML = `
+            <td>
+                <select class="form-select form-select-sm med-select" name="medicineIds" required>
+                    ${optionsHtml}
+                </select>
+            </td>
+            <td>
+                <input type="number" class="form-control form-control-sm med-qty" name="quantities" min="1" value="1" required>
+            </td>
+            <td class="text-center med-unit-text text-secondary">--</td>
+            <td>
+                <input type="text" class="form-control form-control-sm" name="dosages" placeholder="VD: 1 viên" value="1 viên" required>
+            </td>
+            <td>
+                <input type="text" class="form-control form-control-sm" name="frequencies" placeholder="VD: 2 lần/ngày sau ăn" value="2 lần/ngày sau ăn" required>
+                <input type="hidden" name="instructions" value="">
+            </td>
+            <td class="text-end med-price-text text-dark fw-semibold">0 đ</td>
+            <td class="text-center">
+                <button type="button" class="btn btn-sm btn-outline-danger p-1 border-0 btn-remove-row">
+                    <i class="bi bi-trash fs-6"></i>
+                </button>
+            </td>
+        `;
+
+        // Bind events
+        const select = tr.querySelector('.med-select');
+        const qtyInput = tr.querySelector('.med-qty');
+        const unitText = tr.querySelector('.med-unit-text');
+        const priceText = tr.querySelector('.med-price-text');
+        const removeBtn = tr.querySelector('.btn-remove-row');
+
+        select.addEventListener('change', function () {
+            const selectedOpt = this.options[this.selectedIndex];
+            if (this.value) {
+                unitText.textContent = selectedOpt.dataset.unit;
+                const price = parseFloat(selectedOpt.dataset.price || 0);
+                const qty = parseInt(qtyInput.value || 1);
+                priceText.textContent = (price * qty).toLocaleString('vi-VN') + ' đ';
+            } else {
+                unitText.textContent = '--';
+                priceText.textContent = '0 đ';
+            }
+            calculateTotalPrice();
+        });
+
+        qtyInput.addEventListener('input', function () {
+            const selectedOpt = select.options[select.selectedIndex];
+            if (select.value) {
+                const price = parseFloat(selectedOpt.dataset.price || 0);
+                const qty = parseInt(this.value || 0);
+                priceText.textContent = (price * qty).toLocaleString('vi-VN') + ' đ';
+            }
+            calculateTotalPrice();
+        });
+
+        removeBtn.addEventListener('click', function () {
+            tr.remove();
+            calculateTotalPrice();
+        });
+
+        tableBody.appendChild(tr);
+    }
+
+    function calculateTotalPrice() {
+        let total = 0;
+        document.querySelectorAll('#medicineTableBody tr').forEach(row => {
+            const select = row.querySelector('.med-select');
+            const qtyInput = row.querySelector('.med-qty');
+            if (select && select.value) {
+                const opt = select.options[select.selectedIndex];
+                const price = parseFloat(opt.dataset.price || 0);
+                const qty = parseInt(qtyInput.value || 0);
+                total += (price * qty);
+            }
+        });
+        totalMedicinePriceEl.textContent = total.toLocaleString('vi-VN') + ' đ';
+    }
+
+    // Submit confirmation
+    document.getElementById('examinationForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+        const form = this;
+
+        Swal.fire({
+            title: 'Hoàn tất ca khám này?',
+            text: 'Hệ thống sẽ lưu bệnh án, tạo toa thuốc điện tử và sinh hóa đơn viện phí tự động cho bệnh nhân.',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#0284c7',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: 'Đồng ý lưu bệnh án',
+            cancelButtonText: 'Kiểm tra lại'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                form.submit();
+            }
+        });
+    });
+});
+</script>
+</div>
+</body>
+</html>

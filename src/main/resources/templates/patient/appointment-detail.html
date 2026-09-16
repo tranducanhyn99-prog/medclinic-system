@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/main}">
+<head>
+    <title>Chi Tiết Cuộc Hẹn & Mã QR Check-in - MedClinic</title>
+    <style>
+        .ticket-cut {
+            border-top: 2px dashed #cbd5e1;
+            position: relative;
+            margin: 1.25rem 0;
+        }
+        .qr-frame {
+            background-color: #ffffff;
+            padding: 12px;
+            border-radius: 0.75rem;
+            border: 2px solid #e2e8f0;
+            display: inline-block;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+        }
+
+        /* PRINT STYLING: Only print the ticket box, exactly 1 page, hide all alerts/navs/footers */
+        @media print {
+            /* Hide entire page structure */
+            html, body {
+                background: #ffffff !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                visibility: hidden !important;
+            }
+
+            /* Completely remove non-ticket elements from document flow */
+            nav, footer, header, .navbar, .alert, .breadcrumb, .no-print, button, a.btn {
+                display: none !important;
+                visibility: hidden !important;
+                height: 0 !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+
+            /* Show ONLY the Ticket Box */
+            #printTicketSection, #printTicketSection * {
+                visibility: visible !important;
+            }
+
+            #printTicketSection {
+                position: absolute !important;
+                left: 0 !important;
+                top: 0 !important;
+                width: 100% !important;
+                max-width: 680px !important;
+                margin: 0 auto !important;
+                padding: 24px !important;
+                border: 1.5px solid #475569 !important;
+                border-radius: 8px !important;
+                box-shadow: none !important;
+                background-color: #ffffff !important;
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+            }
+
+            .qr-frame {
+                border: 1.5px solid #475569 !important;
+                box-shadow: none !important;
+                padding: 8px !important;
+            }
+
+            @page {
+                size: A4 portrait;
+                margin: 10mm;
+            }
+        }
+    </style>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="container py-4">
+
+        <!-- Breadcrumb & Back (Hidden when printing) -->
+        <div class="d-flex align-items-center justify-content-between mb-4 no-print">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0 small">
+                    <li class="breadcrumb-item"><a th:href="@{/}" class="text-decoration-none">Trang chủ</a></li>
+                    <li class="breadcrumb-item"><a th:href="@{/patient/appointments}" class="text-decoration-none">Lịch hẹn của tôi</a></li>
+                    <li class="breadcrumb-item active" aria-current="page" th:text="${appointment.bookingCode}">MED-xxxx</li>
+                </ol>
+            </nav>
+            <a th:href="@{/patient/appointments}" class="btn btn-sm btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i> Quay lại danh sách
+            </a>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+
+                <!-- Ticket Card (Only this section is printed) -->
+                <div class="card card-custom p-4 p-md-5 card-ticket shadow-sm" id="printTicketSection">
+
+                    <!-- Header -->
+                    <div class="d-flex flex-wrap align-items-center justify-content-between pb-3 border-bottom">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="bi bi-hospital-fill text-primary fs-2"></i>
+                            <div>
+                                <h5 class="fw-bold text-dark mb-0">PHIẾU ĐẶT LỊCH KHÁM BỆNH</h5>
+                                <span class="text-muted small">Phòng khám Đa khoa MedClinic</span>
+                            </div>
+                        </div>
+                        <div class="text-md-end mt-2 mt-md-0">
+                            <span class="badge-med"
+                                  th:classappend="${appointment.status.name() == 'CONFIRMED' ? 'bg-primary-subtle text-primary border border-primary' :
+                                                   (appointment.status.name() == 'CHECKED_IN' ? 'bg-info-subtle text-info border border-info' :
+                                                   (appointment.status.name() == 'COMPLETED' ? 'bg-success-subtle text-success border border-success' :
+                                                   (appointment.status.name() == 'CANCELLED' ? 'bg-danger-subtle text-danger border border-danger' : 'bg-secondary-subtle text-secondary border border-secondary')))}">
+                                <i th:class="${appointment.status.name() == 'CONFIRMED' ? 'bi bi-clock me-1' :
+                                             (appointment.status.name() == 'CHECKED_IN' ? 'bi bi-person-check-fill me-1' :
+                                             (appointment.status.name() == 'COMPLETED' ? 'bi bi-check-circle-fill me-1' :
+                                             (appointment.status.name() == 'CANCELLED' ? 'bi bi-x-circle-fill me-1' : 'bi bi-dash-circle me-1')))}"></i>
+                                <span th:text="${appointment.status.displayName}">Đã xác nhận</span>
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- QR Section -->
+                    <div class="text-center py-3 bg-light rounded-3 my-3">
+                        <div class="qr-frame mb-2">
+                            <!-- Corrected QR src without double data prefix -->
+                            <img th:src="${qrCode}"
+                                 alt="Mã QR Check-in"
+                                 class="img-fluid"
+                                 style="width: 170px; height: 170px; display: block; margin: 0 auto; image-rendering: pixelated;">
+                        </div>
+                        <div class="fw-bold fs-5 text-primary mb-1" th:text="${appointment.bookingCode}">MED-260916-0001</div>
+                        <p class="text-muted small mb-0">
+                            <i class="bi bi-qr-code-scan text-secondary me-1"></i> Quét mã này tại bàn tiếp nhận phòng khám để check-in và nhận số thứ tự (STT) tự động.
+                        </p>
+                    </div>
+
+                    <!-- Queue Number if Checked In -->
+                    <div th:if="${appointment.queueNumber != null}" class="alert alert-success d-flex align-items-center justify-content-between p-3 rounded-3 mb-3">
+                        <div>
+                            <h6 class="fw-bold mb-0 text-success"><i class="bi bi-check-circle-fill me-2"></i> Đã tiếp nhận tại quầy</h6>
+                            <small class="text-secondary">Vui lòng ngồi tại sảnh chờ chuyên khoa, bác sĩ sẽ gọi tên theo STT</small>
+                        </div>
+                        <div class="text-end">
+                            <span class="fs-4 fw-bold text-success" th:text="${appointment.queueNumber}">STT-01</span>
+                        </div>
+                    </div>
+
+                    <!-- Details Grid -->
+                    <div class="row g-3 mb-3">
+                        <div class="col-sm-6">
+                            <label class="text-muted small">Bệnh nhân:</label>
+                            <div class="fw-bold text-dark fs-6" th:text="${appointment.patient.fullName}">Nguyễn Văn Bệnh Nhân</div>
+                            <div class="text-secondary small" th:text="${'SĐT: ' + appointment.patient.phone}">0901234567</div>
+                        </div>
+
+                        <div class="col-sm-6">
+                            <label class="text-muted small">Bác sĩ khám:</label>
+                            <div class="fw-bold text-dark fs-6"
+                                 th:text="${appointment.doctor.user.fullName.startsWith(appointment.doctor.title) ? appointment.doctor.user.fullName : (appointment.doctor.title + ' ' + appointment.doctor.user.fullName)}">
+                                BS. Nguyễn Văn A
+                            </div>
+                            <div class="text-secondary small" th:text="${'Chuyên khoa: ' + appointment.doctor.specialty.name}">Nội tổng quát</div>
+                        </div>
+
+                        <div class="col-sm-6">
+                            <label class="text-muted small">Ngày khám:</label>
+                            <div class="fw-bold text-dark fs-6" th:text="${#temporals.format(appointment.appointmentDate, 'dd/MM/yyyy')}">16/09/2026</div>
+                        </div>
+
+                        <div class="col-sm-6">
+                            <label class="text-muted small">Khung giờ hẹn:</label>
+                            <div class="fw-bold text-primary fs-6" th:text="${appointment.timeSlot.timeRangeFormatted}">08:00 - 08:30</div>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="text-muted small">Lý do khám / Triệu chứng:</label>
+                            <div class="p-2.5 bg-light rounded-2 text-dark small" th:text="${appointment.reason}">Đau đầu, sốt nhẹ...</div>
+                        </div>
+                    </div>
+
+                    <div class="ticket-cut"></div>
+
+                    <!-- Notice & Rules -->
+                    <div class="alert alert-light border small text-secondary mb-3 p-2.5">
+                        <h6 class="fw-bold text-dark mb-1 small"><i class="bi bi-info-circle text-primary me-1"></i> Hướng Dẫn Dành Cho Bệnh Nhân:</h6>
+                        <ul class="mb-0 ps-3" style="font-size: 0.8rem;">
+                            <li>Vui lòng có mặt trước giờ khám từ 10 - 15 phút để hoàn tất thủ tục đo huyết áp/tiếp đón.</li>
+                            <li>Nếu có kết quả xét nghiệm hoặc đơn thuốc cũ trong vòng 3 tháng, vui lòng mang theo.</li>
+                            <li>Nếu cần hủy hoặc đổi lịch hẹn, vui lòng thực hiện trước giờ khám ít nhất 2 tiếng.</li>
+                        </ul>
+                    </div>
+
+                    <!-- Actions (Hidden when printing) -->
+                    <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center no-print pt-2">
+                        <button type="button" class="btn btn-outline-secondary" onclick="window.print()">
+                            <i class="bi bi-printer me-1"></i> In Phiếu Khám
+                        </button>
+
+                        <div class="d-flex gap-2">
+                            <div th:if="${appointment.status.name() == 'CONFIRMED'}">
+                                <form th:action="@{/patient/appointments/{id}/cancel(id=${appointment.id})}" method="post" id="cancelForm">
+                                    <button type="button" class="btn btn-outline-danger" id="cancelBtn">
+                                        <i class="bi bi-x-circle me-1"></i> Hủy Lịch Này
+                                    </button>
+                                </form>
+                            </div>
+
+                            <a th:href="@{/patient/booking}" class="btn btn-med-primary">
+                                <i class="bi bi-calendar-plus me-1"></i> Đặt Thêm Lịch Mới
+                            </a>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div layout:fragment="scripts">
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const cancelBtn = document.getElementById('cancelBtn');
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', function () {
+            Swal.fire({
+                title: 'Hủy cuộc hẹn này?',
+                text: 'Hành động này sẽ giải phóng khung giờ khám để phục vụ bệnh nhân khác.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Xác nhận hủy',
+                cancelButtonText: 'Đóng'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('cancelForm').submit();
+                }
+            });
+        });
+    }
+});
+</script>
+</div>
+</body>
+</html>

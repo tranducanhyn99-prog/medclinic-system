@@ -25,10 +25,52 @@ public class StaffReceptionController {
     private final InvoiceService invoiceService;
 
     @GetMapping("/reception")
-    public String receptionDesk(Model model) {
+    public String receptionDesk(
+            @RequestParam(value = "keyword", required = false) String keyword,
+            @RequestParam(value = "status", required = false, defaultValue = "ALL") String status,
+            Model model) {
+        java.util.List<com.medclinic.entity.Appointment> todayAppointments = appointmentService.findTodayAppointments();
+        java.util.List<com.medclinic.entity.Appointment> appointments = todayAppointments;
+
+        if (keyword != null && !keyword.isBlank()) {
+            String normalizedKeyword = keyword.trim();
+            appointments = appointmentService.searchForReception(normalizedKeyword);
+            model.addAttribute("keyword", normalizedKeyword);
+        }
+
+        long countAll = todayAppointments.size();
+        long countConfirmed = todayAppointments.stream()
+                .filter(appointment -> appointment.getStatus() == com.medclinic.enums.AppointmentStatus.CONFIRMED)
+                .count();
+        long countCheckedIn = todayAppointments.stream()
+                .filter(appointment -> appointment.getStatus() == com.medclinic.enums.AppointmentStatus.CHECKED_IN)
+                .count();
+        long countInProgress = todayAppointments.stream()
+                .filter(appointment -> appointment.getStatus() == com.medclinic.enums.AppointmentStatus.IN_PROGRESS)
+                .count();
+        long countCompleted = todayAppointments.stream()
+                .filter(appointment -> appointment.getStatus() == com.medclinic.enums.AppointmentStatus.COMPLETED)
+                .count();
+        long countCancelled = todayAppointments.stream()
+                .filter(appointment -> appointment.getStatus() == com.medclinic.enums.AppointmentStatus.CANCELLED)
+                .count();
+
+        if (!"ALL".equalsIgnoreCase(status)) {
+            appointments = appointments.stream()
+                    .filter(appointment -> appointment.getStatus().name().equalsIgnoreCase(status))
+                    .toList();
+        }
+
+        model.addAttribute("appointments", appointments);
+        model.addAttribute("currentStatus", status.toUpperCase());
+        model.addAttribute("countAll", countAll);
+        model.addAttribute("countConfirmed", countConfirmed);
+        model.addAttribute("countCheckedIn", countCheckedIn);
+        model.addAttribute("countInProgress", countInProgress);
+        model.addAttribute("countCompleted", countCompleted);
+        model.addAttribute("countCancelled", countCancelled);
         return "staff/reception";
     }
-
     @GetMapping("/reception/search")
     public String searchAppointments(@RequestParam("keyword") String keyword, Model model) {
         model.addAttribute("appointments", appointmentService.searchForReception(keyword));

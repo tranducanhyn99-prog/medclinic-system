@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/dashboard}">
+<head>
+    <title>Quản Lý Chuyên Khoa - MedClinic</title>
+</head>
+<body>
+<div layout:fragment="content">
+
+    <!-- Top Header -->
+    <div class="d-flex flex-wrap align-items-center justify-content-between mb-4 pb-2 border-bottom">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-1 small">
+                    <li class="breadcrumb-item"><a th:href="@{/admin/dashboard}" class="text-decoration-none">Admin</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Chuyên khoa</li>
+                </ol>
+            </nav>
+            <h3 class="fw-bold text-dark mb-0">
+                <i class="bi bi-diagram-3-fill text-info me-2"></i>Quản Lý Danh Mục Chuyên Khoa
+            </h3>
+        </div>
+        <div>
+            <button type="button" class="btn btn-med-primary" data-bs-toggle="modal" data-bs-target="#addSpecialtyModal">
+                <i class="bi bi-plus-circle me-1"></i> Thêm Chuyên Khoa Mới
+            </button>
+        </div>
+    </div>
+
+    <!-- Specialties Table Card -->
+    <div class="card card-portal shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0 small">
+                    <thead class="table-light text-uppercase">
+                        <tr>
+                            <th style="width: 60px;" class="text-center">STT</th>
+                            <th style="min-width: 180px;">Tên Chuyên Khoa</th>
+                            <th>Mô tả chuyên khoa</th>
+                            <th style="width: 120px;" class="text-center">Bác sĩ phụ trách</th>
+                            <th style="width: 120px;" class="text-center">Trạng thái</th>
+                            <th style="width: 120px;" class="text-end pe-3">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="spec, stat : ${specialties}">
+                            <td class="text-center text-muted fw-semibold" th:text="${stat.count}">1</td>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <i class="bi fs-5 text-primary" th:classappend="${spec.icon != null and !spec.icon.isEmpty() ? spec.icon : 'bi-hospital'}"></i>
+                                    <strong class="text-dark fs-6" th:text="${spec.name}">Nội tổng quát</strong>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="text-secondary" th:text="${spec.description != null ? spec.description : '--'}">Khám và điều trị các bệnh nội khoa...</span>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-primary-subtle text-primary border border-primary px-2.5 py-1"
+                                      th:text="${#lists.size(spec.doctors) + ' Bác sĩ'}">3 Bác sĩ</span>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge-portal"
+                                      th:classappend="${spec.isActive ? 'bg-success-subtle text-success border border-success' : 'bg-danger-subtle text-danger border border-danger'}">
+                                    <span th:text="${spec.isActive ? 'Đang hoạt động' : 'Tạm khóa'}">Hoạt động</span>
+                                </span>
+                            </td>
+                            <td class="text-end pe-3">
+                                <form th:action="@{/admin/specialties/{id}/toggle(id=${spec.id})}" method="post" class="d-inline m-0">
+                                    <button type="submit" class="btn btn-sm"
+                                            th:classappend="${spec.isActive ? 'btn-outline-danger' : 'btn-outline-success'}"
+                                            th:title="${spec.isActive ? 'Nhấn để khóa chuyên khoa' : 'Nhấn để mở lại chuyên khoa'}">
+                                        <i th:class="${spec.isActive ? 'bi bi-lock me-1' : 'bi bi-unlock me-1'}"></i>
+                                        <span th:text="${spec.isActive ? 'Khóa' : 'Kích hoạt'}">Khóa</span>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Add Specialty -->
+    <div class="modal fade" id="addSpecialtyModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <form th:action="@{/admin/specialties}" method="post">
+                    <div class="modal-header">
+                        <h6 class="modal-title fw-bold text-dark">
+                            <i class="bi bi-plus-circle-fill text-primary me-2"></i>Thêm Chuyên Khoa Mới
+                        </h6>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="specName" class="form-label fw-semibold small">Tên chuyên khoa <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="specName" name="name" placeholder="Ví dụ: Tim mạch, Nhi khoa..." required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="specIcon" class="form-label fw-semibold small">Icon Bootstrap</label>
+                            <input type="text" class="form-control" id="specIcon" name="icon" placeholder="bi-heart-pulse, bi-lungs, bi-eye...">
+                            <div class="form-text">Mã class từ Bootstrap Icons (VD: bi-heart-pulse).</div>
+                        </div>
+                        <div class="mb-2">
+                            <label for="specDesc" class="form-label fw-semibold small">Mô tả tóm tắt</label>
+                            <textarea class="form-control" id="specDesc" name="description" rows="3" placeholder="Mô tả phạm vi khám và điều trị..."></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                        <button type="submit" class="btn btn-sm btn-med-primary px-3">Lưu Chuyên Khoa</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

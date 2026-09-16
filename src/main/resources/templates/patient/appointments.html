@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/main}">
+<head>
+    <title>Lịch Hẹn Của Tôi - MedClinic</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="container py-4">
+
+        <!-- Page Header -->
+        <div class="d-flex flex-wrap align-items-center justify-content-between mb-4 pb-2 border-bottom">
+            <div>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-1 small">
+                        <li class="breadcrumb-item"><a th:href="@{/}" class="text-decoration-none">Trang chủ</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Lịch hẹn của tôi</li>
+                    </ol>
+                </nav>
+                <h3 class="fw-bold text-dark mb-0">
+                    <i class="bi bi-clock-history text-primary me-2"></i>Danh Sách Lịch Hẹn Khám
+                </h3>
+            </div>
+            <div>
+                <a th:href="@{/patient/booking}" class="btn btn-med-primary shadow-sm">
+                    <i class="bi bi-plus-circle me-1"></i> Đặt Lịch Mới
+                </a>
+            </div>
+        </div>
+
+        <!-- Empty State -->
+        <div th:if="${#lists.isEmpty(appointments)}" class="card card-custom p-5 text-center my-4 border-0">
+            <div class="rounded-circle bg-light text-primary p-4 d-inline-flex align-items-center justify-content-center mx-auto mb-3" style="width: 80px; height: 80px;">
+                <i class="bi bi-calendar-x fs-1 text-secondary"></i>
+            </div>
+            <h5 class="fw-bold text-dark mb-2">Bạn Chưa Có Lịch Hẹn Khám Nào</h5>
+            <p class="text-muted small mb-4" style="max-width: 450px; margin: 0 auto;">
+                Chăm sóc sức khỏe định kỳ giúp phòng ngừa bệnh tật sớm. Hãy chọn bác sĩ và thời gian thuận tiện nhất cho bạn.
+            </p>
+            <div>
+                <a th:href="@{/patient/booking}" class="btn btn-med-primary px-4 py-2">
+                    <i class="bi bi-calendar-plus me-1"></i> Đặt Lịch Khám Ngay
+                </a>
+            </div>
+        </div>
+
+        <!-- Appointments List -->
+        <div th:unless="${#lists.isEmpty(appointments)}" class="row g-3">
+            <div th:each="apt : ${appointments}" class="col-lg-6">
+                <div class="card card-custom p-4 h-100 card-hover border-start border-4"
+                     th:classappend="${apt.status.name() == 'CONFIRMED' ? 'border-primary' :
+                                      (apt.status.name() == 'CHECKED_IN' ? 'border-info' :
+                                      (apt.status.name() == 'COMPLETED' ? 'border-success' :
+                                      (apt.status.name() == 'CANCELLED' ? 'border-danger' : 'border-secondary')))}">
+
+                    <!-- Top header: Code & Status -->
+                    <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
+                        <div>
+                            <span class="text-muted small">Mã cuộc hẹn:</span>
+                            <span class="fw-bold text-dark ms-1" th:text="${apt.bookingCode}">MED-260916-0001</span>
+                        </div>
+                        <div>
+                            <span class="badge-med"
+                                  th:classappend="${apt.status.name() == 'CONFIRMED' ? 'bg-primary-subtle text-primary border border-primary' :
+                                                   (apt.status.name() == 'CHECKED_IN' ? 'bg-info-subtle text-info border border-info' :
+                                                   (apt.status.name() == 'COMPLETED' ? 'bg-success-subtle text-success border border-success' :
+                                                   (apt.status.name() == 'CANCELLED' ? 'bg-danger-subtle text-danger border border-danger' : 'bg-secondary-subtle text-secondary border border-secondary')))}">
+                                <i th:class="${apt.status.name() == 'CONFIRMED' ? 'bi bi-clock me-1' :
+                                             (apt.status.name() == 'CHECKED_IN' ? 'bi bi-person-check-fill me-1' :
+                                             (apt.status.name() == 'COMPLETED' ? 'bi bi-check-circle-fill me-1' :
+                                             (apt.status.name() == 'CANCELLED' ? 'bi bi-x-circle-fill me-1' : 'bi bi-dash-circle me-1')))}"></i>
+                                <span th:text="${apt.status.displayName}">Đã xác nhận</span>
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Body info -->
+                    <div class="row g-2 mb-3 small">
+                        <div class="col-sm-6">
+                            <div class="text-muted"><i class="bi bi-person-badge text-primary me-1"></i> Bác sĩ khám:</div>
+                            <div class="fw-bold text-dark" th:text="${apt.doctor.title + ' ' + apt.doctor.user.fullName}">BS. Nguyễn Văn A</div>
+                            <div class="text-secondary" th:text="${apt.doctor.specialty.name}">Nội tổng quát</div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="text-muted"><i class="bi bi-calendar-event text-primary me-1"></i> Ngày & Khung giờ:</div>
+                            <div class="fw-bold text-dark" th:text="${#temporals.format(apt.appointmentDate, 'dd/MM/yyyy')}">16/09/2026</div>
+                            <div class="text-primary fw-semibold" th:text="${apt.timeSlot.timeRangeFormatted}">08:00 - 08:30</div>
+                        </div>
+                    </div>
+
+                    <div th:if="${apt.queueNumber != null}" class="alert alert-info py-2 px-3 small rounded-2 mb-3 d-flex align-items-center justify-content-between">
+                        <span><i class="bi bi-ticket-perforated-fill me-1 text-info"></i> Số thứ tự khám (STT):</span>
+                        <span class="badge bg-primary fs-6 fw-bold" th:text="${apt.queueNumber}">STT-01</span>
+                    </div>
+
+                    <div class="mb-3 small">
+                        <span class="text-muted">Triệu chứng/Lý do:</span>
+                        <span class="text-secondary fst-italic" th:text="${apt.reason}">Đau đầu nhẹ...</span>
+                    </div>
+
+                    <!-- Footer Actions -->
+                    <div class="d-flex align-items-center justify-content-between pt-2 mt-auto border-top">
+                        <a th:href="@{/patient/appointments/{id}(id=${apt.id})}" class="btn btn-sm btn-outline-primary fw-semibold">
+                            <i class="bi bi-qr-code-scan me-1"></i> Chi tiết & Mã QR
+                        </a>
+
+                        <!-- Cancel button only if CONFIRMED -->
+                        <div th:if="${apt.status.name() == 'CONFIRMED'}">
+                            <form th:action="@{/patient/appointments/{id}/cancel(id=${apt.id})}" method="post" class="cancel-form m-0">
+                                <button type="button" class="btn btn-sm btn-outline-danger fw-semibold btn-cancel-apt">
+                                    <i class="bi bi-x-circle me-1"></i> Hủy lịch
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div layout:fragment="scripts">
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const cancelButtons = document.querySelectorAll('.btn-cancel-apt');
+    cancelButtons.forEach(btn => {
+        btn.addEventListener('click', function () {
+            const form = this.closest('form');
+            Swal.fire({
+                title: 'Xác nhận hủy lịch khám?',
+                text: 'Khung giờ này sẽ được hoàn trả cho bệnh nhân khác. Bạn có chắc chắn muốn hủy cuộc hẹn này không?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Đồng ý hủy',
+                cancelButtonText: 'Giữ lại lịch'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit();
+                }
+            });
+        });
+    });
+});
+</script>
+</div>
+</body>
+</html>

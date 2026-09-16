@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <div th:fragment="alerts">
-    <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show shadow-sm d-flex align-items-center" role="alert">
-        <i class="bi bi-check-circle-fill fs-5 me-2"></i>
-        <div th:text="${successMessage}">Thao tác thành công!</div>
+    <div th:if="${successMessage != null or successMsg != null}" class="alert alert-success alert-dismissible fade show shadow-sm d-flex align-items-center" role="alert">
+        <i class="bi bi-check-circle-fill fs-5 me-2 flex-shrink-0"></i>
+        <div th:text="${successMessage != null ? successMessage : successMsg}">Thao tác thành công!</div>
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
-    <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show shadow-sm d-flex align-items-center" role="alert">
-        <i class="bi bi-exclamation-triangle-fill fs-5 me-2"></i>
-        <div th:text="${errorMessage}">Đã xảy ra lỗi!</div>
+    <div th:if="${errorMessage != null or errorMsg != null}" class="alert alert-danger alert-dismissible fade show shadow-sm d-flex align-items-center" role="alert">
+        <i class="bi bi-exclamation-triangle-fill fs-5 me-2 flex-shrink-0"></i>
+        <div th:text="${errorMessage != null ? errorMessage : errorMsg}">Đã xảy ra lỗi!</div>
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 </div>
