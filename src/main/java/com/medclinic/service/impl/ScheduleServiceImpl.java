@@ -70,7 +70,7 @@ public class ScheduleServiceImpl implements ScheduleService {
     @Override
     @Transactional(readOnly = true)
     public List<DoctorSchedule> findByDoctorAndDateRange(Long doctorId, LocalDate from, LocalDate to) {
-        return doctorScheduleRepository.findByDoctorIdAndWorkDateBetween(doctorId, from, to);
+        return doctorScheduleRepository.findByDoctorIdAndWorkDateBetweenWithTimeSlots(doctorId, from, to);
     }
 
     @Override

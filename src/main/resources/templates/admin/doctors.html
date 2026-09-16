@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/dashboard}">
+<head>
+    <title>Quản Lý Bác Sĩ - MedClinic</title>
+</head>
+<body>
+<div layout:fragment="content">
+
+    <!-- Top Header -->
+    <div class="d-flex flex-wrap align-items-center justify-content-between mb-4 pb-2 border-bottom">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-1 small">
+                    <li class="breadcrumb-item"><a th:href="@{/admin/dashboard}" class="text-decoration-none">Admin</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Bác sĩ</li>
+                </ol>
+            </nav>
+            <h3 class="fw-bold text-dark mb-0">
+                <i class="bi bi-person-badge-fill text-success me-2"></i>Quản Lý Đội Ngũ Bác Sĩ
+            </h3>
+        </div>
+        <div>
+            <button type="button" class="btn btn-med-primary" data-bs-toggle="modal" data-bs-target="#addDoctorModal">
+                <i class="bi bi-person-plus me-1"></i> Thêm Hồ Sơ Bác Sĩ
+            </button>
+        </div>
+    </div>
+
+    <!-- Doctors Table Card -->
+    <div class="card card-portal shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0 small">
+                    <thead class="table-light text-uppercase">
+                        <tr>
+                            <th style="width: 60px;" class="text-center">STT</th>
+                            <th>Họ Tên & Học Vị</th>
+                            <th>Chuyên Khoa</th>
+                            <th class="text-center" style="width: 130px;">Kinh Nghiệm</th>
+                            <th class="text-end" style="width: 140px;">Giá Khám</th>
+                            <th>Giới thiệu / Bio</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="doc, stat : ${doctors}">
+                            <td class="text-center text-muted fw-semibold" th:text="${stat.count}">1</td>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="rounded-circle bg-primary bg-opacity-10 text-primary p-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+                                        <i class="bi bi-person-fill fs-5"></i>
+                                    </div>
+                                    <div>
+                                        <strong class="text-dark fs-6" th:text="${doc.title + ' ' + doc.user.fullName}">BS. Nguyễn Văn A</strong>
+                                        <div class="text-secondary" style="font-size: 0.75rem;" th:text="${'Email: ' + doc.user.email}">email@medclinic.com</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge bg-primary-subtle text-primary border border-primary px-2.5 py-1"
+                                      th:text="${doc.specialty.name}">Nội tổng quát</span>
+                            </td>
+                            <td class="text-center">
+                                <span class="fw-semibold text-dark" th:text="${doc.experienceYears + ' năm'}">10 năm</span>
+                            </td>
+                            <td class="text-end fw-bold text-primary"
+                                th:text="${#numbers.formatDecimal(doc.consultationFee, 0, 'COMMA', 0, 'POINT') + ' đ'}">
+                                150,000 đ
+                            </td>
+                            <td>
+                                <span class="text-secondary text-truncate d-inline-block" style="max-width: 250px;"
+                                      th:text="${doc.bio != null ? doc.bio : '--'}">Chuyên gia đầu ngành...</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Add Doctor Profile -->
+    <div class="modal fade" id="addDoctorModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <form th:action="@{/admin/doctors}" method="post">
+                    <div class="modal-header">
+                        <h6 class="modal-title fw-bold text-dark">
+                            <i class="bi bi-person-plus-fill text-primary me-2"></i>Thêm Hồ Sơ Bác Sĩ Mới
+                        </h6>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="userId" class="form-label fw-semibold small">Mã ID Tài Khoản Bác Sĩ (User ID) <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" id="userId" name="userId" placeholder="Nhập User ID có role DOCTOR..." required>
+                                <div class="form-text">Tài khoản này phải đã được tạo trước đó trong mục Quản lý Tài khoản.</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="specialtyId" class="form-label fw-semibold small">Chuyên khoa phụ trách <span class="text-danger">*</span></label>
+                                <select class="form-select" id="specialtyId" name="specialtyId" required>
+                                    <option value="">-- Chọn chuyên khoa --</option>
+                                    <option th:each="spec : ${specialties}" th:value="${spec.id}" th:text="${spec.name}">Nội tổng quát</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="title" class="form-label fw-semibold small">Học hàm / Học vị <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="title" name="title" placeholder="BS.CKI, ThS.BS, PGS.TS..." required>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="experienceYears" class="form-label fw-semibold small">Số năm kinh nghiệm <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" id="experienceYears" name="experienceYears" min="0" value="5" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="consultationFee" class="form-label fw-semibold small">Giá khám (VNĐ) <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" id="consultationFee" name="consultationFee" min="0" step="10000" value="150000" required>
+                            </div>
+                            <div class="col-12">
+                                <label for="bio" class="form-label fw-semibold small">Tiểu sử & Quá trình công tác</label>
+                                <textarea class="form-control" id="bio" name="bio" rows="3" placeholder="Tóm tắt kinh nghiệm làm việc, nơi từng công tác..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                        <button type="submit" class="btn btn-sm btn-med-primary px-3">Lưu Hồ Sơ Bác Sĩ</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

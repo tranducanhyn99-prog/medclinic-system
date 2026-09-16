@@ -21,7 +21,7 @@ public class SpecialtyServiceImpl implements SpecialtyService {
     @Override
     @Transactional(readOnly = true)
     public List<Specialty> findAll() {
-        return specialtyRepository.findAll();
+        return specialtyRepository.findAllWithDoctors();
     }
 
     @Override

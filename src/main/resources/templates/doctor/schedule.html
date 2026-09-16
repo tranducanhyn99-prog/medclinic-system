@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/dashboard}">
+<head>
+    <title>Lịch Trực Công Tác Bác Sĩ - MedClinic</title>
+</head>
+<body>
+<div layout:fragment="content">
+
+    <!-- Top Header -->
+    <div class="d-flex flex-wrap align-items-center justify-content-between mb-4 pb-2 border-bottom">
+        <div>
+            <h3 class="fw-bold text-dark mb-1">
+                <i class="bi bi-calendar3-week-fill text-primary me-2"></i>Lịch Trực & Khung Giờ Công Tác (14 Ngày Tới)
+            </h3>
+            <p class="text-secondary small mb-0">Theo dõi ca trực và tình trạng kín chỗ của từng khung giờ khám 30 phút.</p>
+        </div>
+        <div>
+            <a th:href="@{/doctor/desk}" class="btn btn-sm btn-outline-primary">
+                <i class="bi bi-arrow-left me-1"></i> Về Bàn Khám Hôm Nay
+            </a>
+        </div>
+    </div>
+
+    <!-- Empty State -->
+    <div th:if="${#lists.isEmpty(schedules)}" class="card card-portal p-5 text-center my-4">
+        <i class="bi bi-calendar-x fs-1 text-secondary mb-2"></i>
+        <h5 class="fw-bold text-dark">Chưa Có Lịch Trực Trong 14 Ngày Tới</h5>
+        <p class="small text-muted mb-0">Vui lòng liên hệ ban quản lý phòng khám để phân bổ ca trực.</p>
+    </div>
+
+    <!-- Schedule Grid -->
+    <div th:unless="${#lists.isEmpty(schedules)}" class="row g-4">
+        <div th:each="sch : ${schedules}" class="col-md-6 col-xl-4">
+            <div class="card card-portal h-100 shadow-sm border-top border-4 border-primary">
+
+                <!-- Card Header: Date & Shift -->
+                <div class="card-header bg-white py-3 border-bottom d-flex align-items-center justify-content-between">
+                    <div>
+                        <h6 class="fw-bold text-dark mb-0" th:text="${#temporals.format(sch.workDate, 'EEEE, dd/MM/yyyy')}">Thứ Hai, 16/09/2026</h6>
+                        <span class="badge bg-light text-primary border small" th:text="${'Ca: ' + sch.shift.displayName}">Ca Sáng</span>
+                    </div>
+                    <span class="badge bg-primary-subtle text-primary small" th:text="${'Tối đa: ' + sch.maxPatients + ' ca'}">8 ca</span>
+                </div>
+
+                <!-- Card Body: Time Slots -->
+                <div class="card-body p-3">
+                    <label class="form-label text-muted small fw-semibold mb-2">Danh Sách Khung Giờ:</label>
+                    <div class="d-flex flex-wrap gap-1.5">
+                        <div th:each="slot : ${sch.timeSlots}">
+                            <span class="badge py-1.5 px-2"
+                                  th:classappend="${slot.status.name() == 'AVAILABLE' ? 'bg-success-subtle text-success border border-success' :
+                                                   (slot.status.name() == 'BOOKED' ? 'bg-primary text-white' : 'bg-secondary-subtle text-secondary border border-secondary')}"
+                                  th:title="${slot.status.name() == 'BOOKED' ? 'Đã có bệnh nhân đặt' : 'Còn trống'}"
+                                  th:text="${slot.timeRangeFormatted}">08:00 - 08:30</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer Stats -->
+                <div class="card-footer bg-light py-2 px-3 small text-secondary d-flex justify-content-between">
+                    <span>
+                        <i class="bi bi-check-circle-fill text-success me-1"></i>
+                        Trống: <strong th:text="${#lists.size(sch.timeSlots.?[status.name() == 'AVAILABLE'])}">6</strong>
+                    </span>
+                    <span>
+                        <i class="bi bi-person-fill text-primary me-1"></i>
+                        Đã đặt: <strong th:text="${#lists.size(sch.timeSlots.?[status.name() == 'BOOKED'])}">2</strong>
+                    </span>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

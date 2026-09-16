@@ -7,23 +7,36 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title layout:title-pattern="$CONTENT_TITLE - MedClinic Portal">MedClinic Portal</title>
-    
+
+    <!-- Bootstrap 5.3 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- Google Fonts Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- SweetAlert2 -->
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.6/dist/sweetalert2.min.css" rel="stylesheet">
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
         :root {
             --sidebar-width: 260px;
             --sidebar-bg: #0f172a;
-            --content-bg: #f1f5f9;
+            --sidebar-hover: #1e293b;
+            --primary: #0284c7;
+            --content-bg: #f8fafc;
+            --border-color: #e2e8f0;
         }
+
         body {
             font-family: 'Inter', sans-serif;
             background-color: var(--content-bg);
-            color: #334155;
+            color: #1e293b;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
         }
+
         #sidebar-wrapper {
             min-height: 100vh;
             width: var(--sidebar-width);
@@ -32,53 +45,196 @@
             top: 0;
             left: 0;
             z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid #1e293b;
         }
+
         .sidebar-brand {
             padding: 1.25rem 1.5rem;
             color: #ffffff;
-            font-size: 1.25rem;
-            font-weight: 700;
+            font-size: 1.3rem;
+            font-weight: 800;
             display: flex;
             align-items: center;
             border-bottom: 1px solid #1e293b;
+            letter-spacing: -0.5px;
         }
+
+        .sidebar-nav-title {
+            padding: 1rem 1.5rem 0.35rem;
+            font-size: 0.725rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #64748b;
+        }
+
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            padding: 0.65rem 1.5rem;
+            color: #94a3b8;
+            font-weight: 500;
+            font-size: 0.9rem;
+            text-decoration: none;
+            transition: all 0.15s ease;
+            gap: 0.75rem;
+        }
+
+        .sidebar-link:hover, .sidebar-link.active {
+            color: #ffffff;
+            background-color: var(--sidebar-hover);
+            border-left: 3px solid var(--primary);
+        }
+
         #page-content-wrapper {
             margin-left: var(--sidebar-width);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
         }
+
+        /* Top Bar */
+        .portal-topbar {
+            background-color: #ffffff;
+            border-bottom: 1px solid var(--border-color);
+            padding: 0.75rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
         .card-portal {
             background-color: #ffffff;
-            border: 1px solid #e2e8f0;
+            border: 1px solid var(--border-color);
             border-radius: 0.75rem;
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04);
+        }
+
+        .badge-portal {
+            font-size: 0.8rem;
+            font-weight: 600;
+            padding: 0.35em 0.7em;
+            border-radius: 0.375rem;
         }
     </style>
 </head>
 <body>
     <div class="d-flex" id="wrapper">
-        <div id="sidebar-wrapper">
+        <!-- Sidebar -->
+        <nav id="sidebar-wrapper">
             <a th:href="@{/}" class="sidebar-brand text-decoration-none">
                 <i class="bi bi-hospital-fill text-info me-2 fs-4"></i>
                 <span>Med<span class="text-info">Clinic</span></span>
             </a>
-            <div class="p-3 text-muted small">
-                <i class="bi bi-gear-fill me-1"></i> Phase 1: Dashboard Layout
-            </div>
-        </div>
 
+            <div class="flex-grow-1 overflow-y-auto py-2">
+                <!-- Doctor Menu -->
+                <div sec:authorize="hasRole('DOCTOR')">
+                    <div class="sidebar-nav-title">Phân hệ Bác sĩ</div>
+                    <a th:href="@{/doctor/desk}" class="sidebar-link">
+                        <i class="bi bi-heart-pulse-fill text-success fs-5"></i> Bàn Khám Hôm Nay
+                    </a>
+                    <a th:href="@{/doctor/schedule}" class="sidebar-link">
+                        <i class="bi bi-calendar3-week-fill text-info fs-5"></i> Lịch Trực Công Tác
+                    </a>
+                </div>
+
+                <!-- Staff Reception Menu -->
+                <div sec:authorize="hasRole('STAFF')">
+                    <div class="sidebar-nav-title">Phân hệ Lễ tân & Thu ngân</div>
+                    <a th:href="@{/staff/reception}" class="sidebar-link">
+                        <i class="bi bi-person-check-fill text-warning fs-5"></i> Tiếp Nhận & Check-in
+                    </a>
+                    <a th:href="@{/staff/walk-in}" class="sidebar-link">
+                        <i class="bi bi-person-plus-fill text-primary fs-5"></i> Đăng Ký Khám Vãng Lai
+                    </a>
+                    <a th:href="@{/staff/billing}" class="sidebar-link">
+                        <i class="bi bi-credit-card-fill text-success fs-5"></i> Thu Ngân & Viện Phí
+                    </a>
+                </div>
+
+                <!-- Admin Menu -->
+                <div sec:authorize="hasRole('ADMIN')">
+                    <div class="sidebar-nav-title">Hệ thống Quản trị</div>
+                    <a th:href="@{/admin/dashboard}" class="sidebar-link">
+                        <i class="bi bi-speedometer2 text-danger fs-5"></i> Bảng Điều Khiển KPI
+                    </a>
+                    <a th:href="@{/admin/specialties}" class="sidebar-link">
+                        <i class="bi bi-diagram-3-fill text-info fs-5"></i> Quản Lý Chuyên Khoa
+                    </a>
+                    <a th:href="@{/admin/doctors}" class="sidebar-link">
+                        <i class="bi bi-person-badge-fill text-success fs-5"></i> Đội Ngũ Bác Sĩ
+                    </a>
+                    <a th:href="@{/admin/medicines}" class="sidebar-link">
+                        <i class="bi bi-capsule text-warning fs-5"></i> Quản Lý Kho Thuốc
+                    </a>
+                    <a th:href="@{/admin/users}" class="sidebar-link">
+                        <i class="bi bi-people-fill text-primary fs-5"></i> Quản Lý Tài Khoản
+                    </a>
+                </div>
+
+                <div class="sidebar-nav-title">Lối tắt</div>
+                <a th:href="@{/}" class="sidebar-link">
+                    <i class="bi bi-arrow-left-circle fs-5"></i> Về Trang Chủ
+                </a>
+            </div>
+
+            <!-- Bottom User Profile in Sidebar -->
+            <div class="p-3 border-top border-secondary border-opacity-25 d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center gap-2 text-truncate me-2">
+                    <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 34px; height: 34px;">
+                        <i class="bi bi-person-fill"></i>
+                    </div>
+                    <div class="text-truncate">
+                        <div class="small fw-semibold text-white text-truncate" sec:authentication="name">User</div>
+                        <div class="text-secondary" style="font-size: 0.75rem;">
+                            <span sec:authorize="hasRole('ADMIN')">Quản trị viên</span>
+                            <span sec:authorize="hasRole('DOCTOR')">Bác sĩ khám</span>
+                            <span sec:authorize="hasRole('STAFF')">Lễ tân tiếp nhận</span>
+                        </div>
+                    </div>
+                </div>
+                <form th:action="@{/logout}" method="post" class="m-0">
+                    <button type="submit" class="btn btn-sm btn-outline-secondary text-danger border-0 p-1" title="Đăng xuất">
+                        <i class="bi bi-box-arrow-right fs-5"></i>
+                    </button>
+                </form>
+            </div>
+        </nav>
+
+        <!-- Page Content -->
         <div id="page-content-wrapper">
-            <div class="container-fluid p-4 flex-grow-1">
+            <!-- Topbar -->
+            <header class="portal-topbar">
+                <div class="d-flex align-items-center gap-3">
+                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle py-1.5 px-2.5 rounded-2 small fw-semibold">
+                        <i class="bi bi-shield-check me-1"></i> MedClinic Internal Portal
+                    </span>
+                </div>
+                <div class="d-flex align-items-center gap-3">
+                    <a th:href="@{/profile}" class="btn btn-sm btn-light border d-flex align-items-center gap-1.5">
+                        <i class="bi bi-person-gear"></i> Tài khoản
+                    </a>
+                </div>
+            </header>
+
+            <!-- Main Content Area -->
+            <main class="container-fluid p-4 flex-grow-1">
                 <div th:replace="~{fragments/alerts :: alerts}"></div>
                 <div layout:fragment="content"></div>
-            </div>
-            <footer class="bg-white border-top py-3 text-center text-muted small">
-                © 2026 MedClinic System - Đồ án Lập trình Web & Công nghệ Phần mềm.
+            </main>
+
+            <!-- Portal Footer -->
+            <footer class="bg-white border-top py-3 px-4 text-center text-muted small d-flex justify-content-between align-items-center">
+                <span>© 2026 MedClinic System - Đồ án Lập trình Web & Công nghệ Phần mềm.</span>
+                <span class="badge bg-light text-secondary border">Spring Boot 3.3.5 • SQL Server 3NF</span>
             </footer>
         </div>
     </div>
 
+    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.6/dist/sweetalert2.all.min.js"></script>
     <div layout:fragment="scripts"></div>

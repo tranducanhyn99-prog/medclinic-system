@@ -13,5 +13,6 @@ public interface AppointmentService {
     Appointment findByBookingCode(String bookingCode);
     List<Appointment> findByPatient(Long patientId);
     List<Appointment> findTodayQueueByDoctor(Long doctorId);
+    List<Appointment> findTodayAppointments();
     List<Appointment> searchForReception(String keyword);
 }

@@ -57,27 +57,27 @@ public class DataInitializer implements CommandLineRunner {
         Specialty spXuongKhop = initSpecialty("Chuyên Khoa Cơ Xương Khớp", "Điều trị thoái hóa khớp, thoát vị đĩa đệm, viêm khớp dạng thấp, loãng xương và đau thần kinh tọa.", "bi-activity");
 
         // 4. Doctors
-        DoctorProfile doc1 = initDoctor("doctor", "123456", "PGS.TS Nguyễn Văn Hùng", "hung.nguyen@medclinic.vn", "0911000001",
+        DoctorProfile doc1 = initDoctor("doctor", "123456", "Nguyễn Văn Hùng", "hung.nguyen@medclinic.vn", "0911000001",
                 spTimMach, "PGS.TS", 18, new BigDecimal("350000"),
                 "Nguyên Trưởng khoa Tim mạch Bệnh viện Chợ Rẫy, hơn 18 năm kinh nghiệm điều trị tim mạch can thiệp và tăng huyết áp.");
 
-        DoctorProfile doc2 = initDoctor("doc_mai", "123456", "ThS.BS Trần Thị Mai", "mai.tran@medclinic.vn", "0911000002",
+        DoctorProfile doc2 = initDoctor("doc_mai", "123456", "Trần Thị Mai", "mai.tran@medclinic.vn", "0911000002",
                 spRangHamMat, "ThS.BS", 12, new BigDecimal("250000"),
                 "Thạc sĩ Bác sĩ Đại học Y Dược TP.HCM, chuyên gia phục hình răng sứ thẩm mỹ và chỉnh nha chuyên sâu.");
 
-        DoctorProfile doc3 = initDoctor("doc_nam", "123456", "BS.CKII Lê Hoàng Nam", "nam.le@medclinic.vn", "0911000003",
+        DoctorProfile doc3 = initDoctor("doc_nam", "123456", "Lê Hoàng Nam", "nam.le@medclinic.vn", "0911000003",
                 spDaLieu, "BS.CKII", 15, new BigDecimal("300000"),
                 "Bác sĩ Chuyên khoa II Da liễu, nguyên Phó khoa Da liễu Bệnh viện Da liễu Trung ương.");
 
-        DoctorProfile doc4 = initDoctor("doc_ha", "123456", "ThS.BS Phạm Thu Hà", "ha.pham@medclinic.vn", "0911000004",
+        DoctorProfile doc4 = initDoctor("doc_ha", "123456", "Phạm Thu Hà", "ha.pham@medclinic.vn", "0911000004",
                 spNhiKhoa, "ThS.BS", 10, new BigDecimal("200000"),
                 "Tốt nghiệp Thủ khoa Bác sĩ Nội trú Nhi khoa, tận tâm, giàu kinh nghiệm chăm sóc sức khỏe trẻ nhỏ.");
 
-        DoctorProfile doc5 = initDoctor("doc_bao", "123456", "BS.CKI Vũ Quốc Bảo", "bao.vu@medclinic.vn", "0911000005",
+        DoctorProfile doc5 = initDoctor("doc_bao", "123456", "Vũ Quốc Bảo", "bao.vu@medclinic.vn", "0911000005",
                 spTaiMuiHong, "BS.CKI", 8, new BigDecimal("200000"),
                 "Chuyên gia nội soi tai mũi họng công nghệ cao, phẫu thuật polyp và điều trị viêm mũi xoang mạn tính.");
 
-        DoctorProfile doc6 = initDoctor("doc_tuan", "123456", "TS.BS Đặng Minh Tuấn", "tuan.dang@medclinic.vn", "0911000006",
+        DoctorProfile doc6 = initDoctor("doc_tuan", "123456", "Đặng Minh Tuấn", "tuan.dang@medclinic.vn", "0911000006",
                 spXuongKhop, "TS.BS", 20, new BigDecimal("400000"),
                 "Tiến sĩ Y khoa, tu nghiệp tại CHLB Đức, chuyên gia đầu ngành về thoái hóa khớp và phẫu thuật nội soi khớp.");
 

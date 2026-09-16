@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/dashboard}">
+<head>
+    <title>Quản Lý Viện Phí & Thu Ngân - MedClinic</title>
+</head>
+<body>
+<div layout:fragment="content">
+
+    <!-- Top Header -->
+    <div class="d-flex flex-wrap align-items-center justify-content-between mb-4 pb-2 border-bottom">
+        <div>
+            <h3 class="fw-bold text-dark mb-1">
+                <i class="bi bi-credit-card-fill text-success me-2"></i>Quản Lý Viện Phí & Quầy Thu Ngân
+            </h3>
+            <p class="text-secondary small mb-0">Xác nhận thanh toán tiền mặt tại quầy hoặc qua cổng VNPay và xuất hóa đơn chuẩn y khoa.</p>
+        </div>
+        <div>
+            <a th:href="@{/staff/reception}" class="btn btn-sm btn-outline-primary">
+                <i class="bi bi-arrow-left me-1"></i> Về Bàn Tiếp Nhận
+            </a>
+        </div>
+    </div>
+
+    <!-- Metric Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-sm-4">
+            <div class="card card-portal p-3 border-start border-4 border-primary">
+                <div class="text-muted small">Tổng Hóa Đơn Khám</div>
+                <h4 class="fw-bold mb-0 text-dark" th:text="${#lists.size(invoices)}">0</h4>
+            </div>
+        </div>
+        <div class="col-sm-4">
+            <div class="card card-portal p-3 border-start border-4 border-warning">
+                <div class="text-muted small">Hóa Đơn Chờ Thanh Toán</div>
+                <h4 class="fw-bold mb-0 text-warning"
+                    th:text="${#lists.size(invoices.?[paymentStatus.name() == 'UNPAID'])}">0</h4>
+            </div>
+        </div>
+        <div class="col-sm-4">
+            <div class="card card-portal p-3 border-start border-4 border-success">
+                <div class="text-muted small">Hóa Đơn Đã Quyết Toán</div>
+                <h4 class="fw-bold mb-0 text-success"
+                    th:text="${#lists.size(invoices.?[paymentStatus.name() == 'PAID'])}">0</h4>
+            </div>
+        </div>
+    </div>
+
+    <!-- Invoices Table -->
+    <div class="card card-portal shadow-sm">
+        <div class="card-header bg-white py-3 border-bottom d-flex align-items-center justify-content-between">
+            <h6 class="fw-bold text-dark mb-0">
+                <i class="bi bi-receipt text-primary me-2"></i>Danh Sách Hóa Đơn Viện Phí
+            </h6>
+            <button class="btn btn-sm btn-light border" onclick="location.reload()">
+                <i class="bi bi-arrow-clockwise me-1"></i> Làm mới
+            </button>
+        </div>
+
+        <div class="card-body p-0">
+            <!-- Empty State -->
+            <div th:if="${#lists.isEmpty(invoices)}" class="p-5 text-center text-muted">
+                <i class="bi bi-receipt-cutoff fs-1 text-secondary d-block mb-2"></i>
+                <h6 class="fw-bold text-dark">Chưa Có Hóa Đơn Nào</h6>
+                <p class="small mb-0">Hóa đơn sẽ tự động sinh sau khi bác sĩ hoàn tất ca khám và kê đơn thuốc.</p>
+            </div>
+
+            <!-- Table -->
+            <div th:unless="${#lists.isEmpty(invoices)}" class="table-responsive">
+                <table class="table table-hover align-middle mb-0 small">
+                    <thead class="table-light text-uppercase">
+                        <tr>
+                            <th>Mã Hóa Đơn</th>
+                            <th>Bệnh nhân</th>
+                            <th>Bác sĩ phụ trách</th>
+                            <th class="text-end">Tiền khám</th>
+                            <th class="text-end">Tiền thuốc</th>
+                            <th class="text-end fw-bold">Tổng viện phí</th>
+                            <th class="text-center">Trạng thái</th>
+                            <th class="text-end pe-3">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="inv : ${invoices}">
+
+                            <!-- Invoice Code -->
+                            <td>
+                                <strong class="text-primary" th:text="${inv.invoiceCode}">INV-260916-0001</strong>
+                                <div class="text-muted" style="font-size: 0.75rem;" th:text="${#temporals.format(inv.createdAt, 'dd/MM/yyyy HH:mm')}">16/09/2026</div>
+                            </td>
+
+                            <!-- Patient -->
+                            <td>
+                                <div class="fw-bold text-dark" th:text="${inv.appointment.patient.fullName}">Nguyễn Văn Bệnh Nhân</div>
+                                <div class="text-secondary" style="font-size: 0.75rem;" th:text="${inv.appointment.patient.phone}">0901234567</div>
+                            </td>
+
+                            <!-- Doctor -->
+                            <td>
+                                <div class="fw-semibold text-dark" th:text="${inv.appointment.doctor.title + ' ' + inv.appointment.doctor.user.fullName}">BS. Nguyễn Văn A</div>
+                                <div class="text-secondary" style="font-size: 0.75rem;" th:text="${inv.appointment.doctor.specialty.name}">Nội tổng quát</div>
+                            </td>
+
+                            <!-- Fees -->
+                            <td class="text-end" th:text="${#numbers.formatDecimal(inv.consultationFee, 0, 'COMMA', 0, 'POINT') + ' đ'}">150,000 đ</td>
+                            <td class="text-end" th:text="${#numbers.formatDecimal(inv.medicineFee, 0, 'COMMA', 0, 'POINT') + ' đ'}">85,000 đ</td>
+                            <td class="text-end fw-bold text-primary fs-6" th:text="${#numbers.formatDecimal(inv.totalAmount, 0, 'COMMA', 0, 'POINT') + ' đ'}">235,000 đ</td>
+
+                            <!-- Status -->
+                            <td class="text-center">
+                                <span class="badge-portal"
+                                      th:classappend="${inv.paymentStatus.name() == 'PAID' ? 'bg-success-subtle text-success border border-success' : 'bg-warning-subtle text-warning border border-warning'}">
+                                    <i th:class="${inv.paymentStatus.name() == 'PAID' ? 'bi bi-check-circle-fill me-1' : 'bi bi-clock-history me-1'}"></i>
+                                    <span th:text="${inv.paymentStatus.displayName}">Chưa thanh toán</span>
+                                </span>
+                            </td>
+
+                            <!-- Actions -->
+                            <td class="text-end pe-3">
+                                <!-- If UNPAID: Pay Button opening Modal -->
+                                <div th:if="${inv.paymentStatus.name() == 'UNPAID'}">
+                                    <button type="button" class="btn btn-sm btn-success fw-semibold"
+                                            data-bs-toggle="modal"
+                                            th:data-bs-target="${'#payModal' + inv.id}">
+                                        <i class="bi bi-cash-coin me-1"></i> Thu Tiền
+                                    </button>
+
+                                    <!-- Payment Modal -->
+                                    <div class="modal fade text-start" th:id="${'payModal' + inv.id}" tabindex="-1">
+                                        <div class="modal-dialog modal-dialog-centered">
+                                            <div class="modal-content">
+                                                <form th:action="@{/staff/billing/pay/{id}(id=${inv.id})}" method="post">
+                                                    <div class="modal-header">
+                                                        <h6 class="modal-title fw-bold text-dark">
+                                                            <i class="bi bi-cash-stack text-success me-2"></i>Xác Nhận Thanh Toán Viện Phí
+                                                        </h6>
+                                                        <button type="button" class="btn-close" data-bs-target="${'#payModal' + inv.id}" data-bs-dismiss="modal"></button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <div class="mb-3 p-3 bg-light rounded-3">
+                                                            <div class="d-flex justify-content-between mb-1">
+                                                                <span class="text-muted">Bệnh nhân:</span>
+                                                                <strong th:text="${inv.appointment.patient.fullName}">Nguyễn Văn A</strong>
+                                                            </div>
+                                                            <div class="d-flex justify-content-between mb-1">
+                                                                <span class="text-muted">Mã hóa đơn:</span>
+                                                                <span class="fw-bold text-primary" th:text="${inv.invoiceCode}">INV-xxxx</span>
+                                                            </div>
+                                                            <div class="d-flex justify-content-between border-top pt-2 mt-2">
+                                                                <span class="fw-bold text-dark">Tổng số tiền cần thu:</span>
+                                                                <strong class="fs-5 text-primary" th:text="${#numbers.formatDecimal(inv.totalAmount, 0, 'COMMA', 0, 'POINT') + ' đ'}">235,000 đ</strong>
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="mb-3">
+                                                            <label class="form-label fw-semibold">Phương thức thanh toán <span class="text-danger">*</span></label>
+                                                            <select class="form-select" name="method" required>
+                                                                <option value="CASH" selected>Tiền mặt tại quầy</option>
+                                                                <option value="VNPAY">Cổng VNPAY Sandbox</option>
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                                                        <button type="submit" class="btn btn-sm btn-success fw-bold px-3">
+                                                            <i class="bi bi-check-circle me-1"></i> Xác Nhận Đã Thu
+                                                        </button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- If PAID: Print Invoice PDF -->
+                                <div th:if="${inv.paymentStatus.name() == 'PAID'}" class="d-flex justify-content-end gap-1">
+                                    <a th:href="@{/export/invoice/{id}(id=${inv.id})}" class="btn btn-sm btn-outline-primary" target="_blank">
+                                        <i class="bi bi-file-earmark-pdf me-1"></i> In Hóa Đơn
+                                    </a>
+                                </div>
+                            </td>
+
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

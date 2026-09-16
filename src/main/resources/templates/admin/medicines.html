@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/dashboard}">
+<head>
+    <title>Quản Lý Kho Thuốc & Dược Phẩm - MedClinic</title>
+</head>
+<body>
+<div layout:fragment="content">
+
+    <!-- Top Header -->
+    <div class="d-flex flex-wrap align-items-center justify-content-between mb-4 pb-2 border-bottom">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-1 small">
+                    <li class="breadcrumb-item"><a th:href="@{/admin/dashboard}" class="text-decoration-none">Admin</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Kho thuốc</li>
+                </ol>
+            </nav>
+            <h3 class="fw-bold text-dark mb-0">
+                <i class="bi bi-capsule text-warning me-2"></i>Quản Lý Kho Thuốc & Dược Phẩm
+            </h3>
+        </div>
+        <div>
+            <button type="button" class="btn btn-med-primary" data-bs-toggle="modal" data-bs-target="#addMedicineModal">
+                <i class="bi bi-plus-circle me-1"></i> Thêm Thuốc Mới
+            </button>
+        </div>
+    </div>
+
+    <!-- Medicines Table Card -->
+    <div class="card card-portal shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0 small">
+                    <thead class="table-light text-uppercase">
+                        <tr>
+                            <th style="width: 50px;" class="text-center">STT</th>
+                            <th>Tên Thuốc & Quy Cách</th>
+                            <th style="width: 100px;" class="text-center">Đơn Vị</th>
+                            <th style="width: 120px;" class="text-end">Đơn Giá</th>
+                            <th style="width: 140px;" class="text-center">Tồn Kho</th>
+                            <th>Hướng Dẫn Sử Dụng Mặc Định</th>
+                            <th style="width: 120px;" class="text-center">Trạng Thái</th>
+                            <th style="width: 120px;" class="text-end pe-3">Thao Tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="med, stat : ${medicines}">
+                            <td class="text-center text-muted fw-semibold" th:text="${stat.count}">1</td>
+                            <td>
+                                <strong class="text-dark fs-6" th:text="${med.name}">Paracetamol 500mg</strong>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-light text-dark border" th:text="${med.unit}">Viên</span>
+                            </td>
+                            <td class="text-end fw-semibold text-primary"
+                                th:text="${#numbers.formatDecimal(med.unitPrice, 0, 'COMMA', 0, 'POINT') + ' đ'}">
+                                2,500 đ
+                            </td>
+                            <td class="text-center">
+                                <span class="badge"
+                                      th:classappend="${med.stockQuantity > 50 ? 'bg-success-subtle text-success border border-success' : 'bg-danger-subtle text-danger border border-danger'}"
+                                      th:text="${med.stockQuantity + ' ' + med.unit}">1000 Viên</span>
+                            </td>
+                            <td>
+                                <span class="text-secondary text-truncate d-inline-block" style="max-width: 250px;"
+                                      th:text="${med.usageGuide != null ? med.usageGuide : '--'}">Uống sau khi ăn...</span>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge-portal"
+                                      th:classappend="${med.isActive ? 'bg-success-subtle text-success border border-success' : 'bg-danger-subtle text-danger border border-danger'}">
+                                    <span th:text="${med.isActive ? 'Đang bán' : 'Ngừng bán'}">Đang bán</span>
+                                </span>
+                            </td>
+                            <td class="text-end pe-3">
+                                <form th:action="@{/admin/medicines/{id}/toggle(id=${med.id})}" method="post" class="d-inline m-0">
+                                    <button type="submit" class="btn btn-sm"
+                                            th:classappend="${med.isActive ? 'btn-outline-danger' : 'btn-outline-success'}">
+                                        <span th:text="${med.isActive ? 'Khóa' : 'Mở'}">Khóa</span>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Add Medicine -->
+    <div class="modal fade" id="addMedicineModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <form th:action="@{/admin/medicines}" method="post">
+                    <div class="modal-header">
+                        <h6 class="modal-title fw-bold text-dark">
+                            <i class="bi bi-capsule text-warning me-2"></i>Thêm Thuốc Mới Vào Kho
+                        </h6>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="medName" class="form-label fw-semibold small">Tên thuốc / Dược phẩm <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="medName" name="name" placeholder="Ví dụ: Amoxicillin 500mg..." required>
+                        </div>
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label for="medUnit" class="form-label fw-semibold small">Đơn vị tính <span class="text-danger">*</span></label>
+                                <select class="form-select" id="medUnit" name="unit" required>
+                                    <option value="Viên" selected>Viên</option>
+                                    <option value="Vỉ">Vỉ</option>
+                                    <option value="Hộp">Hộp</option>
+                                    <option value="Chai">Chai</option>
+                                    <option value="Gói">Gói</option>
+                                    <option value="Tuýp">Tuýp</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="medPrice" class="form-label fw-semibold small">Đơn giá (VNĐ) <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" id="medPrice" name="unitPrice" min="0" step="500" value="5000" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="medStock" class="form-label fw-semibold small">Số lượng nhập kho ban đầu <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" id="medStock" name="stockQuantity" min="0" value="500" required>
+                        </div>
+                        <div class="mb-2">
+                            <label for="medGuide" class="form-label fw-semibold small">Hướng dẫn sử dụng gợi ý</label>
+                            <input type="text" class="form-control" id="medGuide" name="usageGuide" placeholder="Ví dụ: Uống sau ăn, tránh dùng khi đói...">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                        <button type="submit" class="btn btn-sm btn-med-primary px-3">Lưu Thuốc Mới</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

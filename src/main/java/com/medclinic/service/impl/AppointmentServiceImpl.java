@@ -165,6 +165,12 @@ public class AppointmentServiceImpl implements AppointmentService {
 
     @Override
     @Transactional(readOnly = true)
+    public List<Appointment> findTodayAppointments() {
+        return appointmentRepository.findByAppointmentDateOrderByTimeSlot_StartTimeAsc(LocalDate.now());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<Appointment> searchForReception(String keyword) {
         return appointmentRepository.searchForReception(keyword);
     }

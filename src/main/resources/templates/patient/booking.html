@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/main}">
+<head>
+    <title>Đặt Lịch Khám Trực Tuyến - MedClinic</title>
+    <style>
+        .slot-btn {
+            border: 1.5px solid #cbd5e1;
+            background-color: #ffffff;
+            color: #334155;
+            font-weight: 600;
+            padding: 0.6rem 0.75rem;
+            border-radius: 0.5rem;
+            transition: all 0.15s ease;
+            font-size: 0.9rem;
+            text-align: center;
+            cursor: pointer;
+        }
+        .slot-btn:hover:not(:disabled) {
+            border-color: #0284c7;
+            color: #0284c7;
+            background-color: #f0f9ff;
+        }
+        .slot-btn.selected {
+            background-color: #0284c7 !important;
+            color: #ffffff !important;
+            border-color: #0284c7 !important;
+            box-shadow: 0 2px 6px rgba(2, 132, 199, 0.4);
+        }
+        .slot-btn:disabled {
+            background-color: #f1f5f9;
+            color: #94a3b8;
+            border-color: #e2e8f0;
+            cursor: not-allowed;
+            text-decoration: line-through;
+        }
+        .summary-card {
+            position: sticky;
+            top: 90px;
+        }
+    </style>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="container py-4">
+
+        <!-- Page Header -->
+        <div class="d-flex flex-wrap align-items-center justify-content-between mb-4 pb-2 border-bottom">
+            <div>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-1 small">
+                        <li class="breadcrumb-item"><a th:href="@{/}" class="text-decoration-none">Trang chủ</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Đặt lịch khám</li>
+                    </ol>
+                </nav>
+                <h3 class="fw-bold text-dark mb-0">
+                    <i class="bi bi-calendar-plus text-primary me-2"></i>Đặt Lịch Khám Bệnh
+                </h3>
+            </div>
+            <div class="text-muted small">
+                <i class="bi bi-shield-check text-success me-1"></i> Khung giờ 30 phút • Chống Double Booking
+            </div>
+        </div>
+
+        <form th:action="@{/patient/booking}" method="post" id="bookingForm">
+            <div class="row g-4">
+                <!-- Left Column: Form Steps -->
+                <div class="col-lg-8">
+
+                    <!-- Step 1 & 2: Chuyên Khoa & Bác Sĩ -->
+                    <div class="card card-custom p-4 mb-4">
+                        <h5 class="fw-bold text-dark mb-3 d-flex align-items-center">
+                            <span class="badge bg-primary rounded-circle me-2 d-inline-flex align-items-center justify-content-center" style="width: 26px; height: 26px;">1</span>
+                            Chọn Chuyên Khoa & Bác Sĩ Phụ Trách
+                        </h5>
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="specialtySelect" class="form-label fw-semibold small">
+                                    Chuyên khoa <span class="text-danger">*</span>
+                                </label>
+                                <select class="form-select" id="specialtySelect" required>
+                                    <option value="">-- Chọn chuyên khoa khám --</option>
+                                    <option th:each="spec : ${specialties}"
+                                            th:value="${spec.id}"
+                                            th:text="${spec.name}">Nội tổng quát</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="doctorSelect" class="form-label fw-semibold small">
+                                    Bác sĩ thăm khám <span class="text-danger">*</span>
+                                </label>
+                                <select class="form-select" id="doctorSelect" name="doctorId" required disabled>
+                                    <option value="">-- Vui lòng chọn chuyên khoa trước --</option>
+                                    <option th:each="doc : ${doctors}"
+                                            th:value="${doc.id}"
+                                            th:data-specialty-id="${doc.specialty.id}"
+                                            th:data-specialty-name="${doc.specialty.name}"
+                                            th:data-title="${doc.title}"
+                                            th:data-fee="${doc.consultationFee}"
+                                            th:data-exp="${doc.experienceYears}"
+                                            th:text="${doc.title + ' ' + doc.user.fullName}">BS. Nguyễn Văn A</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Doctor Info Banner (Hidden initially) -->
+                        <div id="doctorDetailBox" class="alert alert-info border-info mt-3 p-3 rounded-3 d-none">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="rounded-circle bg-primary text-white p-2 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
+                                    <i class="bi bi-person-badge fs-5"></i>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <h6 class="fw-bold mb-0 text-dark" id="docDetailName">Họ tên Bác sĩ</h6>
+                                    <div class="small text-secondary">
+                                        <span id="docDetailSpec" class="me-3"></span>
+                                        <span id="docDetailExp" class="me-3"></span>
+                                        <span class="text-primary fw-bold" id="docDetailFee"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 3 & 4: Ngày Khám & Chọn Khung Giờ (Time Slots) -->
+                    <div class="card card-custom p-4 mb-4">
+                        <h5 class="fw-bold text-dark mb-3 d-flex align-items-center">
+                            <span class="badge bg-primary rounded-circle me-2 d-inline-flex align-items-center justify-content-center" style="width: 26px; height: 26px;">2</span>
+                            Chọn Ngày Khám & Khung Giờ Còn Trống
+                        </h5>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label for="appointmentDate" class="form-label fw-semibold small">
+                                    Ngày khám dự kiến <span class="text-danger">*</span>
+                                </label>
+                                <input type="date" class="form-control" id="appointmentDate" name="date" required>
+                                <div class="form-text">Phòng khám nhận đặt lịch trước tối đa 14 ngày.</div>
+                            </div>
+                        </div>
+
+                        <!-- Time Slots Grid Container -->
+                        <div>
+                            <label class="form-label fw-semibold small mb-2">
+                                Khung giờ khả dụng (30 phút/ca) <span class="text-danger">*</span>
+                            </label>
+
+                            <!-- Initial instruction state -->
+                            <div id="slotStatePrompt" class="text-muted small p-3 bg-light rounded-3 text-center border">
+                                <i class="bi bi-arrow-up-circle me-1"></i> Vui lòng chọn Bác sĩ và Ngày khám để xem danh sách khung giờ còn trống.
+                            </div>
+
+                            <!-- Loading State -->
+                            <div id="slotStateLoading" class="p-4 text-center d-none">
+                                <div class="spinner-border text-primary spinner-border-sm me-2" role="status"></div>
+                                <span class="text-secondary small">Đang kiểm tra lịch trực và khung giờ khả dụng...</span>
+                            </div>
+
+                            <!-- Empty State -->
+                            <div id="slotStateEmpty" class="alert alert-warning border-warning p-3 rounded-3 small d-none">
+                                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                                Bác sĩ hiện không có lịch làm việc hoặc tất cả khung giờ trong ngày này đã kín. Vui lòng chọn ngày khám khác!
+                            </div>
+
+                            <!-- Slots Grid -->
+                            <div id="slotGrid" class="row row-cols-2 row-cols-sm-3 row-cols-md-4 g-2 d-none">
+                                <!-- Generated dynamically via JavaScript -->
+                            </div>
+
+                            <!-- Hidden input for selected slot ID -->
+                            <input type="hidden" name="slotId" id="selectedSlotId" required>
+                        </div>
+                    </div>
+
+                    <!-- Step 5: Lý Do Khám -->
+                    <div class="card card-custom p-4 mb-4">
+                        <h5 class="fw-bold text-dark mb-3 d-flex align-items-center">
+                            <span class="badge bg-primary rounded-circle me-2 d-inline-flex align-items-center justify-content-center" style="width: 26px; height: 26px;">3</span>
+                            Thông Tin Bệnh Nhân & Triệu Chứng
+                        </h5>
+
+                        <div class="mb-3">
+                            <label for="reason" class="form-label fw-semibold small">
+                                Mô tả triệu chứng hoặc lý do khám <span class="text-danger">*</span>
+                            </label>
+                            <textarea class="form-control" id="reason" name="reason" rows="3"
+                                      placeholder="Ví dụ: Đau đầu âm ỉ kèm sốt nhẹ 2 ngày nay, khó ngủ, có tiền sử huyết áp..." required></textarea>
+                            <div class="form-text">Mô tả rõ ràng giúp bác sĩ chuẩn bị tốt hơn cho buổi khám của bạn.</div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Right Column: Live Booking Summary -->
+                <div class="col-lg-4">
+                    <div class="card card-custom p-4 summary-card shadow-sm border-primary border-opacity-25">
+                        <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
+                            <h6 class="fw-bold text-dark mb-0">Tóm Tắt Phiếu Hẹn</h6>
+                            <span class="badge bg-primary-subtle text-primary small">Trực Tuyến</span>
+                        </div>
+
+                        <div class="small mb-3">
+                            <div class="d-flex justify-content-between py-1.5 border-bottom border-light">
+                                <span class="text-muted">Chuyên khoa:</span>
+                                <span class="fw-semibold text-end" id="sumSpecialty">Chưa chọn</span>
+                            </div>
+                            <div class="d-flex justify-content-between py-1.5 border-bottom border-light">
+                                <span class="text-muted">Bác sĩ:</span>
+                                <span class="fw-semibold text-end" id="sumDoctor">Chưa chọn</span>
+                            </div>
+                            <div class="d-flex justify-content-between py-1.5 border-bottom border-light">
+                                <span class="text-muted">Ngày khám:</span>
+                                <span class="fw-semibold text-end" id="sumDate">Chưa chọn</span>
+                            </div>
+                            <div class="d-flex justify-content-between py-1.5 border-bottom border-light">
+                                <span class="text-muted">Giờ khám:</span>
+                                <span class="fw-bold text-primary text-end" id="sumSlot">Chưa chọn</span>
+                            </div>
+                            <div class="d-flex justify-content-between py-2 mt-2 bg-light p-2 rounded-2">
+                                <span class="fw-bold text-dark">Tiền khám tạm tính:</span>
+                                <span class="fw-bold text-primary fs-6" id="sumFee">0 đ</span>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-light border small text-muted p-2.5 rounded-2 mb-3">
+                            <i class="bi bi-info-circle text-primary me-1"></i>
+                            Mã đặt lịch & QR Code sẽ được cấp ngay sau khi xác nhận. Quý khách vui lòng đến trước 10 phút.
+                        </div>
+
+                        <button type="submit" id="submitBookingBtn" class="btn btn-med-primary w-100 py-2.5 justify-content-center" disabled>
+                            <i class="bi bi-check2-circle fs-5"></i> Xác Nhận Đặt Lịch
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+
+    </div>
+</div>
+
+<div layout:fragment="scripts">
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const specialtySelect = document.getElementById('specialtySelect');
+    const doctorSelect = document.getElementById('doctorSelect');
+    const appointmentDate = document.getElementById('appointmentDate');
+    const slotGrid = document.getElementById('slotGrid');
+    const selectedSlotId = document.getElementById('selectedSlotId');
+    const submitBtn = document.getElementById('submitBookingBtn');
+
+    // Summary Elements
+    const sumSpecialty = document.getElementById('sumSpecialty');
+    const sumDoctor = document.getElementById('sumDoctor');
+    const sumDate = document.getElementById('sumDate');
+    const sumSlot = document.getElementById('sumSlot');
+    const sumFee = document.getElementById('sumFee');
+
+    // Doctor detail box
+    const doctorDetailBox = document.getElementById('doctorDetailBox');
+    const docDetailName = document.getElementById('docDetailName');
+    const docDetailSpec = document.getElementById('docDetailSpec');
+    const docDetailExp = document.getElementById('docDetailExp');
+    const docDetailFee = document.getElementById('docDetailFee');
+
+    // State blocks
+    const slotStatePrompt = document.getElementById('slotStatePrompt');
+    const slotStateLoading = document.getElementById('slotStateLoading');
+    const slotStateEmpty = document.getElementById('slotStateEmpty');
+
+    // Set min date = today, max date = today + 14 days
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+    const minDateStr = `${yyyy}-${mm}-${dd}`;
+    appointmentDate.min = minDateStr;
+
+    const maxDate = new Date();
+    maxDate.setDate(today.getDate() + 14);
+    const maxYyyy = maxDate.getFullYear();
+    const maxMm = String(maxDate.getMonth() + 1).padStart(2, '0');
+    const maxDd = String(maxDate.getDate()).padStart(2, '0');
+    appointmentDate.max = `${maxYyyy}-${maxMm}-${maxDd}`;
+
+    // Set default date = today
+    appointmentDate.value = minDateStr;
+    sumDate.textContent = minDateStr;
+
+    // Cache all doctor options
+    const allDoctorOptions = Array.from(doctorSelect.querySelectorAll('option[data-specialty-id]'));
+
+    // When Specialty changes -> filter doctors
+    specialtySelect.addEventListener('change', function () {
+        const specId = this.value;
+        const specText = this.options[this.selectedIndex].text;
+        sumSpecialty.textContent = specId ? specText : 'Chưa chọn';
+
+        // Reset doctor selection
+        doctorSelect.innerHTML = '<option value="">-- Chọn bác sĩ --</option>';
+        selectedSlotId.value = '';
+        sumSlot.textContent = 'Chưa chọn';
+        submitBtn.disabled = true;
+        doctorDetailBox.classList.add('d-none');
+        clearSlots();
+
+        if (specId) {
+            const filtered = allDoctorOptions.filter(opt => opt.dataset.specialtyId === specId);
+            if (filtered.length > 0) {
+                filtered.forEach(opt => doctorSelect.appendChild(opt.cloneNode(true)));
+                doctorSelect.disabled = false;
+            } else {
+                doctorSelect.innerHTML = '<option value="">(Không có bác sĩ trong khoa này)</option>';
+                doctorSelect.disabled = true;
+            }
+        } else {
+            doctorSelect.disabled = true;
+            sumDoctor.textContent = 'Chưa chọn';
+            sumFee.textContent = '0 đ';
+        }
+    });
+
+    // When Doctor changes -> load slots if date is selected
+    doctorSelect.addEventListener('change', function () {
+        const docId = this.value;
+        if (docId) {
+            const opt = this.options[this.selectedIndex];
+            sumDoctor.textContent = opt.text;
+            const fee = parseFloat(opt.dataset.fee || 0);
+            sumFee.textContent = fee.toLocaleString('vi-VN') + ' đ';
+
+            // Show Doctor Detail Box
+            docDetailName.textContent = opt.text;
+            docDetailSpec.textContent = 'Khoa: ' + opt.dataset.specialtyName;
+            docDetailExp.textContent = 'Kinh nghiệm: ' + opt.dataset.exp + ' năm';
+            docDetailFee.textContent = 'Giá khám: ' + fee.toLocaleString('vi-VN') + ' đ';
+            doctorDetailBox.classList.remove('d-none');
+
+            loadTimeSlots();
+        } else {
+            sumDoctor.textContent = 'Chưa chọn';
+            sumFee.textContent = '0 đ';
+            doctorDetailBox.classList.add('d-none');
+            clearSlots();
+        }
+    });
+
+    // When Date changes -> load slots
+    appointmentDate.addEventListener('change', function () {
+        sumDate.textContent = this.value || 'Chưa chọn';
+        loadTimeSlots();
+    });
+
+    function clearSlots() {
+        slotGrid.innerHTML = '';
+        slotGrid.classList.add('d-none');
+        slotStatePrompt.classList.remove('d-none');
+        slotStateLoading.classList.add('d-none');
+        slotStateEmpty.classList.add('d-none');
+        selectedSlotId.value = '';
+        sumSlot.textContent = 'Chưa chọn';
+        submitBtn.disabled = true;
+    }
+
+    // AJAX Fetch Time Slots
+    function loadTimeSlots() {
+        const docId = doctorSelect.value;
+        const dateVal = appointmentDate.value;
+
+        if (!docId || !dateVal) {
+            clearSlots();
+            return;
+        }
+
+        slotStatePrompt.classList.add('d-none');
+        slotStateEmpty.classList.add('d-none');
+        slotGrid.classList.add('d-none');
+        slotStateLoading.classList.remove('d-none');
+        selectedSlotId.value = '';
+        sumSlot.textContent = 'Chưa chọn';
+        submitBtn.disabled = true;
+
+        fetch(`/api/public/doctors/${docId}/slots?date=${dateVal}`)
+            .then(res => res.json())
+            .then(slots => {
+                slotStateLoading.classList.add('d-none');
+                slotGrid.innerHTML = '';
+
+                if (!slots || slots.length === 0) {
+                    slotStateEmpty.classList.remove('d-none');
+                    return;
+                }
+
+                slotGrid.classList.remove('d-none');
+                slots.forEach(slot => {
+                    const col = document.createElement('div');
+                    col.className = 'col';
+
+                    const isAvailable = slot.status === 'AVAILABLE';
+                    const timeText = `${slot.startTime.substring(0, 5)} - ${slot.endTime.substring(0, 5)}`;
+
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'slot-btn w-100';
+                    btn.textContent = timeText;
+                    btn.dataset.slotId = slot.id;
+                    btn.dataset.timeText = timeText;
+
+                    if (!isAvailable) {
+                        btn.disabled = true;
+                        btn.title = 'Khung giờ này đã được đặt';
+                    } else {
+                        btn.addEventListener('click', function () {
+                            document.querySelectorAll('.slot-btn.selected').forEach(el => el.classList.remove('selected'));
+                            this.classList.add('selected');
+                            selectedSlotId.value = this.dataset.slotId;
+                            sumSlot.textContent = this.dataset.timeText;
+                            submitBtn.disabled = false;
+                        });
+                    }
+
+                    col.appendChild(btn);
+                    slotGrid.appendChild(col);
+                });
+            })
+            .catch(err => {
+                slotStateLoading.classList.add('d-none');
+                slotStateEmpty.classList.remove('d-none');
+                console.error('Lỗi tải time slots:', err);
+            });
+    }
+
+    // Form submit validation
+    document.getElementById('bookingForm').addEventListener('submit', function (e) {
+        if (!selectedSlotId.value) {
+            e.preventDefault();
+            Swal.fire({
+                icon: 'warning',
+                title: 'Chưa chọn khung giờ',
+                text: 'Vui lòng chọn một khung giờ khám còn trống trước khi xác nhận!',
+                confirmButtonColor: '#0284c7'
+            });
+        }
+    });
+});
+</script>
+</div>
+</body>
+</html>
