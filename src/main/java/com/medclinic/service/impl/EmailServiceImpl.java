@@ -83,4 +83,27 @@ public class EmailServiceImpl implements EmailService {
             log.error("Failed to send cancellation email to: {}", toEmail, e);
         }
     }
+    @Async
+    @Override
+    public void sendPasswordResetEmail(String toEmail, String userName, String resetUrl) {
+        try {
+            MimeMessage message = javaMailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            helper.setTo(toEmail);
+            helper.setSubject("Khôi phục mật khẩu MedClinic");
+            String htmlBody = String.format("""
+                    <html><body>
+                    <h2>Chào %s,</h2>
+                    <p>Chúng tôi đã nhận được yêu cầu đặt lại mật khẩu tài khoản MedClinic của bạn.</p>
+                    <p><a href="%s">Đặt lại mật khẩu</a></p>
+                    <p>Liên kết có hiệu lực trong 24 giờ và chỉ dùng được một lần.</p>
+                    <p>Nếu không phải bạn yêu cầu, hãy bỏ qua email này.</p>
+                    </body></html>
+                    """, userName, resetUrl);
+            helper.setText(htmlBody, true);
+            javaMailSender.send(message);
+        } catch (MessagingException exception) {
+            log.error("Failed to send password reset email to: {}", toEmail, exception);
+        }
+    }
 }
