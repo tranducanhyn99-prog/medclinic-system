@@ -164,6 +164,16 @@
                                 Bác sĩ hiện không có lịch làm việc hoặc tất cả khung giờ trong ngày này đã kín. Vui lòng chọn ngày khám khác!
                             </div>
 
+                            <!-- Error State -->
+                            <div id="slotStateError" class="alert alert-danger border-danger p-3 rounded-3 small d-none" role="alert">
+                                <div>
+                                    <i class="bi bi-wifi-off me-2"></i>
+                                    Không thể tải khung giờ lúc này. Vui lòng kiểm tra kết nối và thử lại.
+                                </div>
+                                <button type="button" id="retrySlotLoading" class="btn btn-sm btn-outline-danger text-nowrap">
+                                    <i class="bi bi-arrow-clockwise me-1"></i> Thử lại
+                                </button>
+                            </div>
                             <!-- Slots Grid -->
                             <div id="slotGrid" class="row row-cols-2 row-cols-sm-3 row-cols-md-4 g-2 d-none">
                                 <!-- Generated dynamically via JavaScript -->
@@ -268,6 +278,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const slotStatePrompt = document.getElementById('slotStatePrompt');
     const slotStateLoading = document.getElementById('slotStateLoading');
     const slotStateEmpty = document.getElementById('slotStateEmpty');
+    const slotStateError = document.getElementById('slotStateError');
+    const retrySlotLoading = document.getElementById('retrySlotLoading');
 
     // Set min date = today, max date = today + 14 days
     const today = new Date();
@@ -358,6 +370,7 @@ document.addEventListener('DOMContentLoaded', function () {
         slotStatePrompt.classList.remove('d-none');
         slotStateLoading.classList.add('d-none');
         slotStateEmpty.classList.add('d-none');
+        slotStateError.classList.add('d-none');
         selectedSlotId.value = '';
         sumSlot.textContent = 'Chưa chọn';
         submitBtn.disabled = true;
@@ -375,6 +388,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         slotStatePrompt.classList.add('d-none');
         slotStateEmpty.classList.add('d-none');
+        slotStateError.classList.add('d-none');
         slotGrid.classList.add('d-none');
         slotStateLoading.classList.remove('d-none');
         selectedSlotId.value = '';
@@ -382,7 +396,12 @@ document.addEventListener('DOMContentLoaded', function () {
         submitBtn.disabled = true;
 
         fetch(`/api/public/doctors/${docId}/slots?date=${dateVal}`)
-            .then(res => res.json())
+            .then(res => {
+                if (!res.ok) {
+                    throw new Error(`Không thể tải khung giờ (HTTP ${res.status})`);
+                }
+                return res.json();
+            })
             .then(slots => {
                 slotStateLoading.classList.add('d-none');
                 slotGrid.innerHTML = '';
@@ -426,10 +445,12 @@ document.addEventListener('DOMContentLoaded', function () {
             })
             .catch(err => {
                 slotStateLoading.classList.add('d-none');
-                slotStateEmpty.classList.remove('d-none');
+                slotStateError.classList.remove('d-none');
                 console.error('Lỗi tải time slots:', err);
             });
     }
+
+    retrySlotLoading.addEventListener('click', loadTimeSlots);
 
     // Form submit validation
     document.getElementById('bookingForm').addEventListener('submit', function (e) {
