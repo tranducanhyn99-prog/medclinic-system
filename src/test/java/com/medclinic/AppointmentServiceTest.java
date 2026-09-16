@@ -194,4 +194,18 @@ class AppointmentServiceTest {
         assertEquals("STT-03", checkedIn.getQueueNumber());
         verify(appointmentRepository, times(1)).save(apt);
     }
+
+    @Test
+    @DisplayName("Hàng chờ bác sĩ chỉ lấy ca đã check-in hoặc đang khám")
+    void testFindTodayQueueByDoctor() {
+        java.util.List<AppointmentStatus> queueStatuses = java.util.List.of(
+                AppointmentStatus.CHECKED_IN, AppointmentStatus.IN_PROGRESS);
+        when(appointmentRepository.findByDoctorIdAndAppointmentDateAndStatusInOrderByQueueNumberAsc(
+                1L, LocalDate.now(), queueStatuses)).thenReturn(java.util.List.of());
+
+        assertTrue(appointmentService.findTodayQueueByDoctor(1L).isEmpty());
+
+        verify(appointmentRepository).findByDoctorIdAndAppointmentDateAndStatusInOrderByQueueNumberAsc(
+                1L, LocalDate.now(), queueStatuses);
+    }
 }

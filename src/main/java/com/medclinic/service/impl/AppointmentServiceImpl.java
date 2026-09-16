@@ -159,7 +159,8 @@ public class AppointmentServiceImpl implements AppointmentService {
     @Override
     @Transactional(readOnly = true)
     public List<Appointment> findTodayQueueByDoctor(Long doctorId) {
-        return appointmentRepository.findByDoctorIdAndAppointmentDateOrderByTimeSlot_StartTimeAsc(doctorId, LocalDate.now());
+        return appointmentRepository.findByDoctorIdAndAppointmentDateAndStatusInOrderByQueueNumberAsc(
+                doctorId, LocalDate.now(), List.of(AppointmentStatus.CHECKED_IN, AppointmentStatus.IN_PROGRESS));
     }
 
     @Override
