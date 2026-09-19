@@ -37,5 +37,8 @@ public class Medicine {
     @Builder.Default
     @Column(nullable = false)
     private Boolean isActive = true;
+
+    @Version
+    private Long version;
 }
 

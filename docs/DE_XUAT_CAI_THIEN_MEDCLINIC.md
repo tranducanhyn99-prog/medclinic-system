@@ -1,6 +1,6 @@
 # 📋 BÁO CÁO ĐỀ XUẤT CẢI THIỆN DỰ ÁN MEDCLINIC
 
-> Báo cáo được tổng hợp từ việc rà soát toàn bộ 5 tài liệu kỹ thuật trong `docs/`, 7 file DOCX báo cáo mẫu, và mã nguồn Java thực tế trong project.
+> Báo cáo là đề xuất cải tiến lịch sử. Trạng thái implementation và kiểm chứng hiện tại được đối chiếu tại `08_SOURCE_REVIEW_TASKLIST_2026-09-17.md`; quyết định phạm vi và bằng chứng nằm tại `08_SCOPE_CONFLICT_DECISIONS.md`.
 
 ---
 
@@ -172,7 +172,7 @@ Hiện chỉ có 8 template HTML. Cần bổ sung tối thiểu:
 ## Nhóm 3: Kiểm thử — Test Coverage gần như bằng 0
 
 > [!WARNING]
-> RTM liệt kê 24 Test Case ID (`TC-AUTH-01` → `TC-MED-01`) nhưng thực tế trong mã nguồn chỉ có **1 file test duy nhất** (`UserServiceTest.java`), chưa có integration test hay end-to-end test nào.
+> RTM liệt kê các Test Case ID như kế hoạch. Working tree hiện có thêm các test unit/controller và hai lớp integration `ConcurrentBookingIntegrationTest`/`StartExaminationIntegrationTest`; chúng chưa được xem là bằng chứng nghiệm thu cho đến khi build và lần chạy phù hợp thành công. Vì vậy không dùng số lượng file test để suy ra coverage hay chất lượng luồng nghiệp vụ.
 
 ### 3.1. Bổ sung Unit Test cho các Service (Ưu tiên: 🔴 Cao)
 
@@ -266,7 +266,7 @@ Nếu sau này mở rộng thành SPA hoặc mobile app, cần cấu hình CORS 
 
 ### 5.3. Responsive cho thiết bị di động (Ưu tiên: 🟡 Trung bình)
 
-**Vấn đề:** NFR-USAB-01 yêu cầu Responsive nhưng chưa kiểm tra thực tế.
+**Trạng thái cập nhật:** Layout public và portal đã có breakpoint chung, menu sidebar mobile với overlay/ESC và hỗ trợ focus/giảm chuyển động. Cần smoke test các viewport bên dưới trước khi tuyên bố đạt NFR-USAB-01.
 
 **Đề xuất:**
 - Test trên viewport 375px (iPhone SE), 390px (iPhone 14), 768px (iPad).
@@ -338,7 +338,7 @@ services:
     image: mysql:8.0
     environment:
       MYSQL_DATABASE: medclinic
-      MYSQL_ROOT_PASSWORD: root
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
 ```
 
 ### 7.3. Bổ sung tài liệu triển khai `DEPLOYMENT.md` (Ưu tiên: 🟢 Thấp)

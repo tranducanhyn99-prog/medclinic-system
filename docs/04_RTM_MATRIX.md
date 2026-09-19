@@ -2,6 +2,8 @@
 **Dự án:** MedClinic - Phòng Khám Tư Nhân  
 **Mục đích:** Đảm bảo 100% yêu cầu chức năng (FR) trong SRS được ánh xạ tới Sơ đồ Use Case, Bảng CSDL, Lớp Service/Controller và Kế hoạch kiểm thử.  
 
+**Lưu ý kiểm chứng (19/09/2026):** Cột `Test Case ID` là định danh kế hoạch, không tự khẳng định test tự động đã tồn tại. Full `mvn verify` hiện tại có 63 test case trên 34 test class: 56 executed pass, 0 failure, 0 error và 7 environment-gated case được skip theo environment guard. Coverage thực tế gồm service/controller/security, public và authenticated render, concurrent booking/stock, start examination, email after-commit, PDF Unicode, bootstrap profile, invoice-code reservation, responsive/accessibility contracts và SQL Server deployment-artifact contracts. Xem trạng thái chi tiết tại `docs/08_SOURCE_REVIEW_TASKLIST_2026-09-17.md`.
+
 ---
 
 | Mã Yêu Cầu (SRS) | Mô Tả Yêu Cầu Chức Năng | Use Case | Bảng CSDL Ánh Xạ | Lớp Xử Lý Chính | Test Case ID |
@@ -21,14 +23,15 @@
 | **FR-BOOK-05** | Gửi Email xác nhận bất đồng bộ | UC3 | - | `EmailService.sendBookingConfirmationEmail()` | `TC-MAIL-01` |
 | **FR-BOOK-06** | Bệnh nhân Hủy lịch hẹn | UC4 | `appointments`, `time_slots` | `AppointmentService.cancelAppointment()` | `TC-BOOK-03` |
 | **FR-REC-01** | Tra cứu tiếp nhận lịch hẹn | UC6 | `appointments` | `StaffReceptionController.receptionDesk()` | `TC-REC-01` |
-| **FR-REC-02** | Check-in & Cấp số thứ tự (STT) | UC7 | `appointments.queue_number` | `AppointmentService.checkInAppointment()` | `TC-REC-02` |
+| **FR-REC-02** | Check-in & Cấp số thứ tự (STT) | UC7 | `appointments.queue_number`, `appointments.queue_sequence`, `daily_queue_counters` | `AppointmentService.checkInAppointment()`, `DailyQueueCounterAllocator` | `TC-REC-02` |
 | **FR-REC-03** | Đăng ký Bệnh nhân vãng lai | UC8 | `users`, `appointments` | `AppointmentService.bookWalkInAppointment()` | `TC-REC-03` |
 | **FR-EXAM-01** | Bác sĩ xem hàng chờ khám | UC10 | `appointments` | `DoctorDeskController.doctorDesk()` | `TC-EXAM-01` |
 | **FR-EXAM-02** | Chẩn đoán & Ghi bệnh án điện tử | UC11 | `medical_records` | `MedicalRecordService.saveMedicalRecordAndPrescription()`| `TC-EXAM-02` |
 | **FR-EXAM-03** | Kê đơn thuốc & Trừ tồn kho | UC12 | `prescriptions`, `medicines` | `MedicalRecordService`, `MedicineRepository` | `TC-EXAM-03` |
 | **FR-EXAM-04** | Xuất Đơn thuốc ra file PDF | UC5 | `medical_records`, `prescriptions` | `PdfExportService.exportPrescriptionPdf()` | `TC-PDF-01` |
 | **FR-BILL-01** | Tự động sinh Hóa đơn viện phí | UC9 | `invoices` | `InvoiceService.createInvoiceForAppointment()` | `TC-BILL-01` |
-| **FR-BILL-02** | Thu viện phí (Tiền mặt / VNPay) | UC9 | `invoices` | `InvoiceService.processPayment()` | `TC-BILL-02` |
+| **FR-BILL-02** | Thu viện phí tiền mặt; VNPay/IPN là backlog chưa triển khai | UC9 | `invoices` | `InvoiceService.processPayment()` | `TC-BILL-02` |
 | **FR-BILL-03** | Xuất Hóa đơn ra file PDF | UC9 | `invoices` | `PdfExportService.exportInvoicePdf()` | `TC-PDF-02` |
 | **FR-ADMIN-01**| Dashboard thống kê KPI & Doanh thu| UC17 | `invoices`, `appointments` | `DashboardService.getDashboardStatistics()` | `TC-STAT-01` |
+| **FR-ADMIN-02**| Biểu đồ phân bổ ca khám & tỷ lệ trạng thái | UC17 | `appointments`, `invoices` | `DashboardService`, `AdminController` | `TC-STAT-02` |
 | **FR-ADMIN-03**| Quản lý Kho thuốc & Dược phẩm | UC15 | `medicines` | `MedicineService`, `AdminController` | `TC-MED-01` |

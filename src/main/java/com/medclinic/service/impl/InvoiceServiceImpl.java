@@ -4,6 +4,7 @@ import com.medclinic.entity.*;
 import com.medclinic.enums.PaymentMethod;
 import com.medclinic.enums.PaymentStatus;
 import com.medclinic.exception.ResourceNotFoundException;
+import com.medclinic.exception.BusinessLogicException;
 import com.medclinic.repository.AppointmentRepository;
 import com.medclinic.repository.InvoiceRepository;
 import com.medclinic.service.InvoiceService;
@@ -12,11 +13,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -24,19 +22,23 @@ public class InvoiceServiceImpl implements InvoiceService {
 
     private final InvoiceRepository invoiceRepository;
     private final AppointmentRepository appointmentRepository;
+    private final InvoiceCodeReservationCoordinator invoiceCodeReservationCoordinator;
 
     @Override
     @Transactional
     public Invoice createInvoiceForAppointment(Long appointmentId, BigDecimal medicineFee) {
         Appointment appointment = appointmentRepository.findById(appointmentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy cuộc hẹn"));
+        if (invoiceRepository.findByAppointmentId(appointmentId).isPresent()) {
+            throw new BusinessLogicException("Cuộc hẹn này đã có hóa đơn");
+        }
 
         BigDecimal consultationFee = appointment.getDoctor().getConsultationFee();
         if (consultationFee == null) consultationFee = BigDecimal.ZERO;
         if (medicineFee == null) medicineFee = BigDecimal.ZERO;
 
         BigDecimal totalAmount = consultationFee.add(medicineFee);
-        String invoiceCode = "INV-" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")) + "-" + UUID.randomUUID().toString().substring(0, 4).toUpperCase();
+        String invoiceCode = invoiceCodeReservationCoordinator.reserveUniqueCode();
 
         Invoice invoice = new Invoice();
         invoice.setInvoiceCode(invoiceCode);
@@ -53,8 +55,14 @@ public class InvoiceServiceImpl implements InvoiceService {
     @Override
     @Transactional
     public Invoice processPayment(Long invoiceId, PaymentMethod paymentMethod) {
-        Invoice invoice = invoiceRepository.findById(invoiceId)
+        Invoice invoice = invoiceRepository.findByIdForUpdate(invoiceId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy hóa đơn"));
+        if (invoice.getPaymentStatus() != PaymentStatus.UNPAID) {
+            throw new BusinessLogicException("Hóa đơn này đã được thanh toán");
+        }
+        if (paymentMethod != PaymentMethod.CASH) {
+            throw new BusinessLogicException("Phương thức thanh toán này chưa được tích hợp");
+        }
 
         invoice.setPaymentStatus(PaymentStatus.PAID);
         invoice.setPaymentMethod(paymentMethod);
@@ -88,4 +96,5 @@ public class InvoiceServiceImpl implements InvoiceService {
     public List<Invoice> findAll() {
         return invoiceRepository.findAllByOrderByCreatedAtDesc();
     }
+
 }

@@ -53,7 +53,7 @@
             <h6 class="fw-bold text-dark mb-0">
                 <i class="bi bi-receipt text-primary me-2"></i>Danh Sách Hóa Đơn Viện Phí
             </h6>
-            <button class="btn btn-sm btn-light border" onclick="location.reload()">
+            <button type="button" class="btn btn-sm btn-light border" id="refreshBillingBtn" aria-label="Làm mới danh sách hóa đơn">
                 <i class="bi bi-arrow-clockwise me-1"></i> Làm mới
             </button>
         </div>
@@ -127,15 +127,15 @@
                                     </button>
 
                                     <!-- Payment Modal -->
-                                    <div class="modal fade text-start" th:id="${'payModal' + inv.id}" tabindex="-1">
+                                    <div class="modal fade text-start" th:id="${'payModal' + inv.id}" tabindex="-1" th:attr="aria-labelledby=${'payModalTitle-' + inv.id}">
                                         <div class="modal-dialog modal-dialog-centered">
                                             <div class="modal-content">
                                                 <form th:action="@{/staff/billing/pay/{id}(id=${inv.id})}" method="post">
                                                     <div class="modal-header">
-                                                        <h6 class="modal-title fw-bold text-dark">
+                                                        <h6 class="modal-title fw-bold text-dark" th:id="${'payModalTitle-' + inv.id}">
                                                             <i class="bi bi-cash-stack text-success me-2"></i>Xác Nhận Thanh Toán Viện Phí
                                                         </h6>
-                                                        <button type="button" class="btn-close" data-bs-target="${'#payModal' + inv.id}" data-bs-dismiss="modal"></button>
+                                                        <button type="button" class="btn-close" aria-label="Close" data-bs-target="${'#payModal' + inv.id}" data-bs-dismiss="modal"></button>
                                                     </div>
                                                     <div class="modal-body">
                                                         <div class="mb-3 p-3 bg-light rounded-3">
@@ -154,10 +154,9 @@
                                                         </div>
 
                                                         <div class="mb-3">
-                                                            <label class="form-label fw-semibold">Phương thức thanh toán <span class="text-danger">*</span></label>
-                                                            <select class="form-select" name="method" required>
+                                                            <label class="form-label fw-semibold" th:for="${'paymentMethod-' + inv.id}">Phương thức thanh toán <span class="text-danger">*</span></label>
+                                                            <select class="form-select" th:id="${'paymentMethod-' + inv.id}" name="method" required>
                                                                 <option value="CASH" selected>Tiền mặt tại quầy</option>
-                                                                <option value="VNPAY">Cổng VNPAY Sandbox</option>
                                                             </select>
                                                         </div>
                                                     </div>
@@ -189,6 +188,12 @@
         </div>
     </div>
 
+</div>
+
+<div layout:fragment="scripts">
+    <script>
+        document.getElementById('refreshBillingBtn')?.addEventListener('click', function () { window.location.reload(); });
+    </script>
 </div>
 </body>
 </html>

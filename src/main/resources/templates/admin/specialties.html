@@ -66,6 +66,8 @@
                                 </span>
                             </td>
                             <td class="text-end pe-3">
+                                <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal"
+                                        th:data-bs-target="${'#editSpecialtyModal-' + spec.id}">Sửa</button>
                                 <form th:action="@{/admin/specialties/{id}/toggle(id=${spec.id})}" method="post" class="d-inline m-0">
                                     <button type="submit" class="btn btn-sm"
                                             th:classappend="${spec.isActive ? 'btn-outline-danger' : 'btn-outline-success'}"
@@ -83,29 +85,30 @@
     </div>
 
     <!-- Modal Add Specialty -->
-    <div class="modal fade" id="addSpecialtyModal" tabindex="-1">
+    <div class="modal fade" id="addSpecialtyModal" tabindex="-1" aria-labelledby="addSpecialtyModalTitle">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
-                <form th:action="@{/admin/specialties}" method="post">
+                <form th:action="@{/admin/specialties}" th:object="${specialtyForm}" method="post">
                     <div class="modal-header">
-                        <h6 class="modal-title fw-bold text-dark">
+                        <h6 class="modal-title fw-bold text-dark" id="addSpecialtyModalTitle">
                             <i class="bi bi-plus-circle-fill text-primary me-2"></i>Thêm Chuyên Khoa Mới
                         </h6>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        <button type="button" class="btn-close" aria-label="Close" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body">
                         <div class="mb-3">
                             <label for="specName" class="form-label fw-semibold small">Tên chuyên khoa <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" id="specName" name="name" placeholder="Ví dụ: Tim mạch, Nhi khoa..." required>
+                            <input type="text" class="form-control" id="specName" th:field="*{name}" placeholder="Ví dụ: Tim mạch, Nhi khoa..." required><div class="text-danger small" th:errors="*{name}"></div>
                         </div>
                         <div class="mb-3">
                             <label for="specIcon" class="form-label fw-semibold small">Icon Bootstrap</label>
-                            <input type="text" class="form-control" id="specIcon" name="icon" placeholder="bi-heart-pulse, bi-lungs, bi-eye...">
+                            <input type="text" class="form-control" id="specIcon" th:field="*{icon}" placeholder="bi-heart-pulse, bi-lungs, bi-eye...">
+                            <div class="text-danger small" th:errors="*{icon}"></div>
                             <div class="form-text">Mã class từ Bootstrap Icons (VD: bi-heart-pulse).</div>
                         </div>
                         <div class="mb-2">
                             <label for="specDesc" class="form-label fw-semibold small">Mô tả tóm tắt</label>
-                            <textarea class="form-control" id="specDesc" name="description" rows="3" placeholder="Mô tả phạm vi khám và điều trị..."></textarea>
+                            <textarea class="form-control" id="specDesc" th:field="*{description}" rows="3" placeholder="Mô tả phạm vi khám và điều trị..."></textarea>
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -115,6 +118,21 @@
                 </form>
             </div>
         </div>
+    </div>
+
+    <div th:each="spec : ${specialties}" class="modal fade" th:id="${'editSpecialtyModal-' + spec.id}" tabindex="-1" th:attr="aria-labelledby=${'editSpecialtyModalTitle-' + spec.id}">
+        <div class="modal-dialog modal-dialog-centered"><div class="modal-content">
+            <form th:action="@{/admin/specialties}" method="post">
+                <input type="hidden" name="id" th:value="${spec.id}">
+                <div class="modal-header"><h6 class="modal-title" th:id="${'editSpecialtyModalTitle-' + spec.id}">Sửa chuyên khoa</h6><button type="button" class="btn-close" aria-label="Close" data-bs-dismiss="modal"></button></div>
+                <div class="modal-body">
+                    <label class="form-label" th:for="${'editSpecialtyName-' + spec.id}">Tên chuyên khoa</label><input th:id="${'editSpecialtyName-' + spec.id}" class="form-control mb-2" name="name" required th:value="${spec.name}">
+                    <label class="form-label" th:for="${'editSpecialtyIcon-' + spec.id}">Icon Bootstrap</label><input th:id="${'editSpecialtyIcon-' + spec.id}" class="form-control mb-2" name="icon" th:value="${spec.icon}">
+                    <label class="form-label" th:for="${'editSpecialtyDescription-' + spec.id}">Mô tả</label><textarea th:id="${'editSpecialtyDescription-' + spec.id}" class="form-control" name="description" rows="3" th:text="${spec.description}"></textarea>
+                </div>
+                <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button><button class="btn btn-med-primary" type="submit">Lưu thay đổi</button></div>
+            </form>
+        </div></div>
     </div>
 
 </div>

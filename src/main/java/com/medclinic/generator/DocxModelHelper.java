@@ -36,7 +36,6 @@ public class DocxModelHelper {
             addZipEntry(zos, "word/_rels/document.xml.rels", getDocRelsXml(imageRelationships));
             addZipEntry(zos, "word/styles.xml", getStylesXml());
             addZipEntry(zos, "word/settings.xml", getSettingsXml());
-            addZipEntry(zos, "word/fontTable.xml", getFontTableXml());
             addZipEntry(zos, "word/document.xml", documentXml);
 
             // Ghi các file ảnh nhị phân
@@ -74,8 +73,9 @@ public class DocxModelHelper {
     public static String p(String text, String style, boolean bold, int sizePt, String align) {
         StringBuilder sb = new StringBuilder("<w:p><w:pPr>");
         if (style != null) sb.append("<w:pStyle w:val=\"").append(style).append("\"/>");
+        sb.append("<w:spacing w:line=\"276\" w:lineRule=\"auto\" w:after=\"120\"/>");
         if (align != null) sb.append("<w:jc w:val=\"").append(align).append("\"/>");
-        sb.append("<w:spacing w:line=\"276\" w:lineRule=\"auto\" w:after=\"120\"/></w:pPr>");
+        sb.append("</w:pPr>");
         if (text != null && !text.isEmpty()) {
             sb.append("<w:r><w:rPr><w:rFonts w:ascii=\"Times New Roman\" w:hAnsi=\"Times New Roman\"/>");
             if (bold) sb.append("<w:b/>");
@@ -88,7 +88,7 @@ public class DocxModelHelper {
 
     public static String drawingImage(String rId, int docPrId, String name, int cxEmu, int cyEmu, String caption) {
         StringBuilder sb = new StringBuilder();
-        sb.append("<w:p><w:pPr><w:jc w:val=\"center\"/><w:spacing w:before=\"180\" w:after=\"60\"/></w:pPr>");
+        sb.append("<w:p><w:pPr><w:spacing w:before=\"180\" w:after=\"60\"/><w:jc w:val=\"center\"/></w:pPr>");
         sb.append("<w:r><w:drawing><wp:inline distT=\"0\" distB=\"0\" distL=\"0\" distR=\"0\">");
         sb.append("<wp:extent cx=\"").append(cxEmu).append("\" cy=\"").append(cyEmu).append("\"/>");
         sb.append("<wp:docPr id=\"").append(docPrId).append("\" name=\"").append(escapeXml(name)).append("\"/>");
@@ -177,7 +177,10 @@ public class DocxModelHelper {
                 "xmlns:pic=\"http://schemas.openxmlformats.org/drawingml/2006/picture\">\n" +
                 "<w:body>\n" +
                 bodyContent +
-                "\n</w:body></w:document>";
+                "<w:sectPr>" +
+                "<w:pgSz w:w=\"12240\" w:h=\"15840\"/>" +
+                "<w:pgMar w:top=\"1440\" w:right=\"1440\" w:bottom=\"1440\" w:left=\"1440\" w:header=\"720\" w:footer=\"720\" w:gutter=\"0\"/>" +
+                "</w:sectPr>\n</w:body></w:document>";
     }
 
     private static String getContentTypesXml() {
@@ -192,7 +195,6 @@ public class DocxModelHelper {
                 "  <Override PartName=\"/word/document.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml\"/>\n" +
                 "  <Override PartName=\"/word/styles.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml\"/>\n" +
                 "  <Override PartName=\"/word/settings.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.wordprocessingml.settings+xml\"/>\n" +
-                "  <Override PartName=\"/word/fontTable.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.wordprocessingml.fontTable+xml\"/>\n" +
                 "  <Override PartName=\"/docProps/core.xml\" ContentType=\"application/vnd.openxmlformats-package.core-properties+xml\"/>\n" +
                 "  <Override PartName=\"/docProps/app.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.extended-properties+xml\"/>\n" +
                 "</Types>";
@@ -213,7 +215,6 @@ public class DocxModelHelper {
         sb.append("<Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\">\n");
         sb.append("  <Relationship Id=\"rId1\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles\" Target=\"styles.xml\"/>\n");
         sb.append("  <Relationship Id=\"rId2\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/settings\" Target=\"settings.xml\"/>\n");
-        sb.append("  <Relationship Id=\"rId3\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/fontTable\" Target=\"fontTable.xml\"/>\n");
         if (imageRelationships != null) {
             for (Map.Entry<String, String> entry : imageRelationships.entrySet()) {
                 sb.append("  <Relationship Id=\"").append(entry.getKey()).append("\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/image\" Target=\"").append(entry.getValue()).append("\"/>\n");
@@ -241,11 +242,6 @@ public class DocxModelHelper {
                 "<w:settings xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><w:defaultTabStop w:val=\"720\"/></w:settings>";
     }
 
-    private static String getFontTableXml() {
-        return "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n" +
-                "<w:fontTable xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><w:font w:name=\"Times New Roman\"/></w:fontTable>";
-    }
-
     private static String getStylesXml() {
         return "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n" +
                 "<w:styles xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\">\n" +
@@ -256,12 +252,12 @@ public class DocxModelHelper {
                 "  <w:style w:type=\"paragraph\" w:styleId=\"Heading1\">\n" +
                 "    <w:name w:val=\"heading 1\"/>\n" +
                 "    <w:basedOn w:val=\"Normal\"/>\n" +
-                "    <w:rPr><w:rFonts w:ascii=\"Times New Roman\" w:hAnsi=\"Times New Roman\"/><w:b/><w:sz w:val=\"32\"/><w:color w:val=\"1F4E79\"/></w:rPr>\n" +
+                "    <w:rPr><w:rFonts w:ascii=\"Times New Roman\" w:hAnsi=\"Times New Roman\"/><w:b/><w:color w:val=\"1F4E79\"/><w:sz w:val=\"32\"/></w:rPr>\n" +
                 "  </w:style>\n" +
                 "  <w:style w:type=\"paragraph\" w:styleId=\"Heading2\">\n" +
                 "    <w:name w:val=\"heading 2\"/>\n" +
                 "    <w:basedOn w:val=\"Normal\"/>\n" +
-                "    <w:rPr><w:rFonts w:ascii=\"Times New Roman\" w:hAnsi=\"Times New Roman\"/><w:b/><w:sz w:val=\"28\"/><w:color w:val=\"2F5597\"/></w:rPr>\n" +
+                "    <w:rPr><w:rFonts w:ascii=\"Times New Roman\" w:hAnsi=\"Times New Roman\"/><w:b/><w:color w:val=\"2F5597\"/><w:sz w:val=\"28\"/></w:rPr>\n" +
                 "  </w:style>\n" +
                 "  <w:style w:type=\"paragraph\" w:styleId=\"Heading3\">\n" +
                 "    <w:name w:val=\"heading 3\"/>\n" +

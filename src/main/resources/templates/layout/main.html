@@ -6,6 +6,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Resolve the deferred CSRF token before Thymeleaf streams the page body. -->
+    <meta name="_csrf" th:content="${_csrf.token}">
+    <meta name="_csrf_parameter" th:content="${_csrf.parameterName}">
     <title layout:title-pattern="$CONTENT_TITLE - MedClinic">MedClinic - Hệ Thống Phòng Khám Đa Khoa</title>
 
     <!-- Bootstrap 5.3 CSS -->
@@ -13,13 +16,13 @@
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <!-- Google Fonts Inter -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <!-- SweetAlert2 -->
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.6/dist/sweetalert2.min.css" rel="stylesheet">
 
     <style>
         :root {
-            --primary: #0284c7;
+            --primary: #1676A6;
             --primary-hover: #0369a1;
             --primary-dark: #075985;
             --secondary: #0d9488;
@@ -31,14 +34,40 @@
             --text-muted: #64748b;
         }
 
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+                scroll-behavior: auto !important;
+            }
+        }
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Geist', -apple-system, sans-serif;
             background-color: var(--light-bg);
             color: var(--text-main);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             -webkit-font-smoothing: antialiased;
+        }
+
+        .skip-link {
+            background: var(--dark-navy);
+            color: #ffffff;
+            left: 1rem;
+            padding: 0.65rem 1rem;
+            position: fixed;
+            top: -4rem;
+            transition: top 0.15s ease;
+            z-index: 1100;
+        }
+        .skip-link:focus {
+            top: 1rem;
+        }
+        :focus-visible {
+            outline: 3px solid #0ea5e9;
+            outline-offset: 3px;
         }
 
         /* Navbar Styling */
@@ -67,7 +96,7 @@
 
         /* Buttons */
         .btn-med-primary {
-            background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+            background-color: var(--primary);
             color: #ffffff;
             border: none;
             font-weight: 600;
@@ -140,6 +169,7 @@
     </style>
 </head>
 <body>
+    <a class="skip-link" href="#main-content">Bỏ qua điều hướng, đến nội dung chính</a>
 
     <!-- Header Navbar -->
     <nav class="navbar navbar-expand-lg navbar-med sticky-top py-2.5">
@@ -151,7 +181,7 @@
                 <span>Med<span class="text-dark">Clinic</span></span>
             </a>
 
-            <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
+            <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain" aria-controls="navbarMain" aria-expanded="false" aria-label="Mở điều hướng chính">
                 <span class="navbar-toggler-icon"></span>
             </button>
 
@@ -232,7 +262,7 @@
     </nav>
 
     <!-- Main Content -->
-    <main class="flex-grow-1">
+    <main id="main-content" class="flex-grow-1" tabindex="-1">
         <div class="container py-2 no-print">
             <div th:replace="~{fragments/alerts :: alerts}"></div>
         </div>
@@ -251,7 +281,7 @@
                     <p class="small text-secondary mb-0">Hệ thống Đặt lịch khám và Quản lý phòng khám tư nhân hiện đại. Ứng dụng công nghệ chống Double Booking, bàn khám điện tử và hồ sơ y tế chuẩn hóa.</p>
                 </div>
                 <div class="col-lg-3 col-6">
-                    <h6 class="text-white fw-semibold small mb-2 text-uppercase">Dịch Vụ</h6>
+                    <h2 class="h6 text-white fw-semibold small mb-2 text-uppercase">Dịch Vụ</h2>
                     <ul class="list-unstyled small mb-0">
                         <li class="mb-1"><a th:href="@{/patient/booking}">Đặt lịch trực tuyến</a></li>
                         <li class="mb-1"><a th:href="@{/patient/appointments}">Kiểm tra lịch hẹn</a></li>
@@ -259,7 +289,7 @@
                     </ul>
                 </div>
                 <div class="col-lg-4 col-6">
-                    <h6 class="text-white fw-semibold small mb-2 text-uppercase">Liên Hệ Hỗ Trợ</h6>
+                    <h2 class="h6 text-white fw-semibold small mb-2 text-uppercase">Liên Hệ Hỗ Trợ</h2>
                     <p class="small text-secondary mb-1"><i class="bi bi-geo-alt me-2 text-info"></i> Khu Công Nghệ Cao, TP. Thủ Đức, TP. Hồ Chí Minh</p>
                     <p class="small text-secondary mb-1"><i class="bi bi-telephone me-2 text-info"></i> Hotline cấp cứu & tư vấn: 1900 8888</p>
                     <p class="small text-secondary mb-0"><i class="bi bi-clock me-2 text-info"></i> Giờ làm việc: 07:30 - 20:00 (Thứ 2 - Chủ Nhật)</p>
@@ -276,5 +306,27 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.6/dist/sweetalert2.all.min.js"></script>
     <div layout:fragment="scripts"></div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('form').forEach(function(form) {
+                form.addEventListener('submit', function(event) {
+                    if (form.dataset.submitting === 'true') {
+                        event.preventDefault();
+                        return;
+                    }
+
+                    form.dataset.submitting = 'true';
+                    var btn = event.submitter || form.querySelector('button[type="submit"], input[type="submit"]');
+                    if (btn) {
+                        btn.disabled = true;
+                        btn.setAttribute('aria-busy', 'true');
+                        if (btn.tagName === 'BUTTON' && btn.innerHTML.indexOf('spinner') === -1) {
+                            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>' + btn.innerHTML;
+                        }
+                    }
+                });
+            });
+        });
+    </script>
 </body>
 </html>

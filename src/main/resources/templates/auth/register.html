@@ -15,50 +15,50 @@
                         <div class="rounded-circle bg-primary bg-opacity-10 text-primary p-3 d-inline-flex align-items-center justify-content-center mb-2" style="width: 70px; height: 70px;">
                             <i class="bi bi-person-plus-fill fs-1"></i>
                         </div>
-                        <h3 class="fw-bold text-dark mb-1">Đăng Ký Tài Khoản Bệnh Nhân</h3>
+                        <h1 class="h3 fw-bold text-dark mb-1">Đăng Ký Tài Khoản Bệnh Nhân</h1>
                         <p class="text-muted small">Tạo hồ sơ bệnh nhân điện tử để đặt lịch khám nhanh chóng</p>
                     </div>
 
                     <form th:action="@{/register}" th:object="${registerDto}" method="post">
                         <div class="row g-3">
                             <div class="col-md-6">
-                                <label class="form-label small fw-semibold text-muted">Họ và tên <span class="text-danger">*</span></label>
+                                <label for="fullName" class="form-label small fw-semibold text-muted">Họ và tên <span class="text-danger">*</span></label>
                                 <input type="text" th:field="*{fullName}" class="form-control" th:classappend="${#fields.hasErrors('fullName')} ? 'is-invalid'" placeholder="Ví dụ: Nguyễn Văn An">
                                 <div class="invalid-feedback" th:errors="*{fullName}"></div>
                             </div>
 
                             <div class="col-md-6">
-                                <label class="form-label small fw-semibold text-muted">Tên đăng nhập <span class="text-danger">*</span></label>
+                                <label for="username" class="form-label small fw-semibold text-muted">Tên đăng nhập <span class="text-danger">*</span></label>
                                 <input type="text" th:field="*{username}" class="form-control" th:classappend="${#fields.hasErrors('username')} ? 'is-invalid'" placeholder="Ít nhất 3 ký tự">
                                 <div class="invalid-feedback" th:errors="*{username}"></div>
                             </div>
 
                             <div class="col-md-6">
-                                <label class="form-label small fw-semibold text-muted">Mật khẩu <span class="text-danger">*</span></label>
+                                <label for="password" class="form-label small fw-semibold text-muted">Mật khẩu <span class="text-danger">*</span></label>
                                 <input type="password" th:field="*{password}" class="form-control" th:classappend="${#fields.hasErrors('password')} ? 'is-invalid'" placeholder="Ít nhất 6 ký tự">
                                 <div class="invalid-feedback" th:errors="*{password}"></div>
                             </div>
 
                             <div class="col-md-6">
-                                <label class="form-label small fw-semibold text-muted">Xác nhận mật khẩu <span class="text-danger">*</span></label>
+                                <label for="confirmPassword" class="form-label small fw-semibold text-muted">Xác nhận mật khẩu <span class="text-danger">*</span></label>
                                 <input type="password" th:field="*{confirmPassword}" class="form-control" th:classappend="${#fields.hasErrors('confirmPassword')} ? 'is-invalid'" placeholder="Nhập lại mật khẩu">
                                 <div class="invalid-feedback" th:errors="*{confirmPassword}"></div>
                             </div>
 
                             <div class="col-md-6">
-                                <label class="form-label small fw-semibold text-muted">Email <span class="text-danger">*</span></label>
+                                <label for="email" class="form-label small fw-semibold text-muted">Email <span class="text-danger">*</span></label>
                                 <input type="email" th:field="*{email}" class="form-control" th:classappend="${#fields.hasErrors('email')} ? 'is-invalid'" placeholder="email@example.com">
                                 <div class="invalid-feedback" th:errors="*{email}"></div>
                             </div>
 
                             <div class="col-md-6">
-                                <label class="form-label small fw-semibold text-muted">Số điện thoại <span class="text-danger">*</span></label>
+                                <label for="phone" class="form-label small fw-semibold text-muted">Số điện thoại <span class="text-danger">*</span></label>
                                 <input type="text" th:field="*{phone}" class="form-control" th:classappend="${#fields.hasErrors('phone')} ? 'is-invalid'" placeholder="0901234567">
                                 <div class="invalid-feedback" th:errors="*{phone}"></div>
                             </div>
 
                             <div class="col-md-6">
-                                <label class="form-label small fw-semibold text-muted">Giới tính</label>
+                                <label for="gender" class="form-label small fw-semibold text-muted">Giới tính</label>
                                 <select th:field="*{gender}" class="form-select">
                                     <option th:value="${T(com.medclinic.enums.Gender).MALE}">Nam</option>
                                     <option th:value="${T(com.medclinic.enums.Gender).FEMALE}">Nữ</option>
@@ -67,12 +67,12 @@
                             </div>
 
                             <div class="col-md-6">
-                                <label class="form-label small fw-semibold text-muted">Ngày sinh</label>
+                                <label for="dateOfBirth" class="form-label small fw-semibold text-muted">Ngày sinh</label>
                                 <input type="date" th:field="*{dateOfBirth}" class="form-control">
                             </div>
 
                             <div class="col-12">
-                                <label class="form-label small fw-semibold text-muted">Địa chỉ cư trú</label>
+                                <label for="address" class="form-label small fw-semibold text-muted">Địa chỉ cư trú</label>
                                 <input type="text" th:field="*{address}" class="form-control" placeholder="Số nhà, đường, phường/xã, quận/huyện...">
                             </div>
                         </div>

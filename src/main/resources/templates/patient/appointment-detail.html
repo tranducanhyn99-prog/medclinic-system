@@ -193,7 +193,7 @@
 
                     <!-- Actions (Hidden when printing) -->
                     <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center no-print pt-2">
-                        <button type="button" class="btn btn-outline-secondary" onclick="window.print()">
+                        <button type="button" class="btn btn-outline-secondary" id="printAppointmentBtn">
                             <i class="bi bi-printer me-1"></i> In Phiếu Khám
                         </button>
 
@@ -222,6 +222,11 @@
 <div layout:fragment="scripts">
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+    const printAppointmentBtn = document.getElementById('printAppointmentBtn');
+    if (printAppointmentBtn) {
+        printAppointmentBtn.addEventListener('click', function () { window.print(); });
+    }
+
     const cancelBtn = document.getElementById('cancelBtn');
     if (cancelBtn) {
         cancelBtn.addEventListener('click', function () {

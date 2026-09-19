@@ -7,13 +7,13 @@
     <title>Trang Chủ - Phòng Khám Đa Khoa MedClinic</title>
     <style>
         .hero-section {
-            background: linear-gradient(135deg, #0284c7 0%, #0369a1 60%, #0f172a 100%);
+            background-color: var(--primary-dark);
             color: #ffffff;
             border-radius: 1.25rem;
             padding: 4rem 2.5rem;
             position: relative;
             overflow: hidden;
-            box-shadow: 0 10px 25px -5px rgba(2, 132, 199, 0.3);
+            box-shadow: 0 10px 25px -5px rgba(22, 118, 166, 0.3);
         }
         .hero-section::before {
             content: "";
@@ -39,13 +39,19 @@
             width: 36px;
             height: 36px;
             border-radius: 50%;
-            background-color: #0284c7;
+            background-color: var(--primary);
             color: #ffffff;
             display: inline-flex;
             align-items: center;
             justify-content: center;
             font-weight: 700;
             margin-bottom: 0.75rem;
+        }
+        @media (max-width: 575.98px) {
+            .hero-section {
+                border-radius: 0.85rem;
+                padding: 2.5rem 1.25rem;
+            }
         }
     </style>
 </head>
@@ -80,7 +86,7 @@
                                 <i class="bi bi-clock-history fs-5"></i>
                             </div>
                             <div>
-                                <h6 class="mb-0 fw-bold text-white">Khám Đúng Khung Giờ</h6>
+                                <div class="h6 mb-0 fw-bold text-white">Khám Đúng Khung Giờ</div>
                                 <small class="text-light opacity-75">Tự động chọn khung giờ còn trống</small>
                             </div>
                         </div>
@@ -89,7 +95,7 @@
                                 <i class="bi bi-qr-code fs-5"></i>
                             </div>
                             <div>
-                                <h6 class="mb-0 fw-bold text-white">Mã QR Check-in Quầy</h6>
+                                <div class="h6 mb-0 fw-bold text-white">Mã QR Check-in Quầy</div>
                                 <small class="text-light opacity-75">Cấp STT khám tức thì dưới 10 giây</small>
                             </div>
                         </div>
@@ -98,7 +104,7 @@
                                 <i class="bi bi-file-earmark-medical fs-5"></i>
                             </div>
                             <div>
-                                <h6 class="mb-0 fw-bold text-white">Toa Thuốc Điện Tử</h6>
+                                <div class="h6 mb-0 fw-bold text-white">Toa Thuốc Điện Tử</div>
                                 <small class="text-light opacity-75">Lưu trữ trọn đời, dễ dàng tra cứu</small>
                             </div>
                         </div>
@@ -111,25 +117,25 @@
         <section class="row g-3 mb-5 text-center">
             <div class="col-6 col-md-3">
                 <div class="card card-custom p-3">
-                    <h3 class="fw-bold text-primary mb-0">15,000+</h3>
+                    <div class="h3 fw-bold text-primary mb-0">15,000+</div>
                     <small class="text-muted fw-semibold">Bệnh nhân tin tưởng</small>
                 </div>
             </div>
             <div class="col-6 col-md-3">
                 <div class="card card-custom p-3">
-                    <h3 class="fw-bold text-success mb-0">50+</h3>
+                    <div class="h3 fw-bold text-success mb-0">50+</div>
                     <small class="text-muted fw-semibold">Bác sĩ chuyên khoa</small>
                 </div>
             </div>
             <div class="col-6 col-md-3">
                 <div class="card card-custom p-3">
-                    <h3 class="fw-bold text-warning mb-0">100%</h3>
+                    <div class="h3 fw-bold text-warning mb-0">100%</div>
                     <small class="text-muted fw-semibold">Chống trùng lịch hẹn</small>
                 </div>
             </div>
             <div class="col-6 col-md-3">
                 <div class="card card-custom p-3">
-                    <h3 class="fw-bold text-info mb-0">&lt; 30s</h3>
+                    <div class="h3 fw-bold text-info mb-0">&lt; 30s</div>
                     <small class="text-muted fw-semibold">Tiếp nhận check-in</small>
                 </div>
             </div>
@@ -139,7 +145,7 @@
         <section class="mb-5">
             <div class="text-center mb-4">
                 <span class="badge bg-primary-subtle text-primary fw-semibold px-3 py-1.5 rounded-pill mb-2">Quy Trình Đơn Giản</span>
-                <h3 class="fw-bold text-dark">4 Bước Thăm Khám Nhanh Chóng</h3>
+                <h2 class="h3 fw-bold text-dark">4 Bước Thăm Khám Nhanh Chóng</h2>
                 <p class="text-muted small">Quy trình tối ưu hóa trải nghiệm, không mất thời gian chen lấn lấy số</p>
             </div>
 
@@ -147,28 +153,28 @@
                 <div class="col-md-3">
                     <div class="card card-custom h-100 p-4 text-center card-hover">
                         <div class="step-number mx-auto">1</div>
-                        <h6 class="fw-bold mb-2">Chọn Khoa & Bác Sĩ</h6>
+                        <h3 class="h6 fw-bold mb-2">Chọn Khoa & Bác Sĩ</h3>
                         <p class="small text-muted mb-0">Tìm kiếm chuyên khoa phù hợp cùng danh sách bác sĩ giàu kinh nghiệm.</p>
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="card card-custom h-100 p-4 text-center card-hover">
                         <div class="step-number mx-auto">2</div>
-                        <h6 class="fw-bold mb-2">Chọn Ngày & Giờ</h6>
+                        <h3 class="h6 fw-bold mb-2">Chọn Ngày & Giờ</h3>
                         <p class="small text-muted mb-0">Hệ thống hiển thị khung giờ còn trống 30 phút theo thời gian thực.</p>
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="card card-custom h-100 p-4 text-center card-hover">
                         <div class="step-number mx-auto">3</div>
-                        <h6 class="fw-bold mb-2">Nhận Mã QR Check-in</h6>
+                        <h3 class="h6 fw-bold mb-2">Nhận Mã QR Check-in</h3>
                         <p class="small text-muted mb-0">Nhận mã đặt lịch tức thì kèm QR Code để quét tại quầy lễ tân khi đến.</p>
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="card card-custom h-100 p-4 text-center card-hover">
                         <div class="step-number mx-auto">4</div>
-                        <h6 class="fw-bold mb-2">Khám & Toa Thuốc</h6>
+                        <h3 class="h6 fw-bold mb-2">Khám & Toa Thuốc</h3>
                         <p class="small text-muted mb-0">Bác sĩ khám lâm sàng, nhận toa thuốc điện tử và hồ sơ bệnh án chuẩn y khoa.</p>
                     </div>
                 </div>
@@ -177,7 +183,7 @@
 
         <!-- CTA Action Callout -->
         <section class="card card-custom bg-light border p-4 p-md-5 text-center">
-            <h4 class="fw-bold mb-2">Bạn Cần Đặt Lịch Khám Bệnh Hôm Nay?</h4>
+            <h2 class="h4 fw-bold mb-2">Bạn Cần Đặt Lịch Khám Bệnh Hôm Nay?</h2>
             <p class="text-muted mb-4" style="max-width: 500px; margin: 0 auto;">Chủ động chọn bác sĩ và thời gian khám phù hợp chỉ trong 2 phút.</p>
             <div>
                 <a th:href="@{/patient/booking}" class="btn btn-med-primary px-4 py-2.5 fs-6">

@@ -9,13 +9,15 @@ import com.medclinic.repository.AppointmentRepository;
 import com.medclinic.repository.MedicalRecordRepository;
 import com.medclinic.repository.MedicineRepository;
 import com.medclinic.service.MedicalRecordService;
+import com.medclinic.service.InvoiceService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
+import java.math.BigDecimal;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -24,27 +26,49 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
     private final MedicalRecordRepository medicalRecordRepository;
     private final AppointmentRepository appointmentRepository;
     private final MedicineRepository medicineRepository;
+    private final InvoiceService invoiceService;
 
     @Override
-    @Transactional
-    public MedicalRecord saveMedicalRecordAndPrescription(Long appointmentId, Long doctorUserId, String symptoms, String diagnosis, String doctorNotes, LocalDate reExamDate, List<PrescriptionItemDto> prescriptionItems) {
+    @PreAuthorize("hasAnyRole('DOCTOR','ADMIN')")
+    @Transactional(readOnly = true)
+    public Appointment getAppointmentForExamination(Long appointmentId, Long doctorUserId) {
         Appointment appointment = appointmentRepository.findById(appointmentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy cuộc hẹn"));
+        verifyDoctor(appointment, doctorUserId);
+        return appointment;
+    }
 
-        if (!appointment.getDoctor().getUser().getId().equals(doctorUserId)) {
-            throw new BusinessLogicException("Bạn không có quyền hoàn tất ca khám này");
+    @Override
+    @PreAuthorize("hasAnyRole('DOCTOR','ADMIN')")
+    @Transactional
+    public Appointment startExamination(Long appointmentId, Long doctorUserId) {
+        Appointment appointment = appointmentRepository.findByIdForUpdate(appointmentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy cuộc hẹn"));
+        verifyDoctor(appointment, doctorUserId);
+        if (appointment.getStatus() == AppointmentStatus.CHECKED_IN) {
+            appointment.setStatus(AppointmentStatus.IN_PROGRESS);
+            return appointmentRepository.save(appointment);
         }
-        if (appointment.getStatus() != AppointmentStatus.CHECKED_IN
-                && appointment.getStatus() != AppointmentStatus.IN_PROGRESS) {
-            throw new BusinessLogicException("Chỉ có thể khám bệnh nhân đã check-in");
+        if (appointment.getStatus() != AppointmentStatus.IN_PROGRESS) {
+            throw new BusinessLogicException("Chỉ có thể bắt đầu khám bệnh nhân đã check-in");
+        }
+        return appointment;
+    }
+
+    @Override
+    @PreAuthorize("hasAnyRole('DOCTOR','ADMIN')")
+    @Transactional
+    public MedicalRecord saveMedicalRecordAndPrescription(Long appointmentId, Long doctorUserId, String symptoms, String diagnosis, String doctorNotes, LocalDate reExamDate, List<PrescriptionItemDto> prescriptionItems) {
+        Appointment appointment = appointmentRepository.findByIdForUpdate(appointmentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy cuộc hẹn"));
+        verifyDoctor(appointment, doctorUserId);
+        if (appointment.getStatus() != AppointmentStatus.IN_PROGRESS) {
+            throw new BusinessLogicException("Ca khám phải được bắt đầu trước khi hoàn tất");
         }
         if (medicalRecordRepository.findByAppointmentId(appointmentId).isPresent()) {
             throw new BusinessLogicException("Ca khám này đã có bệnh án");
         }
 
-
-        appointment.setStatus(AppointmentStatus.COMPLETED);
-        appointmentRepository.save(appointment);
 
         MedicalRecord medicalRecord = new MedicalRecord();
         medicalRecord.setAppointment(appointment);
@@ -60,21 +84,34 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
         
         List<PrescriptionItem> items = new ArrayList<>();
         if (prescriptionItems != null && !prescriptionItems.isEmpty()) {
+            Map<Long, Integer> quantitiesByMedicine = new TreeMap<>();
             for (PrescriptionItemDto dto : prescriptionItems) {
-                Medicine medicine = medicineRepository.findById(dto.getMedicineId())
-                        .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy thuốc ID " + dto.getMedicineId()));
-                
-                if (medicine.getStockQuantity() < dto.getQuantity()) {
+                if (dto.getMedicineId() == null || dto.getQuantity() == null || dto.getQuantity() <= 0) {
+                    throw new BusinessLogicException("Mỗi thuốc phải có số lượng lớn hơn 0");
+                }
+                quantitiesByMedicine.merge(dto.getMedicineId(), dto.getQuantity(), Math::addExact);
+            }
+            Map<Long, Medicine> lockedMedicines = new HashMap<>();
+            for (Map.Entry<Long, Integer> entry : quantitiesByMedicine.entrySet()) {
+                Medicine medicine = medicineRepository.findByIdForUpdate(entry.getKey())
+                        .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy thuốc ID " + entry.getKey()));
+                if (!Boolean.TRUE.equals(medicine.getIsActive())) {
+                    throw new BusinessLogicException("Thuốc " + medicine.getName() + " không còn được phép kê đơn");
+                }
+                if (medicine.getStockQuantity() < entry.getValue()) {
                     throw new BusinessLogicException("Thuốc " + medicine.getName() + " không đủ số lượng tồn kho (Còn lại: " + medicine.getStockQuantity() + ")");
                 }
-                
-                medicine.setStockQuantity(medicine.getStockQuantity() - dto.getQuantity());
+                medicine.setStockQuantity(medicine.getStockQuantity() - entry.getValue());
                 medicineRepository.save(medicine);
-                
+                lockedMedicines.put(entry.getKey(), medicine);
+            }
+            for (PrescriptionItemDto dto : prescriptionItems) {
+                Medicine medicine = lockedMedicines.get(dto.getMedicineId());
                 PrescriptionItem item = new PrescriptionItem();
                 item.setPrescription(prescription);
                 item.setMedicine(medicine);
                 item.setQuantity(dto.getQuantity());
+                item.setUnitPriceAtTime(medicine.getUnitPrice());
                 item.setDosage(dto.getDosage());
                 item.setFrequency(dto.getFrequency());
                 item.setInstructions(dto.getInstructions());
@@ -84,11 +121,15 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
         
         prescription.setItems(items);
         medicalRecord.setPrescription(prescription);
-
-        return medicalRecordRepository.save(medicalRecord);
+        appointment.setStatus(AppointmentStatus.COMPLETED);
+        appointmentRepository.save(appointment);
+        MedicalRecord saved = medicalRecordRepository.save(medicalRecord);
+        invoiceService.createInvoiceForAppointment(appointmentId, prescription.calculateTotalMedicinePrice());
+        return saved;
     }
 
     @Override
+    @PreAuthorize("hasAnyRole('DOCTOR','PATIENT','ADMIN')")
     @Transactional(readOnly = true)
     public List<MedicalRecord> getPatientMedicalHistory(Long patientId) {
         return medicalRecordRepository.findByPatientIdOrderByCreatedAtDesc(patientId);
@@ -99,5 +140,11 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
     public MedicalRecord findByAppointmentId(Long appointmentId) {
         return medicalRecordRepository.findByAppointmentId(appointmentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy hồ sơ bệnh án cho cuộc hẹn này"));
+    }
+
+    private void verifyDoctor(Appointment appointment, Long doctorUserId) {
+        if (!appointment.getDoctor().getUser().getId().equals(doctorUserId)) {
+            throw new BusinessLogicException("Bạn không có quyền thao tác ca khám này");
+        }
     }
 }

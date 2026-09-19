@@ -7,6 +7,7 @@ import com.medclinic.enums.SlotStatus;
 import com.medclinic.exception.BusinessLogicException;
 import com.medclinic.repository.*;
 import com.medclinic.service.impl.AppointmentServiceImpl;
+import com.medclinic.service.impl.DailyQueueCounterAllocator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -15,6 +16,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.OptimisticLockingFailureException;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -41,6 +43,15 @@ class AppointmentServiceTest {
 
     @Mock
     private DoctorProfileRepository doctorProfileRepository;
+
+    @Mock
+    private DailyQueueCounterRepository dailyQueueCounterRepository;
+
+    @Mock
+    private DailyQueueCounterAllocator dailyQueueCounterAllocator;
+
+    @Mock
+    private ApplicationEventPublisher applicationEventPublisher;
 
     @InjectMocks
     private AppointmentServiceImpl appointmentService;
@@ -82,7 +93,7 @@ class AppointmentServiceTest {
     void testBookAppointmentSuccess() {
         when(userRepository.findById(1L)).thenReturn(Optional.of(patient));
         when(doctorProfileRepository.findById(1L)).thenReturn(Optional.of(doctor));
-        when(timeSlotRepository.findById(100L)).thenReturn(Optional.of(timeSlot));
+        when(timeSlotRepository.findByIdForUpdate(100L)).thenReturn(Optional.of(timeSlot));
         when(timeSlotRepository.saveAndFlush(any(TimeSlot.class))).thenReturn(timeSlot);
 
         when(appointmentRepository.save(any(Appointment.class))).thenAnswer(invocation -> {
@@ -111,7 +122,7 @@ class AppointmentServiceTest {
                 .workDate(LocalDate.now().plusDays(1)).build());
         when(userRepository.findById(1L)).thenReturn(Optional.of(patient));
         when(doctorProfileRepository.findById(1L)).thenReturn(Optional.of(doctor));
-        when(timeSlotRepository.findById(100L)).thenReturn(Optional.of(timeSlot));
+        when(timeSlotRepository.findByIdForUpdate(100L)).thenReturn(Optional.of(timeSlot));
 
         BusinessLogicException ex = assertThrows(BusinessLogicException.class, () ->
                 appointmentService.bookAppointment(1L, 1L, LocalDate.now().plusDays(1), 100L, "Đau đầu"));
@@ -127,7 +138,7 @@ class AppointmentServiceTest {
 
         when(userRepository.findById(1L)).thenReturn(Optional.of(patient));
         when(doctorProfileRepository.findById(1L)).thenReturn(Optional.of(doctor));
-        when(timeSlotRepository.findById(100L)).thenReturn(Optional.of(timeSlot));
+        when(timeSlotRepository.findByIdForUpdate(100L)).thenReturn(Optional.of(timeSlot));
 
         BusinessLogicException ex = assertThrows(BusinessLogicException.class, () ->
                 appointmentService.bookAppointment(1L, 1L, LocalDate.now().plusDays(1), 100L, "Đau họng")
@@ -142,7 +153,7 @@ class AppointmentServiceTest {
     void testBookAppointmentOptimisticLockFailure() {
         when(userRepository.findById(1L)).thenReturn(Optional.of(patient));
         when(doctorProfileRepository.findById(1L)).thenReturn(Optional.of(doctor));
-        when(timeSlotRepository.findById(100L)).thenReturn(Optional.of(timeSlot));
+        when(timeSlotRepository.findByIdForUpdate(100L)).thenReturn(Optional.of(timeSlot));
         doThrow(new OptimisticLockingFailureException("Version conflict")).when(timeSlotRepository).saveAndFlush(any(TimeSlot.class));
 
         BusinessLogicException ex = assertThrows(BusinessLogicException.class, () ->
@@ -164,7 +175,7 @@ class AppointmentServiceTest {
                 .build();
         timeSlot.setStatus(SlotStatus.BOOKED);
 
-        when(appointmentRepository.findById(500L)).thenReturn(Optional.of(apt));
+        when(appointmentRepository.findByIdForUpdate(500L)).thenReturn(Optional.of(apt));
 
         appointmentService.cancelAppointment(500L, 1L);
 
@@ -184,8 +195,8 @@ class AppointmentServiceTest {
                 .status(AppointmentStatus.CONFIRMED)
                 .build();
 
-        when(appointmentRepository.findById(500L)).thenReturn(Optional.of(apt));
-        when(appointmentRepository.countQueueForDate(LocalDate.now())).thenReturn(2L);
+        when(appointmentRepository.findByIdForUpdate(500L)).thenReturn(Optional.of(apt));
+        when(dailyQueueCounterAllocator.allocateNext(LocalDate.now())).thenReturn(3L);
         when(appointmentRepository.save(any(Appointment.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         Appointment checkedIn = appointmentService.checkInAppointment(500L);
@@ -200,12 +211,12 @@ class AppointmentServiceTest {
     void testFindTodayQueueByDoctor() {
         java.util.List<AppointmentStatus> queueStatuses = java.util.List.of(
                 AppointmentStatus.CHECKED_IN, AppointmentStatus.IN_PROGRESS);
-        when(appointmentRepository.findByDoctorIdAndAppointmentDateAndStatusInOrderByQueueNumberAsc(
+        when(appointmentRepository.findByDoctorIdAndAppointmentDateAndStatusInOrderByQueueSequenceAsc(
                 1L, LocalDate.now(), queueStatuses)).thenReturn(java.util.List.of());
 
         assertTrue(appointmentService.findTodayQueueByDoctor(1L).isEmpty());
 
-        verify(appointmentRepository).findByDoctorIdAndAppointmentDateAndStatusInOrderByQueueNumberAsc(
+        verify(appointmentRepository).findByDoctorIdAndAppointmentDateAndStatusInOrderByQueueSequenceAsc(
                 1L, LocalDate.now(), queueStatuses);
     }
 }

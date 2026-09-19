@@ -13,6 +13,7 @@ import java.util.Optional;
 @Repository
 public interface DoctorProfileRepository extends JpaRepository<DoctorProfile, Long> {
     Optional<DoctorProfile> findByUserId(Long userId);
+    Optional<DoctorProfile> findByLicenseNumber(String licenseNumber);
     List<DoctorProfile> findBySpecialtyId(Long specialtyId);
 
     @Query("SELECT d FROM DoctorProfile d JOIN d.user u WHERE u.isActive = true")

@@ -10,7 +10,9 @@ import javax.imageio.ImageIO;
 public class DatabaseDiagramRenderer {
 
     public static void main(String[] args) throws Exception {
-        Path outputDir = Paths.get("c:/Users/DUCANHZZ/Downloads/LTW/PRJ/docs/diagrams");
+        Path outputDir = args.length > 0
+                ? Paths.get(args[0])
+                : Paths.get(System.getProperty("medclinic.docs.output", "docs/generated")).resolve("diagrams");
         renderAllDiagrams(outputDir);
     }
 
@@ -72,7 +74,7 @@ public class DatabaseDiagramRenderer {
 
         // Nhóm 3: Lịch hẹn & Bệnh án (Giữa dưới)
         drawEntityCard(g, 570, 520, 230, 170, "Appointment", new Color(225, 29, 72),
-                new String[]{"id (PK)", "booking_code", "patient_id (FK)", "doctor_id (FK)", "time_slot_id (FK 1-1)", "status", "queue_number"});
+                new String[]{"id (PK)", "booking_code", "patient_id (FK)", "doctor_id (FK)", "time_slot_id (FK N-1)", "queue_sequence", "version (@Version)"});
 
         drawEntityCard(g, 850, 520, 220, 160, "MedicalRecord", new Color(147, 51, 234),
                 new String[]{"id (PK)", "appointment_id (FK 1-1)", "doctor_id (FK)", "patient_id (FK)", "symptoms, diagnosis", "re_exam_date"});
@@ -82,10 +84,10 @@ public class DatabaseDiagramRenderer {
 
         // Nhóm 4: Dược phẩm & Hóa đơn (Đáy)
         drawEntityCard(g, 1110, 690, 200, 140, "PrescriptionItem", new Color(217, 119, 6),
-                new String[]{"id (PK)", "prescription_id (FK)", "medicine_id (FK)", "quantity", "dosage, frequency"});
+                new String[]{"id (PK)", "prescription_id (FK)", "medicine_id (FK)", "quantity", "unit_price_at_time", "dosage, frequency"});
 
         drawEntityCard(g, 850, 710, 220, 130, "Medicine", new Color(217, 119, 6),
-                new String[]{"id (PK)", "name", "unit", "unit_price", "stock_quantity"});
+                new String[]{"id (PK)", "name", "unit", "unit_price", "stock_quantity", "version (@Version)"});
 
         drawEntityCard(g, 290, 550, 220, 160, "Invoice", new Color(5, 150, 105),
                 new String[]{"id (PK)", "appointment_id (FK 1-1)", "invoice_code", "consultation_fee", "medicine_fee", "total_amount", "payment_status"});
@@ -103,8 +105,8 @@ public class DatabaseDiagramRenderer {
         drawConnector(g, 790, 380, 840, 380, "1", "*", "doctor_id");
         // 6. Schedule -> TimeSlot (1 - *)
         drawConnector(g, 1060, 380, 1100, 380, "1", "*", "schedule_id");
-        // 7. TimeSlot -> Appointment (1 - 0..1)
-        drawOrthogonalConnector(g, 1150, 450, 1150, 485, 750, 485, 750, 520, "1", "0..1");
+        // 7. TimeSlot -> Appointment (1 - many historical appointments)
+        drawOrthogonalConnector(g, 1150, 450, 1150, 485, 750, 485, 750, 520, "1", "*");
         // 8. User (Patient) -> Appointment (1 - *)
         drawOrthogonalConnector(g, 340, 270, 340, 485, 630, 485, 630, 520, "1", "*");
         // 9. DoctorProfile -> Appointment (1 - *)
@@ -250,7 +252,7 @@ public class DatabaseDiagramRenderer {
                 new String[]{"PK  id : BIGINT", "FK  doctor_id : BIGINT", "    work_date : DATE", "    shift : VARCHAR(20)", "    max_patients : INT"});
 
         drawTableSchema(g, 660, 310, 260, "appointments",
-                new String[]{"PK  id : BIGINT", "UK  booking_code : VARCHAR(30)", "FK  patient_id : BIGINT", "FK  doctor_id : BIGINT", "UK,FK  time_slot_id : BIGINT", "    appointment_date : DATE", "    reason : TEXT", "    status : VARCHAR(30)", "    queue_number : VARCHAR(20)", "    created_at : DATETIME"});
+                new String[]{"PK  id : BIGINT", "UK  booking_code : VARCHAR(30)", "FK  patient_id : BIGINT", "FK  doctor_id : BIGINT", "FK  time_slot_id : BIGINT", "    appointment_date : DATE", "    status : VARCHAR(30)", "UK* queue_sequence : BIGINT", "    version : BIGINT", "    created_at : DATETIME"});
 
         drawTableSchema(g, 660, 630, 260, "medical_records",
                 new String[]{"PK  id : BIGINT", "UK,FK  appointment_id : BIGINT", "FK  doctor_id : BIGINT", "FK  patient_id : BIGINT", "    symptoms : TEXT", "    diagnosis : TEXT", "    doctor_notes : TEXT", "    re_exam_date : DATE", "    created_at : DATETIME"});
@@ -260,13 +262,13 @@ public class DatabaseDiagramRenderer {
                 new String[]{"PK  id : BIGINT", "FK  schedule_id : BIGINT", "    start_time : TIME", "    end_time : TIME", "    status : VARCHAR(20)", "    version : BIGINT (@Version)"});
 
         drawTableSchema(g, 980, 310, 270, "medicines",
-                new String[]{"PK  id : BIGINT", "UK  name : VARCHAR(150)", "    unit : VARCHAR(30)", "    unit_price : DECIMAL(12,2)", "    usage_guide : VARCHAR(255)", "    stock_quantity : INT", "    is_active : BOOLEAN"});
+                new String[]{"PK  id : BIGINT", "UK  name : VARCHAR(150)", "    unit : VARCHAR(30)", "    unit_price : DECIMAL(12,2)", "    stock_quantity : INT", "    is_active : BOOLEAN", "    version : BIGINT"});
 
         drawTableSchema(g, 980, 530, 270, "prescriptions",
                 new String[]{"PK  id : BIGINT", "UK,FK  medical_record_id : BIGINT", "    doctor_notes : TEXT", "    created_at : DATETIME"});
 
         drawTableSchema(g, 980, 710, 270, "prescription_items",
-                new String[]{"PK  id : BIGINT", "FK  prescription_id : BIGINT", "FK  medicine_id : BIGINT", "    quantity : INT", "    dosage : VARCHAR(100)", "    frequency : VARCHAR(100)", "    instructions : VARCHAR(255)"});
+                new String[]{"PK  id : BIGINT", "FK  prescription_id : BIGINT", "FK  medicine_id : BIGINT", "    quantity : INT", "    unit_price_at_time : DECIMAL", "    dosage : VARCHAR(100)", "    frequency : VARCHAR(100)"});
 
         // Đường nối khóa ngoại với Orthogonal routing
         g.setStroke(new BasicStroke(1.4f));

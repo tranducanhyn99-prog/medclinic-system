@@ -11,6 +11,7 @@ import com.medclinic.repository.UserRepository;
 import com.medclinic.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -94,17 +95,30 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
+    @PreAuthorize("#userId == principal.id or hasRole('ADMIN')")
     public User updateUserProfile(Long userId, String fullName, String phone, String address) {
+        requireText(fullName, "Họ tên");
         User user = findById(userId);
-        user.setFullName(fullName);
-        user.setPhone(phone);
-        user.setAddress(address);
+        String normalizedPhone = normalizeOptional(phone);
+        if (normalizedPhone != null) {
+            User owner = userRepository.findByPhone(normalizedPhone).orElse(null);
+            if (owner != null && !owner.getId().equals(userId)) {
+                throw new BusinessLogicException("Số điện thoại đã được đăng ký");
+            }
+        }
+        user.setFullName(fullName.trim());
+        user.setPhone(normalizedPhone);
+        user.setAddress(normalizeOptional(address));
         return userRepository.save(user);
     }
 
     @Override
     @Transactional
+    @PreAuthorize("#userId == principal.id or hasRole('ADMIN')")
     public void changePassword(Long userId, String oldPassword, String newPassword) {
+        if (newPassword == null || newPassword.length() < 8) {
+            throw new BusinessLogicException("Mật khẩu mới phải có ít nhất 8 ký tự.");
+        }
         User user = findById(userId);
         if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
             throw new BusinessLogicException("Mật khẩu hiện tại không chính xác!");
@@ -115,10 +129,21 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
+    @PreAuthorize("hasRole('ADMIN')")
     public void toggleUserStatus(Long userId) {
         User user = findById(userId);
         user.setIsActive(!user.getIsActive());
         userRepository.save(user);
+    }
+
+    private void requireText(String value, String label) {
+        if (value == null || value.trim().isEmpty()) {
+            throw new BusinessLogicException(label + " không được để trống");
+        }
+    }
+
+    private String normalizeOptional(String value) {
+        return value == null || value.trim().isEmpty() ? null : value.trim();
     }
 }
 

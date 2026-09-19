@@ -54,9 +54,9 @@
                         <li class="breadcrumb-item active" aria-current="page">Đặt lịch khám</li>
                     </ol>
                 </nav>
-                <h3 class="fw-bold text-dark mb-0">
+                <h1 class="h3 fw-bold text-dark mb-0">
                     <i class="bi bi-calendar-plus text-primary me-2"></i>Đặt Lịch Khám Bệnh
-                </h3>
+                </h1>
             </div>
             <div class="text-muted small">
                 <i class="bi bi-shield-check text-success me-1"></i> Khung giờ 30 phút • Chống Double Booking
@@ -70,20 +70,21 @@
 
                     <!-- Step 1 & 2: Chuyên Khoa & Bác Sĩ -->
                     <div class="card card-custom p-4 mb-4">
-                        <h5 class="fw-bold text-dark mb-3 d-flex align-items-center">
+                        <h2 class="h5 fw-bold text-dark mb-3 d-flex align-items-center">
                             <span class="badge bg-primary rounded-circle me-2 d-inline-flex align-items-center justify-content-center" style="width: 26px; height: 26px;">1</span>
                             Chọn Chuyên Khoa & Bác Sĩ Phụ Trách
-                        </h5>
+                        </h2>
 
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <label for="specialtySelect" class="form-label fw-semibold small">
                                     Chuyên khoa <span class="text-danger">*</span>
                                 </label>
-                                <select class="form-select" id="specialtySelect" required>
+                                <select class="form-select" id="specialtySelect" name="specialtyId" required>
                                     <option value="">-- Chọn chuyên khoa khám --</option>
                                     <option th:each="spec : ${specialties}"
                                             th:value="${spec.id}"
+                                            th:selected="${bookingForm.specialtyId != null and bookingForm.specialtyId == spec.id}"
                                             th:text="${spec.name}">Nội tổng quát</option>
                                 </select>
                             </div>
@@ -92,10 +93,11 @@
                                 <label for="doctorSelect" class="form-label fw-semibold small">
                                     Bác sĩ thăm khám <span class="text-danger">*</span>
                                 </label>
-                                <select class="form-select" id="doctorSelect" name="doctorId" required disabled>
+                                <select class="form-select" id="doctorSelect" name="doctorId" required disabled th:attr="data-saved-doctor-id=${bookingForm.doctorId}">
                                     <option value="">-- Vui lòng chọn chuyên khoa trước --</option>
                                     <option th:each="doc : ${doctors}"
                                             th:value="${doc.id}"
+                                            th:selected="${bookingForm.doctorId != null and bookingForm.doctorId == doc.id}"
                                             th:data-specialty-id="${doc.specialty.id}"
                                             th:data-specialty-name="${doc.specialty.name}"
                                             th:data-title="${doc.title}"
@@ -107,13 +109,13 @@
                         </div>
 
                         <!-- Doctor Info Banner (Hidden initially) -->
-                        <div id="doctorDetailBox" class="alert alert-info border-info mt-3 p-3 rounded-3 d-none">
+                        <div id="doctorDetailBox" class="alert alert-info border-info mt-3 p-3 rounded-3 d-none" role="status" aria-live="polite" aria-atomic="true">
                             <div class="d-flex align-items-center gap-3">
                                 <div class="rounded-circle bg-primary text-white p-2 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
                                     <i class="bi bi-person-badge fs-5"></i>
                                 </div>
                                 <div class="flex-grow-1">
-                                    <h6 class="fw-bold mb-0 text-dark" id="docDetailName">Họ tên Bác sĩ</h6>
+                                    <div class="h6 fw-bold mb-0 text-dark" id="docDetailName">Họ tên Bác sĩ</div>
                                     <div class="small text-secondary">
                                         <span id="docDetailSpec" class="me-3"></span>
                                         <span id="docDetailExp" class="me-3"></span>
@@ -126,17 +128,17 @@
 
                     <!-- Step 3 & 4: Ngày Khám & Chọn Khung Giờ (Time Slots) -->
                     <div class="card card-custom p-4 mb-4">
-                        <h5 class="fw-bold text-dark mb-3 d-flex align-items-center">
+                        <h2 class="h5 fw-bold text-dark mb-3 d-flex align-items-center">
                             <span class="badge bg-primary rounded-circle me-2 d-inline-flex align-items-center justify-content-center" style="width: 26px; height: 26px;">2</span>
                             Chọn Ngày Khám & Khung Giờ Còn Trống
-                        </h5>
+                        </h2>
 
                         <div class="row g-3 mb-3">
                             <div class="col-md-6">
                                 <label for="appointmentDate" class="form-label fw-semibold small">
                                     Ngày khám dự kiến <span class="text-danger">*</span>
                                 </label>
-                                <input type="date" class="form-control" id="appointmentDate" name="date" required>
+                                <input type="date" class="form-control" id="appointmentDate" name="date" required th:value="${bookingForm.date}">
                                 <div class="form-text">Phòng khám nhận đặt lịch trước tối đa 14 ngày.</div>
                             </div>
                         </div>
@@ -148,44 +150,45 @@
                             </label>
 
                             <!-- Initial instruction state -->
-                            <div id="slotStatePrompt" class="text-muted small p-3 bg-light rounded-3 text-center border">
+                            <div id="slotStatePrompt" class="text-muted small p-3 bg-light rounded-3 text-center border" role="status" aria-live="polite">
                                 <i class="bi bi-arrow-up-circle me-1"></i> Vui lòng chọn Bác sĩ và Ngày khám để xem danh sách khung giờ còn trống.
                             </div>
 
                             <!-- Loading State -->
-                            <div id="slotStateLoading" class="p-4 text-center d-none">
+                            <div id="slotStateLoading" class="p-4 text-center d-none" role="status" aria-live="polite" aria-atomic="true">
                                 <div class="spinner-border text-primary spinner-border-sm me-2" role="status"></div>
                                 <span class="text-secondary small">Đang kiểm tra lịch trực và khung giờ khả dụng...</span>
                             </div>
 
                             <!-- Empty State -->
-                            <div id="slotStateEmpty" class="alert alert-warning border-warning p-3 rounded-3 small d-none">
+                            <div id="slotStateEmpty" class="alert alert-warning border-warning p-3 rounded-3 small d-none" role="alert">
                                 <i class="bi bi-exclamation-triangle-fill me-2"></i>
                                 Bác sĩ hiện không có lịch làm việc hoặc tất cả khung giờ trong ngày này đã kín. Vui lòng chọn ngày khám khác!
                             </div>
 
                             <!-- Slots Grid -->
-                            <div id="slotGrid" class="row row-cols-2 row-cols-sm-3 row-cols-md-4 g-2 d-none">
+                            <div id="slotGrid" class="row row-cols-2 row-cols-sm-3 row-cols-md-4 g-2 d-none" role="group" aria-label="C?c khung gi? kh?m kh? d?ng">
                                 <!-- Generated dynamically via JavaScript -->
                             </div>
 
                             <!-- Hidden input for selected slot ID -->
-                            <input type="hidden" name="slotId" id="selectedSlotId" required>
+                            <input type="hidden" name="slotId" id="selectedSlotId" required th:value="${bookingForm.slotId}">
+                            <div id="slotSelectionStatus" class="visually-hidden" role="status" aria-live="polite" aria-atomic="true"></div>
                         </div>
                     </div>
 
                     <!-- Step 5: Lý Do Khám -->
                     <div class="card card-custom p-4 mb-4">
-                        <h5 class="fw-bold text-dark mb-3 d-flex align-items-center">
+                        <h2 class="h5 fw-bold text-dark mb-3 d-flex align-items-center">
                             <span class="badge bg-primary rounded-circle me-2 d-inline-flex align-items-center justify-content-center" style="width: 26px; height: 26px;">3</span>
                             Thông Tin Bệnh Nhân & Triệu Chứng
-                        </h5>
+                        </h2>
 
                         <div class="mb-3">
                             <label for="reason" class="form-label fw-semibold small">
                                 Mô tả triệu chứng hoặc lý do khám <span class="text-danger">*</span>
                             </label>
-                            <textarea class="form-control" id="reason" name="reason" rows="3"
+                            <textarea class="form-control" id="reason" name="reason" rows="3" th:text="${bookingForm.reason}"
                                       placeholder="Ví dụ: Đau đầu âm ỉ kèm sốt nhẹ 2 ngày nay, khó ngủ, có tiền sử huyết áp..." required></textarea>
                             <div class="form-text">Mô tả rõ ràng giúp bác sĩ chuẩn bị tốt hơn cho buổi khám của bạn.</div>
                         </div>
@@ -197,7 +200,7 @@
                 <div class="col-lg-4">
                     <div class="card card-custom p-4 summary-card shadow-sm border-primary border-opacity-25">
                         <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
-                            <h6 class="fw-bold text-dark mb-0">Tóm Tắt Phiếu Hẹn</h6>
+                            <h2 class="h6 fw-bold text-dark mb-0">Tóm Tắt Phiếu Hẹn</h2>
                             <span class="badge bg-primary-subtle text-primary small">Trực Tuyến</span>
                         </div>
 
@@ -249,6 +252,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const slotGrid = document.getElementById('slotGrid');
     const selectedSlotId = document.getElementById('selectedSlotId');
     const submitBtn = document.getElementById('submitBookingBtn');
+    const slotSelectionStatus = document.getElementById('slotSelectionStatus');
 
     // Summary Elements
     const sumSpecialty = document.getElementById('sumSpecialty');
@@ -285,7 +289,9 @@ document.addEventListener('DOMContentLoaded', function () {
     appointmentDate.max = `${maxYyyy}-${maxMm}-${maxDd}`;
 
     // Set default date = today
-    appointmentDate.value = minDateStr;
+    if (!appointmentDate.value) {
+        appointmentDate.value = minDateStr;
+    }
     sumDate.textContent = minDateStr;
 
     // Cache all doctor options
@@ -361,6 +367,7 @@ document.addEventListener('DOMContentLoaded', function () {
         selectedSlotId.value = '';
         sumSlot.textContent = 'Chưa chọn';
         submitBtn.disabled = true;
+        slotSelectionStatus.textContent = '';
     }
 
     // AJAX Fetch Time Slots
@@ -377,6 +384,7 @@ document.addEventListener('DOMContentLoaded', function () {
         slotStateEmpty.classList.add('d-none');
         slotGrid.classList.add('d-none');
         slotStateLoading.classList.remove('d-none');
+        slotGrid.setAttribute('aria-busy', 'true');
         selectedSlotId.value = '';
         sumSlot.textContent = 'Chưa chọn';
         submitBtn.disabled = true;
@@ -385,6 +393,7 @@ document.addEventListener('DOMContentLoaded', function () {
             .then(res => res.json())
             .then(slots => {
                 slotStateLoading.classList.add('d-none');
+                slotGrid.setAttribute('aria-busy', 'false');
                 slotGrid.innerHTML = '';
 
                 if (!slots || slots.length === 0) {
@@ -406,17 +415,23 @@ document.addEventListener('DOMContentLoaded', function () {
                     btn.textContent = timeText;
                     btn.dataset.slotId = slot.id;
                     btn.dataset.timeText = timeText;
+                    btn.setAttribute('aria-pressed', 'false');
 
                     if (!isAvailable) {
                         btn.disabled = true;
                         btn.title = 'Khung giờ này đã được đặt';
                     } else {
                         btn.addEventListener('click', function () {
-                            document.querySelectorAll('.slot-btn.selected').forEach(el => el.classList.remove('selected'));
+                            document.querySelectorAll('.slot-btn.selected').forEach(el => {
+                                el.classList.remove('selected');
+                                el.setAttribute('aria-pressed', 'false');
+                            });
                             this.classList.add('selected');
+                            this.setAttribute('aria-pressed', 'true');
                             selectedSlotId.value = this.dataset.slotId;
                             sumSlot.textContent = this.dataset.timeText;
                             submitBtn.disabled = false;
+                            slotSelectionStatus.textContent = '?? ch?n khung gi? ' + this.dataset.timeText;
                         });
                     }
 
@@ -426,6 +441,7 @@ document.addEventListener('DOMContentLoaded', function () {
             })
             .catch(err => {
                 slotStateLoading.classList.add('d-none');
+                slotGrid.setAttribute('aria-busy', 'false');
                 slotStateEmpty.classList.remove('d-none');
                 console.error('Lỗi tải time slots:', err);
             });

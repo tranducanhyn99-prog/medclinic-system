@@ -15,13 +15,13 @@
                         <div class="rounded-circle bg-primary bg-opacity-10 text-primary p-3 d-inline-flex align-items-center justify-content-center mb-2" style="width: 70px; height: 70px;">
                             <i class="bi bi-person-fill-lock fs-1"></i>
                         </div>
-                        <h3 class="fw-bold text-dark mb-1">Đăng Nhập MedClinic</h3>
+                        <h1 class="h3 fw-bold text-dark mb-1">Đăng Nhập MedClinic</h1>
                         <p class="text-muted small">Truy cập cổng thông tin và dịch vụ khám chữa bệnh</p>
                     </div>
 
                     <form th:action="@{/login}" method="post">
                         <div class="mb-3">
-                            <label class="form-label small fw-semibold text-muted">Tên đăng nhập hoặc Email</label>
+                            <label for="usernameInput" class="form-label small fw-semibold text-muted">Tên đăng nhập hoặc Email</label>
                             <div class="input-group">
                                 <span class="input-group-text bg-light"><i class="bi bi-person"></i></span>
                                 <input type="text" id="usernameInput" name="username" class="form-control form-control-lg" placeholder="Nhập username/email..." required autofocus>
@@ -29,7 +29,7 @@
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label small fw-semibold text-muted">Mật khẩu</label>
+                            <label for="passwordInput" class="form-label small fw-semibold text-muted">Mật khẩu</label>
                             <div class="input-group">
                                 <span class="input-group-text bg-light"><i class="bi bi-lock"></i></span>
                                 <input type="password" id="passwordInput" name="password" class="form-control form-control-lg" placeholder="Nhập mật khẩu..." required>
@@ -60,10 +60,10 @@
                             <i class="bi bi-lightning-charge-fill text-warning me-1"></i> Tài khoản Demo Nhanh (Click để tự điền):
                         </div>
                         <div class="d-flex flex-wrap gap-1 justify-content-center">
-                            <button type="button" class="btn btn-sm btn-outline-danger py-1 px-2" onclick="fillLogin('admin', '123456')">Admin</button>
-                            <button type="button" class="btn btn-sm btn-outline-success py-1 px-2" onclick="fillLogin('doctor', '123456')">Bác sĩ</button>
-                            <button type="button" class="btn btn-sm btn-outline-warning text-dark py-1 px-2" onclick="fillLogin('staff', '123456')">Lễ tân</button>
-                            <button type="button" class="btn btn-sm btn-outline-primary py-1 px-2" onclick="fillLogin('patient', '123456')">Bệnh nhân</button>
+                            <button type="button" class="btn btn-sm btn-outline-danger py-1 px-2 demo-login" data-username="admin" data-password="123456">Admin</button>
+                            <button type="button" class="btn btn-sm btn-outline-success py-1 px-2 demo-login" data-username="doctor" data-password="123456">Bác sĩ</button>
+                            <button type="button" class="btn btn-sm btn-outline-warning text-dark py-1 px-2 demo-login" data-username="staff" data-password="123456">Lễ tân</button>
+                            <button type="button" class="btn btn-sm btn-outline-primary py-1 px-2 demo-login" data-username="patient" data-password="123456">Bệnh nhân</button>
                         </div>
                     </div>
 
@@ -75,10 +75,13 @@
 
 <div layout:fragment="scripts">
     <script>
-        function fillLogin(user, pass) {
-            document.getElementById('usernameInput').value = user;
-            document.getElementById('passwordInput').value = pass;
-        }
+        document.querySelectorAll('.demo-login').forEach(function(button) {
+            button.addEventListener('click', function() {
+                document.getElementById('usernameInput').value = button.dataset.username;
+                document.getElementById('passwordInput').value = button.dataset.password;
+                document.getElementById('passwordInput').focus();
+            });
+        });
     </script>
 </div>
 </body>

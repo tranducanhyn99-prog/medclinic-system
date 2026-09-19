@@ -48,7 +48,7 @@ public class EmailServiceImpl implements EmailService {
             helper.setText(htmlBody, true);
             javaMailSender.send(message);
             log.info("Booking confirmation email sent to: {}", toEmail);
-        } catch (MessagingException e) {
+        } catch (Exception e) {
             log.error("Failed to send booking confirmation email to: {}", toEmail, e);
         }
     }
@@ -79,7 +79,7 @@ public class EmailServiceImpl implements EmailService {
             helper.setText(htmlBody, true);
             javaMailSender.send(message);
             log.info("Cancellation email sent to: {}", toEmail);
-        } catch (MessagingException e) {
+        } catch (Exception e) {
             log.error("Failed to send cancellation email to: {}", toEmail, e);
         }
     }
@@ -102,7 +102,7 @@ public class EmailServiceImpl implements EmailService {
                     """, userName, resetUrl);
             helper.setText(htmlBody, true);
             javaMailSender.send(message);
-        } catch (MessagingException exception) {
+        } catch (Exception exception) {
             log.error("Failed to send password reset email to: {}", toEmail, exception);
         }
     }

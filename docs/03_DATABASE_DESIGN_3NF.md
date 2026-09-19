@@ -1,7 +1,7 @@
 # THIẾT KẾ CƠ SỞ DỮ LIỆU & CHỨNG MINH CHUẨN HÓA 3NF (DATABASE DESIGN)
-**Dự án:** MedClinic - Phòng Khám Tư Nhân  
-**Học phần:** Lập trình Web & Công nghệ Phần mềm  
-**Hệ quản trị CSDL hỗ trợ:** H2 Database (Dev Mode) / MySQL 8.0 / MS SQL Server  
+**Dự án:** MedClinic - Phòng Khám Tư Nhân
+**Học phần:** Lập trình Web & Công nghệ Phần mềm
+**Hệ quản trị CSDL mục tiêu:** Microsoft SQL Server (current/production); H2 Database chỉ dùng cho Dev/Test. MySQL là khả năng tương thích dự kiến trong roadmap tương lai.
 
 ---
 
@@ -14,20 +14,22 @@ erDiagram
     SPECIALTIES ||--o{ DOCTOR_PROFILES : "categorizes"
     DOCTOR_PROFILES ||--o{ DOCTOR_SCHEDULES : "has"
     DOCTOR_SCHEDULES ||--o{ TIME_SLOTS : "divides_into"
-    
+
     USERS ||--o{ APPOINTMENTS : "books_as_patient"
     DOCTOR_PROFILES ||--o{ APPOINTMENTS : "assigned_doctor"
-    TIME_SLOTS ||--o| APPOINTMENTS : "allocates"
-    
+    TIME_SLOTS ||--o{ APPOINTMENTS : "allocated_to_history"
+
     APPOINTMENTS ||--o| MEDICAL_RECORDS : "produces"
     DOCTOR_PROFILES ||--o{ MEDICAL_RECORDS : "examines"
     USERS ||--o{ MEDICAL_RECORDS : "has_history"
-    
+
     MEDICAL_RECORDS ||--o| PRESCRIPTIONS : "includes"
     PRESCRIPTIONS ||--o{ PRESCRIPTION_ITEMS : "details"
     MEDICINES ||--o{ PRESCRIPTION_ITEMS : "supplies"
-    
+
     APPOINTMENTS ||--o| INVOICES : "billed_as"
+    DAILY_QUEUE_COUNTERS ||--|| APPOINTMENTS : "allocates_daily_sequence"
+    INVOICE_CODE_RESERVATIONS ||--|| INVOICES : "reserves_unique_code"
     USERS ||--o{ NOTIFICATIONS : "receives"
 ```
 
@@ -52,7 +54,7 @@ erDiagram
 - **Định nghĩa:** Một quan hệ đạt 3NF nếu đạt 2NF và không tồn tại phụ thuộc hàm bắc cầu ($X \rightarrow Y$ và $Y \rightarrow Z$, trong đó $Z$ là thuộc tính không khóa).
 - **Áp dụng trong MedClinic:**
   - *Ví dụ 1 (Bảng `appointments`):* Bảng này chỉ lưu khóa ngoại `doctor_id` và `time_slot_id`. Tên chuyên khoa, học vị của bác sĩ không được lưu trong bảng `appointments` mà phải truy vấn qua liên kết $Appointment \rightarrow DoctorProfile \rightarrow Specialty$.
-  - *Ví dụ 2 (Bảng `prescription_items`):* Bảng này chỉ lưu `medicine_id` và `quantity`. Tên thuốc `name`, đơn vị tính `unit` và giá thuốc `unitPrice` được lưu tại bảng `medicines`, loại bỏ hoàn toàn phụ thuộc bắc cầu $PrescriptionItem \rightarrow Medicine \rightarrow (name, unit, unitPrice)$.
+  - *Ví dụ 2 (Bảng `prescription_items`):* Tên thuốc và đơn vị tiếp tục được chuẩn hóa tại `medicines`. `unit_price_at_time` là snapshot giá tại thời điểm kê đơn, một sự kiện lịch sử bất biến phục vụ hóa đơn; không dùng để thay thế giá hiện hành ở `medicines`.
 
 ---
 
@@ -130,11 +132,13 @@ erDiagram
 | `booking_code` | VARCHAR(30) | NOT NULL, UNIQUE, INDEX | Mã lịch hẹn (VD: `MED-260831-A1B2`) |
 | `patient_id` | BIGINT | NOT NULL, FK -> `users(id)` | Khóa ngoại bệnh nhân |
 | `doctor_id` | BIGINT | NOT NULL, FK -> `doctor_profiles(id)` | Khóa ngoại bác sĩ |
-| `time_slot_id` | BIGINT | NOT NULL, UNIQUE, FK -> `time_slots(id)`| Khung giờ khám được đặt |
+| `time_slot_id` | BIGINT | NOT NULL, FK -> `time_slots(id)`| Khung giờ khám; nhiều appointment lịch sử được phép tham chiếu cùng slot sau khi hủy |
 | `appointment_date`| DATE | NOT NULL, INDEX | Ngày khám thực tế |
 | `reason` | TEXT | NULL | Lý do khám & Triệu chứng ban đầu |
 | `status` | VARCHAR(30) | NOT NULL | `CONFIRMED`, `CHECKED_IN`, `IN_PROGRESS`, `COMPLETED`, `CANCELLED`, `NO_SHOW` |
 | `queue_number` | VARCHAR(20) | NULL | Số thứ tự tiếp nhận trong ngày (VD: `STT-01`) |
+| `queue_sequence` | BIGINT | NULL, UNIQUE cùng `appointment_date` | Giá trị số dùng để sắp hàng queue đúng sau 99 |
+| `version` | BIGINT | NOT NULL | Optimistic locking khi đổi trạng thái appointment |
 | `created_at` | DATETIME | NOT NULL | Thời điểm đặt lịch |
 | `updated_at` | DATETIME | NULL | Thời điểm cập nhật cuối |
 
@@ -161,10 +165,11 @@ erDiagram
 | `usage_guide` | VARCHAR(255) | NULL | Hướng dẫn sử dụng cơ bản |
 | `stock_quantity`| INT | NOT NULL, DEFAULT 1000 | Số lượng tồn trong kho |
 | `is_active` | BOOLEAN | NOT NULL, DEFAULT TRUE | Trạng thái kinh doanh |
+| `version` | BIGINT | NOT NULL | Optimistic locking khi trừ tồn kho |
 
 ### 3.10. Bảng `prescriptions` & `prescription_items` (Đơn thuốc & Chi tiết đơn thuốc)
 - **`prescriptions`:** `id` (PK), `medical_record_id` (FK Unique), `doctor_notes` (TEXT), `created_at` (DATETIME).
-- **`prescription_items`:** `id` (PK), `prescription_id` (FK), `medicine_id` (FK), `quantity` (INT), `dosage` (VARCHAR), `frequency` (VARCHAR), `instructions` (VARCHAR).
+- **`prescription_items`:** `id` (PK), `prescription_id` (FK), `medicine_id` (FK), `quantity` (INT), `unit_price_at_time` (DECIMAL(12,2), NOT NULL), `dosage` (VARCHAR), `frequency` (VARCHAR), `instructions` (VARCHAR). Giá snapshot được dùng cho tổng tiền của đơn cũ.
 
 ### 3.11. Bảng `invoices` (Hóa đơn thanh toán viện phí)
 | Tên Cột | Kiểu Dữ Liệu | Ràng Buộc | Ý Nghĩa / Diễn Giải |
@@ -175,7 +180,32 @@ erDiagram
 | `consultation_fee`| DECIMAL(12,2)| NOT NULL | Tiền công khám bác sĩ |
 | `medicine_fee` | DECIMAL(12,2)| NOT NULL, DEFAULT 0 | Tổng tiền thuốc trong đơn |
 | `total_amount` | DECIMAL(12,2)| NOT NULL | Tổng tiền thanh toán (`consultation_fee + medicine_fee`) |
-| `payment_method`| VARCHAR(20) | NOT NULL | `CASH`, `VNPAY` |
+| `payment_method`| VARCHAR(20) | NOT NULL | Hiện nhận `CASH`; `VNPAY` chỉ được mở sau khi có redirect/IPN/callback |
 | `payment_status`| VARCHAR(20) | NOT NULL | `UNPAID`, `PAID`, `REFUNDED` |
 | `paid_at` | DATETIME | NULL | Thời điểm thanh toán |
 | `created_at` | DATETIME | NOT NULL | Thời điểm lập hóa đơn |
+
+### 3.12. Bảng `daily_queue_counters` (Bộ cấp số thứ tự theo ngày)
+| Tên Cột | Kiểu Dữ Liệu | Ràng Buộc | Ý Nghĩa / Diễn Giải |
+| :--- | :--- | :--- | :--- |
+| `id` | BIGINT | PK, AUTO_INCREMENT | Khóa chính |
+| `queue_date` | DATE | NOT NULL, UNIQUE | Một counter cho mỗi ngày khám |
+| `next_sequence` | BIGINT | NOT NULL | Sequence kế tiếp để cấp STT |
+| `version` | BIGINT | NOT NULL | Optimistic locking cho counter |
+
+### 3.13. Bảng `invoice_code_reservations` (Giữ chỗ mã hóa đơn)
+| Tên Cột | Kiểu Dữ Liệu | Ràng Buộc | Ý Nghĩa / Diễn Giải |
+| :--- | :--- | :--- | :--- |
+| `invoice_code` | VARCHAR(30) | PK, UNIQUE | Bản ghi reservation được insert trước khi phát hành hóa đơn để xử lý collision mã |
+
+### 3.14. B?ng `notifications` (Th?ng b?o n?i b?)
+- `id` BIGINT IDENTITY PK; `user_id` FK -> `users(id)`; `title` NVARCHAR(150) NOT NULL; `content` NVARCHAR(MAX) NOT NULL; `type` NVARCHAR(50) NULL; `is_read` BIT NOT NULL; `created_at` DATETIME2 NOT NULL.
+
+### 3.15. B?ng `password_reset_tokens` (Token kh?i ph?c m?t kh?u)
+- `id` BIGINT IDENTITY PK; `user_id` FK -> `users(id)`; `token_hash` NVARCHAR(64) NOT NULL UNIQUE + index; `expires_at` DATETIME2 NOT NULL; `used_at` DATETIME2 NULL; `created_at` DATETIME2 NOT NULL. Ch? l?u hash token, kh?ng l?u token th?.
+
+> SQL Server d?ng `NVARCHAR`/`NVARCHAR(MAX)` th?ng qua `hibernate.use_nationalized_character_data=true` ?? b?o to?n ti?ng Vi?t tr?n server collation `SQL_Latin1_General_CP1_CI_AS`.
+
+## 4. Triển khai migration
+
+SQL Server l? ??ch tri?n khai c?a phi?n b?n hi?n t?i. Production d?ng `ddl-auto=validate`; Hibernate kh?ng t? thay ??i schema. Database s?ch d?ng baseline `docs/database/SQLSERVER_BASELINE_SCHEMA_2026-09-19.sql`; database ?? t?n t?i d?ng pre-check/incremental migration trong `docs/database/CORE_WORKFLOW_MIGRATION_2026-09-17.md`. Baseline ?? apply th?nh c?ng tr?n SQL Server local 17.0.1000.7 v?i 16 b?ng, filtered unique index cho queue v? ki?m tra Unicode round-trip. Lu?n backup v? DBA-review tr??c production. MySQL ch? thu?c roadmap t??ng lai.

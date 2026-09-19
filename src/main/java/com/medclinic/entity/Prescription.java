@@ -26,7 +26,7 @@ public class Prescription {
     @JoinColumn(name = "medical_record_id", nullable = false, unique = true)
     private MedicalRecord medicalRecord;
 
-    @Column(columnDefinition = "TEXT")
+    @Lob
     private String doctorNotes;
 
     @OneToMany(mappedBy = "prescription", cascade = CascadeType.ALL, orphanRemoval = true)

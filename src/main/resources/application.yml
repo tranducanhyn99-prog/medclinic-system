@@ -26,8 +26,8 @@ spring:
   mail:
     host: smtp.gmail.com
     port: 587
-    username: ${MAIL_USERNAME:medclinic.demo@gmail.com}
-    password: ${MAIL_PASSWORD:demopassword123}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
     properties:
       mail:
         smtp:
@@ -47,6 +47,9 @@ app:
   hotline: 1900 6868
   email: support@medclinic.vn
   website: http://localhost:8080
+  security:
+    # Production profiles must supply this via REMEMBER_ME_KEY or an external config source.
+    remember-me-key: ${REMEMBER_ME_KEY}
 
 ---
 # Development Profile (H2 In-Memory for Instant Zero-Config Run)
@@ -73,6 +76,11 @@ spring:
       ddl-auto: create-drop
     defer-datasource-initialization: true
 
+app:
+  security:
+    # Local H2 data is ephemeral; production never receives a checked-in key.
+    remember-me-key: dev-only-replace-before-deploy
+
 ---
 # MySQL Production / Local Profile
 spring:
@@ -82,8 +90,8 @@ spring:
 
   datasource:
     url: jdbc:mysql://localhost:3306/medclinic_db?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=Asia/Ho_Chi_Minh&characterEncoding=UTF-8
-    username: root
-    password: ${DB_PASSWORD:root}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
@@ -100,12 +108,15 @@ spring:
 
   datasource:
     url: jdbc:sqlserver://localhost:1433;databaseName=medclinic_db;encrypt=false;trustServerCertificate=true;sendStringParametersAsUnicode=true;
-    username: sa
-    password: ${DB_PASSWORD:YourPassword123}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
     driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
 
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
     database-platform: org.hibernate.dialect.SQLServerDialect
     defer-datasource-initialization: true
+    properties:
+      hibernate:
+        use_nationalized_character_data: true

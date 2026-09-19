@@ -11,14 +11,14 @@
     <!-- Top Header -->
     <div class="d-flex flex-wrap align-items-center justify-content-between mb-4 pb-2 border-bottom">
         <div>
-            <h3 class="fw-bold text-dark mb-1">
+            <h1 class="h3 fw-bold text-dark mb-1">
                 <i class="bi bi-speedometer2 text-danger me-2"></i>Bảng Điều Khiển Quản Trị (KPI Dashboard)
-            </h3>
+            </h1>
             <p class="text-secondary small mb-0">Thống kê vận hành phòng khám, hiệu suất ca khám và trực quan hóa doanh thu y tế.</p>
         </div>
         <div>
             <span class="badge bg-light text-dark border p-2 small">
-                <i class="bi bi-clock me-1 text-primary"></i> Cập nhật thời gian thực
+                <i class="bi bi-clock me-1 text-primary"></i> Dữ liệu tại thời điểm tải trang
             </span>
         </div>
     </div>
@@ -30,7 +30,7 @@
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
                         <div class="text-muted small fw-semibold text-uppercase">Tổng Bệnh Nhân</div>
-                        <h3 class="fw-bold mb-0 text-dark mt-1" th:text="${totalPatients}">0</h3>
+                        <div class="h3 fw-bold mb-0 text-dark mt-1" th:text="${totalPatients}">0</div>
                     </div>
                     <div class="rounded-circle bg-primary bg-opacity-10 text-primary p-3">
                         <i class="bi bi-people-fill fs-3"></i>
@@ -43,8 +43,8 @@
             <div class="card card-portal p-4 border-start border-4 border-success shadow-sm h-100">
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
-                        <div class="text-muted small fw-semibold text-uppercase">Bác Sĩ Trực Tuyến</div>
-                        <h3 class="fw-bold mb-0 text-success mt-1" th:text="${totalDoctors}">0</h3>
+                        <div class="text-muted small fw-semibold text-uppercase">Tổng Bác Sĩ</div>
+                        <div class="h3 fw-bold mb-0 text-success mt-1" th:text="${totalDoctors}">0</div>
                     </div>
                     <div class="rounded-circle bg-success bg-opacity-10 text-success p-3">
                         <i class="bi bi-person-badge-fill fs-3"></i>
@@ -58,7 +58,7 @@
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
                         <div class="text-muted small fw-semibold text-uppercase">Lịch Khám Hôm Nay</div>
-                        <h3 class="fw-bold mb-0 text-warning mt-1" th:text="${todayAppointments}">0</h3>
+                        <div class="h3 fw-bold mb-0 text-warning mt-1" th:text="${todayAppointments}">0</div>
                     </div>
                     <div class="rounded-circle bg-warning bg-opacity-10 text-warning p-3">
                         <i class="bi bi-calendar2-check-fill fs-3"></i>
@@ -72,8 +72,8 @@
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
                         <div class="text-muted small fw-semibold text-uppercase">Tổng Doanh Thu Viện Phí</div>
-                        <h4 class="fw-bold mb-0 text-info mt-1"
-                            th:text="${#numbers.formatDecimal(totalRevenue, 0, 'COMMA', 0, 'POINT') + ' đ'}">0 đ</h4>
+                        <div class="h4 fw-bold mb-0 text-info mt-1"
+                            th:text="${#numbers.formatDecimal(totalRevenue, 0, 'COMMA', 0, 'POINT') + ' đ'}">0 đ</div>
                     </div>
                     <div class="rounded-circle bg-info bg-opacity-10 text-info p-3">
                         <i class="bi bi-cash-coin fs-3"></i>
@@ -88,9 +88,9 @@
         <!-- Status Donut Chart -->
         <div class="col-lg-5">
             <div class="card card-portal p-4 shadow-sm h-100">
-                <h6 class="fw-bold text-dark mb-3">
+                <h2 class="h6 fw-bold text-dark mb-3">
                     <i class="bi bi-pie-chart-fill text-primary me-2"></i>Tỷ Lệ Trạng Thái Cuộc Hẹn
-                </h6>
+                </h2>
                 <div class="chart-container" style="position: relative; height: 260px;">
                     <canvas id="statusChart"></canvas>
                 </div>
@@ -100,9 +100,9 @@
         <!-- Specialty Bar Chart -->
         <div class="col-lg-7">
             <div class="card card-portal p-4 shadow-sm h-100">
-                <h6 class="fw-bold text-dark mb-3">
+                <h2 class="h6 fw-bold text-dark mb-3">
                     <i class="bi bi-bar-chart-fill text-success me-2"></i>Lượt Đặt Khám Theo Chuyên Khoa
-                </h6>
+                </h2>
                 <div class="chart-container" style="position: relative; height: 260px;">
                     <canvas id="specialtyChart"></canvas>
                 </div>
@@ -112,35 +112,35 @@
 
     <!-- Quick Management Hub -->
     <div class="card card-portal p-4 shadow-sm">
-        <h6 class="fw-bold text-dark mb-3">
+        <h2 class="h6 fw-bold text-dark mb-3">
             <i class="bi bi-grid-fill text-secondary me-2"></i>Lối Tắt Quản Trị Danh Mục & Vận Hành
-        </h6>
+        </h2>
         <div class="row g-3">
             <div class="col-sm-6 col-md-3">
                 <a th:href="@{/admin/specialties}" class="card card-portal p-3 text-decoration-none card-hover border-primary border-opacity-25 h-100 text-center">
                     <i class="bi bi-diagram-3-fill fs-2 text-primary mb-2"></i>
-                    <h6 class="fw-bold text-dark mb-1">Chuyên Khoa</h6>
+                    <h3 class="h6 fw-bold text-dark mb-1">Chuyên Khoa</h3>
                     <small class="text-secondary">Cấu hình danh mục khoa khám</small>
                 </a>
             </div>
             <div class="col-sm-6 col-md-3">
                 <a th:href="@{/admin/doctors}" class="card card-portal p-3 text-decoration-none card-hover border-success border-opacity-25 h-100 text-center">
                     <i class="bi bi-person-badge-fill fs-2 text-success mb-2"></i>
-                    <h6 class="fw-bold text-dark mb-1">Đội Ngũ Bác Sĩ</h6>
+                    <h3 class="h6 fw-bold text-dark mb-1">Đội Ngũ Bác Sĩ</h3>
                     <small class="text-secondary">Hồ sơ, học hàm, giá khám</small>
                 </a>
             </div>
             <div class="col-sm-6 col-md-3">
                 <a th:href="@{/admin/medicines}" class="card card-portal p-3 text-decoration-none card-hover border-warning border-opacity-25 h-100 text-center">
                     <i class="bi bi-capsule fs-2 text-warning mb-2"></i>
-                    <h6 class="fw-bold text-dark mb-1">Kho Thuốc & Dược Phẩm</h6>
+                    <h3 class="h6 fw-bold text-dark mb-1">Kho Thuốc & Dược Phẩm</h3>
                     <small class="text-secondary">Quản lý tồn kho và giá bán</small>
                 </a>
             </div>
             <div class="col-sm-6 col-md-3">
                 <a th:href="@{/admin/users}" class="card card-portal p-3 text-decoration-none card-hover border-danger border-opacity-25 h-100 text-center">
                     <i class="bi bi-people-fill fs-2 text-danger mb-2"></i>
-                    <h6 class="fw-bold text-dark mb-1">Tài Khoản Người Dùng</h6>
+                    <h3 class="h6 fw-bold text-dark mb-1">Tài Khoản Người Dùng</h3>
                     <small class="text-secondary">Phân quyền và khóa tài khoản</small>
                 </a>
             </div>

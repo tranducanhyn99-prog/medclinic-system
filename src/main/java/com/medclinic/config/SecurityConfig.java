@@ -4,6 +4,7 @@ import com.medclinic.security.CustomUserDetailsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -22,6 +23,9 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 public class SecurityConfig {
 
     private final CustomUserDetailsService userDetailsService;
+
+    @Value("${app.security.remember-me-key}")
+    private String rememberMeKey;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -97,12 +101,13 @@ public class SecurityConfig {
                 .permitAll()
             )
             .rememberMe(remember -> remember
-                .key("medclinic-remember-me-secret-key-2026")
+                .key(rememberMeKey)
                 .tokenValiditySeconds(86400 * 14) // 14 days
                 .userDetailsService(userDetailsService)
             )
             .csrf(csrf -> csrf
-                .ignoringRequestMatchers("/h2-console/**", "/ws/**", "/api/**")
+                // Browser API requests use the same session cookie and must retain CSRF protection.
+                .ignoringRequestMatchers("/h2-console/**", "/ws/**")
             )
             .headers(headers -> headers
                 .frameOptions(frame -> frame.sameOrigin()) // Allow H2 Console iframe

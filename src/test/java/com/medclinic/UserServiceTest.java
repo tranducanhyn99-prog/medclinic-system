@@ -114,5 +114,13 @@ class UserServiceTest {
         assertTrue(exception.getMessage().contains("đã tồn tại"));
         verify(userRepository, never()).save(any(User.class));
     }
-}
 
+    @Test
+    @DisplayName("Đổi mật khẩu từ 8 ký tự trở lên")
+    void rejectsShortNewPassword() {
+        BusinessLogicException exception = assertThrows(BusinessLogicException.class,
+                () -> userService.changePassword(1L, "old", "short"));
+        assertTrue(exception.getMessage().contains("ít nhất 8"));
+        verify(userRepository, never()).save(any(User.class));
+    }
+}

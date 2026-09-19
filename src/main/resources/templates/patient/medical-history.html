@@ -103,7 +103,7 @@
                     <div th:if="${rec.prescription != null}" class="mt-3 pt-3 border-top">
                         <div class="d-flex align-items-center justify-content-between mb-2">
                             <h6 class="fw-bold text-dark mb-0"><i class="bi bi-capsule text-primary me-1"></i> Đơn Thuốc Đã Kê:</h6>
-                            <a th:href="@{/export/prescription/{id}(id=${rec.id})}" class="btn btn-sm btn-outline-primary" target="_blank">
+                            <a th:href="@{/export/prescription/{id}(id=${rec.appointment.id})}" class="btn btn-sm btn-outline-primary" target="_blank">
                                 <i class="bi bi-file-earmark-pdf me-1"></i> Xuất Đơn Thuốc (PDF)
                             </a>
                         </div>

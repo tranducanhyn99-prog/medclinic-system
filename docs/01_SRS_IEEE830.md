@@ -37,7 +37,7 @@ MedClinic là giải pháp chuyển đổi số toàn diện cho phòng khám đ
 Hệ thống được phát triển theo mô hình kiến trúc phân tầng chuẩn (Layered Architecture):
 - **Tầng Trình diễn (Presentation Layer):** Thymeleaf Server-Side Rendering + Bootstrap 5.3 + WebSocket Client.
 - **Tầng Bảo mật & Nghiệp vụ (Security & Business Service Layer):** Spring Security 6 RBAC, Spring Data JPA Services, Concurrency Manager, Async Email Engine, OpenPDF & ZXing Utilities.
-- **Tầng Dữ liệu (Data Layer):** Relational Database (H2 Database cho Development / MySQL 8.0 cho Production) đạt chuẩn 3NF.
+- **Tầng Dữ liệu (Data Layer):** Relational Database (H2 Database cho Development/Test / Microsoft SQL Server cho hệ thống hiện tại và Production) đạt chuẩn 3NF. MySQL được giữ ở roadmap tương lai, không thuộc tiêu chí nghiệm thu phiên bản hiện tại.
 
 ### 2.2. Danh mục tác nhân trong hệ thống (User Classes and Roles)
 | Tác nhân (Actor) | Vai trò (Role) | Mô tả trách nhiệm & Quyền hạn |
@@ -85,7 +85,7 @@ Hệ thống được phát triển theo mô hình kiến trúc phân tầng chu
 
 ### 3.6. Phân hệ Hóa đơn & Thu viện phí (Billing & Invoice)
 - **FR-BILL-01 (Tự động sinh Hóa đơn):** Khi bác sĩ hoàn tất khám, hệ thống tự động tính tổng tiền (Tiền công khám + Tiền thuốc trong đơn) và tạo Hóa đơn viện phí (`Invoice`).
-- **FR-BILL-02 (Thu viện phí):** Lễ tân thực hiện thu tiền mặt tại quầy hoặc xác nhận thanh toán qua VNPay sandbox, chuyển trạng thái hóa đơn sang `PAID`.
+- **FR-BILL-02 (Thu viện phí):** Lễ tân thực hiện thu tiền mặt tại quầy, chuyển trạng thái hóa đơn sang `PAID`. VNPay sandbox/IPN/callback là backlog cho đến khi có đặc tả tích hợp và kiểm thử riêng; hệ thống hiện từ chối phương thức này để tránh ghi nhận thanh toán giả.
 - **FR-BILL-03 (Xuất Hóa đơn PDF):** Hệ thống hỗ trợ xuất và in Hóa đơn thanh toán viện phí định dạng PDF.
 
 ### 3.7. Phân hệ Quản trị & Báo cáo Doanh thu (Admin Dashboard & Reports)
@@ -98,7 +98,7 @@ Hệ thống được phát triển theo mô hình kiến trúc phân tầng chu
 ## 4. YÊU CẦU PHI CHỨC NĂNG (NON-FUNCTIONAL REQUIREMENTS)
 
 ### 4.1. Hiệu năng & Khả năng đáp ứng (Performance)
-- **NFR-PERF-01:** Thời gian tải trang trung bình dưới 1.5 giây.
+- **NFR-PERF-01:** Với các trang công khai và portal đã nêu trong `docs/performance/TEST_PLAN.md`, p95 thời gian tải tài liệu HTML sau warm-up dưới 1,5 giây trong môi trường nghiệm thu được ghi nhận. Kết quả baseline phải kèm cấu hình môi trường; khi chưa có kết quả, yêu cầu ở trạng thái chưa xác minh.
 - **NFR-PERF-02:** Các tác vụ gửi email hoặc sinh mã QR/PDF phải chạy bất đồng bộ hoặc tối ưu bộ nhớ stream, không gây tràn bộ nhớ JVM.
 
 ### 4.2. Bảo mật & An toàn thông tin (Security)

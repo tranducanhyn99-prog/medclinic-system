@@ -29,6 +29,9 @@ public class PrescriptionItem {
     @Column(nullable = false)
     private Integer quantity;
 
+    @Column(nullable = false, precision = 12, scale = 2)
+    private BigDecimal unitPriceAtTime;
+
     @Column(nullable = false, length = 100)
     private String dosage; // e.g. 1 viên / lần
 
@@ -39,10 +42,10 @@ public class PrescriptionItem {
     private String instructions; // e.g. Uống sau khi ăn no 30 phút
 
     public BigDecimal calculateSubtotal() {
-        if (medicine == null || medicine.getUnitPrice() == null || quantity == null) {
+        if (unitPriceAtTime == null || quantity == null) {
             return BigDecimal.ZERO;
         }
-        return medicine.getUnitPrice().multiply(BigDecimal.valueOf(quantity));
+        return unitPriceAtTime.multiply(BigDecimal.valueOf(quantity));
     }
 }
 

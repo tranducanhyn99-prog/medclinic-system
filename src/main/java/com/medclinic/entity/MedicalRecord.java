@@ -32,13 +32,15 @@ public class MedicalRecord {
     @JoinColumn(name = "patient_id", nullable = false)
     private User patient;
 
-    @Column(nullable = false, columnDefinition = "TEXT")
+    @Lob
+    @Column(nullable = false)
     private String symptoms;
 
-    @Column(nullable = false, columnDefinition = "TEXT")
+    @Lob
+    @Column(nullable = false)
     private String diagnosis;
 
-    @Column(columnDefinition = "TEXT")
+    @Lob
     private String doctorNotes;
 
     private LocalDate reExamDate;

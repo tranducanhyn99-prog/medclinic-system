@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+import org.springframework.context.annotation.Profile;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
@@ -21,6 +22,7 @@ import java.util.List;
 
 @Slf4j
 @Component
+@Profile("dev")
 @RequiredArgsConstructor
 public class DataInitializer implements CommandLineRunner {
 
@@ -154,6 +156,7 @@ public class DataInitializer implements CommandLineRunner {
                 doctorProfileRepository.save(DoctorProfile.builder()
                         .user(user)
                         .specialty(specialty)
+                        .licenseNumber("GPHN-" + user.getId())
                         .title(title)
                         .experienceYears(expYears)
                         .consultationFee(fee)

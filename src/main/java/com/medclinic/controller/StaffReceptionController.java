@@ -34,7 +34,7 @@ public class StaffReceptionController {
 
         if (keyword != null && !keyword.isBlank()) {
             String normalizedKeyword = keyword.trim();
-            appointments = appointmentService.searchForReception(normalizedKeyword);
+            appointments = appointmentService.searchForReception(normalizedKeyword, LocalDate.now());
             model.addAttribute("keyword", normalizedKeyword);
         }
 
@@ -73,7 +73,7 @@ public class StaffReceptionController {
     }
     @GetMapping("/reception/search")
     public String searchAppointments(@RequestParam("keyword") String keyword, Model model) {
-        model.addAttribute("appointments", appointmentService.searchForReception(keyword));
+        model.addAttribute("appointments", appointmentService.searchForReception(keyword, LocalDate.now()));
         model.addAttribute("keyword", keyword);
         return "staff/reception";
     }
@@ -95,12 +95,15 @@ public class StaffReceptionController {
     @PostMapping("/walk-in")
     public String processWalkIn(@RequestParam("fullName") String fullName,
                                 @RequestParam("phone") String phone,
+                                @RequestParam(value = "dateOfBirth", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateOfBirth,
+                                @RequestParam(value = "gender", required = false) com.medclinic.enums.Gender gender,
+                                @RequestParam(value = "address", required = false) String address,
                                 @RequestParam("doctorId") Long doctorId,
                                 @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
                                 @RequestParam("slotId") Long slotId,
                                 @RequestParam(value = "reason", required = false) String reason,
                                 RedirectAttributes redirectAttributes) {
-        appointmentService.bookWalkInAppointment(fullName, phone, doctorId, date, slotId, reason);
+        appointmentService.bookWalkInAppointment(fullName, phone, dateOfBirth, gender, address, doctorId, date, slotId, reason);
         redirectAttributes.addFlashAttribute("successMessage", "Đã đăng ký khám trực tiếp thành công");
         return "redirect:/staff/reception";
     }

@@ -15,7 +15,7 @@ public class ThietKeCsdlDocBuilder {
 
         // 4.1. Lược đồ logic
         sb.append(p("4.1. Lược đồ logic (Logical Schema)", "Heading2", true, 14, "left"));
-        sb.append(p("Hệ thống MedClinic được thiết kế theo mô hình cơ sở dữ liệu quan hệ đạt dạng chuẩn 3 (Third Normal Form - 3NF), loại bỏ hoàn toàn các dị thường trùng lặp dữ liệu, đảm bảo tính nhất quán và hiệu năng truy vấn tối ưu. CSDL bao gồm 13 bảng thực thể với 14 mối quan hệ khóa ngoại (Foreign Keys):", null, false, 13, "both"));
+        sb.append(p("Hệ thống MedClinic được thiết kế theo mô hình cơ sở dữ liệu quan hệ đạt dạng chuẩn 3 (Third Normal Form - 3NF). Bản hiện hành bổ sung counter queue theo ngày, reservation mã hóa đơn và snapshot giá kê đơn để bảo toàn tính nhất quán nghiệp vụ:", null, false, 13, "both"));
 
         sb.append(p("Danh sách các quan hệ logic giữa các bảng:", null, true, 12, "left"));
         sb.append(p("• roles (1) ──< users (*) : Phân quyền vai trò người dùng\n" +
@@ -25,7 +25,7 @@ public class ThietKeCsdlDocBuilder {
                    "• doctor_schedules (1) ──< time_slots (*) : Các khung giờ khám 30 phút trong ca\n" +
                    "• users (1) ──< appointments (*) : Bệnh nhân đặt lịch khám\n" +
                    "• doctor_profiles (1) ──< appointments (*) : Bác sĩ phụ trách ca khám\n" +
-                   "• time_slots (1) ─── appointments (0..1) : Mỗi khung giờ gắn với tối đa 1 lịch hẹn (Unique)\n" +
+                   "• time_slots (1) ──< appointments (*) : Một slot có thể có lịch sử hủy và lần đặt lại\n" +
                    "• appointments (1) ─── medical_records (0..1) : Bệnh án điện tử của ca khám (1 - 1)\n" +
                    "• medical_records (1) ─── prescriptions (0..1) : Đơn thuốc của bệnh án (1 - 1)\n" +
                    "• prescriptions (1) ──< prescription_items (*) : Chi tiết các loại thuốc trong đơn\n" +
@@ -142,18 +142,20 @@ public class ThietKeCsdlDocBuilder {
 
         // Bảng 7: appointments
         sb.append(p("Bảng 4.7. Lịch hẹn khám bệnh (appointments)", "Heading3", true, 13, "left"));
-        sb.append(p("appointments(id, booking_code, patient_id, doctor_id, time_slot_id, appointment_date, reason, status, queue_number, created_at)", null, true, 11, "left"));
+        sb.append(p("appointments(id, booking_code, patient_id, doctor_id, time_slot_id, appointment_date, reason, status, queue_number, queue_sequence, version, created_at)", null, true, 11, "left"));
         sb.append(startTable());
         sb.append(tableRow(true, "STT", "Thuộc tính", "Kiểu", "Miền giá trị", "Ý nghĩa", "Ghi chú"));
         sb.append(tableRow(false, "1", "id", "BIGINT", "Tự tăng, >0", "Mã định danh lịch hẹn", "Khóa chính (PK)"));
         sb.append(tableRow(false, "2", "booking_code", "VARCHAR(30)", "Duy nhất, chuẩn MED-YYMMDD-XXXX", "Mã đặt lịch duy nhất của bệnh nhân", "Unique Index"));
         sb.append(tableRow(false, "3", "patient_id", "BIGINT", "FK -> users(id)", "Bệnh nhân đặt khám", "Khóa ngoại (FK)"));
         sb.append(tableRow(false, "4", "doctor_id", "BIGINT", "FK -> doctor_profiles(id)", "Bác sĩ phụ trách khám", "Khóa ngoại (FK)"));
-        sb.append(tableRow(false, "5", "time_slot_id", "BIGINT", "Duy nhất, FK -> time_slots(id)", "Khung giờ đã đặt", "Unique FK"));
+        sb.append(tableRow(false, "5", "time_slot_id", "BIGINT", "FK -> time_slots(id)", "Khung giờ đã đặt; cho phép lịch sử hủy", "Many-to-one"));
         sb.append(tableRow(false, "6", "appointment_date", "DATE", "Ngày hẹn khám", "Ngày diễn ra cuộc hẹn", "Index tìm kiếm"));
         sb.append(tableRow(false, "7", "reason", "TEXT", "", "Lý do khám / Triệu chứng bệnh nhân mô tả", ""));
         sb.append(tableRow(false, "8", "status", "VARCHAR(30)", "'CONFIRMED', 'CHECKED_IN', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'", "Trạng thái vòng đời ca khám", "Not Null"));
         sb.append(tableRow(false, "9", "queue_number", "VARCHAR(20)", "Chuẩn STT-XX", "Số thứ tự khám trong ngày", "Cấp khi Check-in"));
+        sb.append(tableRow(false, "10", "queue_sequence", "BIGINT", "Duy nhất cùng appointment_date", "Giá trị số để sắp queue", "Unique composite"));
+        sb.append(tableRow(false, "11", "version", "BIGINT", "Optimistic lock", "Version trạng thái appointment", "@Version"));
         sb.append(tableRow(false, "10", "created_at", "DATETIME", "Thời điểm đặt", "Thời điểm đặt lịch hẹn", "Auto generated"));
         sb.append(endTable());
         sb.append(p("", null, false, 11, "left"));
@@ -177,7 +179,7 @@ public class ThietKeCsdlDocBuilder {
 
         // Bảng 9: medicines
         sb.append(p("Bảng 4.9. Danh mục thuốc & Kho dược (medicines)", "Heading3", true, 13, "left"));
-        sb.append(p("medicines(id, name, unit, unit_price, usage_guide, stock_quantity, is_active)", null, true, 11, "left"));
+        sb.append(p("medicines(id, name, unit, unit_price, usage_guide, stock_quantity, is_active, version)", null, true, 11, "left"));
         sb.append(startTable());
         sb.append(tableRow(true, "STT", "Thuộc tính", "Kiểu", "Miền giá trị", "Ý nghĩa", "Ghi chú"));
         sb.append(tableRow(false, "1", "id", "BIGINT", "Tự tăng, >0", "Mã thuốc", "Khóa chính (PK)"));
@@ -187,6 +189,7 @@ public class ThietKeCsdlDocBuilder {
         sb.append(tableRow(false, "5", "usage_guide", "VARCHAR(255)", "", "Hướng dẫn sử dụng cơ bản", ""));
         sb.append(tableRow(false, "6", "stock_quantity", "INT", ">= 0, mặc định 1000", "Số lượng thuốc còn tồn trong kho", "Default: 1000"));
         sb.append(tableRow(false, "7", "is_active", "BOOLEAN", "TRUE / FALSE", "Trạng thái kinh doanh", "Default: TRUE"));
+        sb.append(tableRow(false, "8", "version", "BIGINT", "Optimistic lock", "Bảo vệ thay đổi tồn kho", "@Version"));
         sb.append(endTable());
         sb.append(p("", null, false, 11, "left"));
 
@@ -204,16 +207,17 @@ public class ThietKeCsdlDocBuilder {
 
         // Bảng 11: prescription_items
         sb.append(p("Bảng 4.11. Chi tiết dòng thuốc trong đơn (prescription_items)", "Heading3", true, 13, "left"));
-        sb.append(p("prescription_items(id, prescription_id, medicine_id, quantity, dosage, frequency, instructions)", null, true, 11, "left"));
+        sb.append(p("prescription_items(id, prescription_id, medicine_id, quantity, unit_price_at_time, dosage, frequency, instructions)", null, true, 11, "left"));
         sb.append(startTable());
         sb.append(tableRow(true, "STT", "Thuộc tính", "Kiểu", "Miền giá trị", "Ý nghĩa", "Ghi chú"));
         sb.append(tableRow(false, "1", "id", "BIGINT", "Tự tăng, >0", "Mã chi tiết dòng thuốc", "Khóa chính (PK)"));
         sb.append(tableRow(false, "2", "prescription_id", "BIGINT", "FK -> prescriptions(id)", "Đơn thuốc chứa dòng thuốc này", "Khóa ngoại (FK)"));
         sb.append(tableRow(false, "3", "medicine_id", "BIGINT", "FK -> medicines(id)", "Thuốc được kê", "Khóa ngoại (FK)"));
         sb.append(tableRow(false, "4", "quantity", "INT", "> 0", "Số lượng thuốc kê đơn", "Not Null"));
-        sb.append(tableRow(false, "5", "dosage", "VARCHAR(100)", "VD: '1 viên / lần'", "Liều lượng dùng mỗi lần", "Not Null"));
-        sb.append(tableRow(false, "6", "frequency", "VARCHAR(100)", "VD: '2 lần / ngày'", "Tần suất uống trong ngày", "Not Null"));
-        sb.append(tableRow(false, "7", "instructions", "VARCHAR(255)", "VD: 'Uống sau bữa ăn 30 phút'", "Hướng dẫn dùng chi tiết", ""));
+        sb.append(tableRow(false, "5", "unit_price_at_time", "DECIMAL(12,2)", ">= 0 VNĐ", "Giá thuốc tại thời điểm kê", "Historical snapshot"));
+        sb.append(tableRow(false, "6", "dosage", "VARCHAR(100)", "VD: '1 viên / lần'", "Liều lượng dùng mỗi lần", "Not Null"));
+        sb.append(tableRow(false, "7", "frequency", "VARCHAR(100)", "VD: '2 lần / ngày'", "Tần suất uống trong ngày", "Not Null"));
+        sb.append(tableRow(false, "8", "instructions", "VARCHAR(255)", "VD: 'Uống sau bữa ăn 30 phút'", "Hướng dẫn dùng chi tiết", ""));
         sb.append(endTable());
         sb.append(p("", null, false, 11, "left"));
 
@@ -228,15 +232,36 @@ public class ThietKeCsdlDocBuilder {
         sb.append(tableRow(false, "4", "consultation_fee", "DECIMAL(12,2)", ">= 0 VNĐ", "Tiền công khám tư vấn của bác sĩ", "Not Null"));
         sb.append(tableRow(false, "5", "medicine_fee", "DECIMAL(12,2)", ">= 0 VNĐ, mặc định 0", "Tổng tiền thuốc trong đơn", "Default: 0"));
         sb.append(tableRow(false, "6", "total_amount", "DECIMAL(12,2)", "= consultation_fee + medicine_fee", "Tổng tiền thanh toán cuối cùng", "Not Null"));
-        sb.append(tableRow(false, "7", "payment_method", "VARCHAR(20)", "'CASH', 'VNPAY'", "Phương thức thanh toán", "Not Null"));
+        sb.append(tableRow(false, "7", "payment_method", "VARCHAR(20)", "'CASH'", "Phương thức thanh toán", "VNPay/IPN là backlog"));
         sb.append(tableRow(false, "8", "payment_status", "VARCHAR(20)", "'UNPAID', 'PAID', 'REFUNDED'", "Trạng thái thanh toán", "Not Null"));
         sb.append(tableRow(false, "9", "paid_at", "DATETIME", "", "Thời điểm xác nhận thanh toán thành công", ""));
         sb.append(tableRow(false, "10", "created_at", "DATETIME", "Thời điểm tạo", "Thời điểm hệ thống tự động sinh hóa đơn", "Auto generated"));
         sb.append(endTable());
         sb.append(p("", null, false, 11, "left"));
 
+        // Bảng 13: daily_queue_counters
+        sb.append(p("Bảng 4.13. Bộ cấp số thứ tự theo ngày (daily_queue_counters)", "Heading3", true, 13, "left"));
+        sb.append(p("daily_queue_counters(id, queue_date, next_sequence, version)", null, true, 11, "left"));
+        sb.append(startTable());
+        sb.append(tableRow(true, "STT", "Thuộc tính", "Kiểu", "Miền giá trị", "Ý nghĩa", "Ghi chú"));
+        sb.append(tableRow(false, "1", "id", "BIGINT", "Tự tăng, >0", "Mã counter", "Khóa chính"));
+        sb.append(tableRow(false, "2", "queue_date", "DATE", "Duy nhất, Not Null", "Ngày cấp số", "Một counter mỗi ngày"));
+        sb.append(tableRow(false, "3", "next_sequence", "BIGINT", ">= 1", "Sequence tiếp theo", "Cấp STT dạng số"));
+        sb.append(tableRow(false, "4", "version", "BIGINT", "Optimistic lock", "Bảo vệ counter", "@Version"));
+        sb.append(endTable());
+        sb.append(p("", null, false, 11, "left"));
+
+        // Bảng 14: invoice_code_reservations
+        sb.append(p("Bảng 4.14. Giữ chỗ mã hóa đơn (invoice_code_reservations)", "Heading3", true, 13, "left"));
+        sb.append(p("invoice_code_reservations(invoice_code)", null, true, 11, "left"));
+        sb.append(startTable());
+        sb.append(tableRow(true, "STT", "Thuộc tính", "Kiểu", "Miền giá trị", "Ý nghĩa", "Ghi chú"));
+        sb.append(tableRow(false, "1", "invoice_code", "VARCHAR(30)", "PK, Duy nhất", "Mã được reserve trước khi phát hành invoice", "Insert-only collision guard"));
+        sb.append(endTable());
+        sb.append(p("", null, false, 11, "left"));
+
         // Bảng 13: notifications
-        sb.append(p("Bảng 4.13. Thông báo người dùng (notifications)", "Heading3", true, 13, "left"));
+        sb.append(p("Bảng 4.15. Thông báo người dùng (notifications)", "Heading3", true, 13, "left"));
         sb.append(p("notifications(id, user_id, title, content, type, is_read, created_at)", null, true, 11, "left"));
         sb.append(startTable());
         sb.append(tableRow(true, "STT", "Thuộc tính", "Kiểu", "Miền giá trị", "Ý nghĩa", "Ghi chú"));
@@ -252,7 +277,7 @@ public class ThietKeCsdlDocBuilder {
 
         // 4.4. Sơ đồ quan hệ CSDL chi tiết (Physical Database Schema)
         sb.append(p("4.4. Sơ đồ quan hệ cơ sở dữ liệu vật lý chi tiết (Physical ERD)", "Heading2", true, 14, "left"));
-        sb.append(p("Sơ đồ quan hệ cơ sở dữ liệu vật lý thể hiện cấu trúc 13 bảng thực thể, các kiểu dữ liệu cụ thể (BIGINT, VARCHAR, DATE, TIME, DATETIME, DECIMAL, BOOLEAN), các ràng buộc khóa chính (PK), khóa ngoại (FK), chỉ mục duy nhất (UK) và cơ chế khóa lạc quan (@Version) chống tranh chấp đặt lịch đồng thời:", null, false, 12, "both"));
+        sb.append(p("Sơ đồ quan hệ cơ sở dữ liệu vật lý thể hiện các bảng lõi, queue counter, reservation mã invoice, kiểu dữ liệu, PK/FK/UK và cơ chế @Version. Migration production cần được áp dụng theo tài liệu migration riêng:", null, false, 12, "both"));
 
         sb.append(drawingImage("rIdImg3", 103, "diagram_physical_schema.png", 5700000, 3735000, "Hình 4.3. Sơ đồ quan hệ cơ sở dữ liệu vật lý chi tiết (Physical Database Schema)"));
         sb.append(p("", null, false, 12, "left"));

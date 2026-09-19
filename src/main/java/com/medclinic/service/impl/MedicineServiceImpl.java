@@ -7,6 +7,7 @@ import com.medclinic.repository.MedicineRepository;
 import com.medclinic.service.MedicineService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
@@ -40,13 +41,15 @@ public class MedicineServiceImpl implements MedicineService {
 
     @Override
     @Transactional
+    @PreAuthorize("hasRole('ADMIN')")
     public Medicine save(String name, String unit, BigDecimal unitPrice, String usageGuide, int stockQuantity) {
+        validateMedicine(name, unit, unitPrice, stockQuantity);
         if (medicineRepository.findByName(name).isPresent()) {
             throw new BusinessLogicException("Tên thuốc đã tồn tại");
         }
         Medicine medicine = new Medicine();
-        medicine.setName(name);
-        medicine.setUnit(unit);
+        medicine.setName(name.trim());
+        medicine.setUnit(unit.trim());
         medicine.setUnitPrice(unitPrice);
         medicine.setUsageGuide(usageGuide);
         medicine.setStockQuantity(stockQuantity);
@@ -56,15 +59,17 @@ public class MedicineServiceImpl implements MedicineService {
 
     @Override
     @Transactional
+    @PreAuthorize("hasRole('ADMIN')")
     public Medicine update(Long id, String name, String unit, BigDecimal unitPrice, String usageGuide, int stockQuantity) {
+        validateMedicine(name, unit, unitPrice, stockQuantity);
         Medicine medicine = findById(id);
         medicineRepository.findByName(name).ifPresent(existing -> {
             if (!existing.getId().equals(id)) {
                 throw new BusinessLogicException("Tên thuốc đã tồn tại");
             }
         });
-        medicine.setName(name);
-        medicine.setUnit(unit);
+        medicine.setName(name.trim());
+        medicine.setUnit(unit.trim());
         medicine.setUnitPrice(unitPrice);
         medicine.setUsageGuide(usageGuide);
         medicine.setStockQuantity(stockQuantity);
@@ -73,9 +78,19 @@ public class MedicineServiceImpl implements MedicineService {
 
     @Override
     @Transactional
+    @PreAuthorize("hasRole('ADMIN')")
     public void toggleStatus(Long id) {
         Medicine medicine = findById(id);
         medicine.setIsActive(!Boolean.TRUE.equals(medicine.getIsActive()));
         medicineRepository.save(medicine);
+    }
+
+    private void validateMedicine(String name, String unit, BigDecimal unitPrice, int stockQuantity) {
+        if (name == null || name.trim().isEmpty() || unit == null || unit.trim().isEmpty()) {
+            throw new BusinessLogicException("Tên thuốc và đơn vị tính không được để trống");
+        }
+        if (unitPrice == null || unitPrice.signum() < 0 || stockQuantity < 0) {
+            throw new BusinessLogicException("Đơn giá và tồn kho phải lớn hơn hoặc bằng 0");
+        }
     }
 }

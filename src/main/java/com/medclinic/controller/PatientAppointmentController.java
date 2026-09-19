@@ -2,6 +2,7 @@ package com.medclinic.controller;
 
 import com.medclinic.entity.Appointment;
 import com.medclinic.entity.MedicalRecord;
+import com.medclinic.dto.BookingFormDto;
 import com.medclinic.security.CustomUserDetails;
 import com.medclinic.service.AppointmentService;
 import com.medclinic.service.DoctorService;
@@ -14,6 +15,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.validation.BindingResult;
+import jakarta.validation.Valid;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -52,27 +55,31 @@ public class PatientAppointmentController {
 
     @GetMapping("/booking")
     public String bookingForm(Model model) {
-        model.addAttribute("specialties", specialtyService.findAllActive());
-        model.addAttribute("doctors", doctorService.findAll());
+        prepareBookingForm(model);
         return "patient/booking";
     }
 
     @PostMapping("/booking")
     public String processBooking(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @RequestParam Long doctorId,
-            @RequestParam String date,
-            @RequestParam Long slotId,
-            @RequestParam String reason,
+            @Valid @ModelAttribute("bookingForm") BookingFormDto form,
+            BindingResult bindingResult,
+            Model model,
             RedirectAttributes redirectAttributes) {
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("bookingForm", form);
+            prepareBookingForm(model);
+            return "patient/booking";
+        }
         try {
-            LocalDate appointmentDate = LocalDate.parse(date);
-            Appointment newAppointment = appointmentService.bookAppointment(userDetails.getId(), doctorId, appointmentDate, slotId, reason);
+            Appointment newAppointment = appointmentService.bookAppointment(userDetails.getId(), form.getDoctorId(), form.getDate(), form.getSlotId(), form.getReason());
             redirectAttributes.addFlashAttribute("successMsg", "Đặt lịch khám thành công!");
             return "redirect:/patient/appointments/" + newAppointment.getId();
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMsg", e.getMessage());
-            return "redirect:/patient/booking";
+            model.addAttribute("bookingForm", form);
+            model.addAttribute("errorMessage", e.getMessage());
+            prepareBookingForm(model);
+            return "patient/booking";
         }
     }
 
@@ -92,5 +99,13 @@ public class PatientAppointmentController {
         List<MedicalRecord> records = medicalRecordService.getPatientMedicalHistory(userDetails.getId());
         model.addAttribute("records", records);
         return "patient/medical-history";
+    }
+
+    private void prepareBookingForm(Model model) {
+        model.addAttribute("specialties", specialtyService.findAllActive());
+        model.addAttribute("doctors", doctorService.findAll());
+        if (!model.containsAttribute("bookingForm")) {
+            model.addAttribute("bookingForm", new BookingFormDto());
+        }
     }
 }

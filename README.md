@@ -7,7 +7,7 @@
 [![Spring Security](https://img.shields.io/badge/Spring%20Security-6.x-green.svg?style=for-the-badge&logo=springsecurity)](https://spring.io/projects/spring-security)
 [![Thymeleaf](https://img.shields.io/badge/Thymeleaf-3.x-005F0E.svg?style=for-the-badge&logo=thymeleaf)](https://www.thymeleaf.org/)
 [![Database](https://img.shields.io/badge/Database-SQL%20Server%20%7C%20H2-004880.svg?style=for-the-badge&logo=microsoftsqlserver)](https://www.microsoft.com/sql-server/)
-[![Tests](https://img.shields.io/badge/Tests-9%20Passed-success.svg?style=for-the-badge&logo=junit5)](https://junit.org/junit5/)
+[![Tests](https://img.shields.io/badge/Tests-56%20Executed%20Passing-success.svg?style=for-the-badge&logo=junit5)](https://junit.org/junit5/)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](LICENSE)
 
 *Giải pháp số hóa quy trình y tế toàn diện: Đặt lịch khám trực tuyến, Bàn khám Bác sĩ điện tử, Tiếp nhận tự động & Bệnh án điện tử chống Double Booking trên nền tảng **Microsoft SQL Server**.*
@@ -48,11 +48,11 @@ Tại các phòng khám tư nhân quy mô vừa và nhỏ ở Việt Nam, việc
 - Cung cấp cổng đặt lịch khám bệnh trực tuyến mọi lúc mọi nơi theo chuyên khoa, bác sĩ và khung giờ 30 phút.
 - Tự động hóa khâu tiếp nhận tại quầy: check-in qua mã QR, cấp số thứ tự điện tử (STT) và tiếp nhận bệnh nhân vãng lai (walk-in).
 - Hỗ trợ bác sĩ khám bệnh với Bàn khám điện tử, kê đơn thuốc tự động trừ tồn kho dược phẩm và truy xuất nhanh tiền sử bệnh án.
-- Tự động tạo hóa đơn viện phí, hỗ trợ thanh toán tiền mặt hoặc cổng VNPay Sandbox, và xuất PDF đơn thuốc/hóa đơn chuẩn y khoa.
+- Tự động tạo hóa đơn viện phí, hỗ trợ thanh toán tiền mặt tại quầy và xuất PDF đơn thuốc/hóa đơn chuẩn y khoa. VNPay/IPN được giữ trong roadmap tương lai.
 
 ### Điểm nổi bật & Thách thức kỹ thuật
 - **Kiểm soát đồng thời chống Double Booking:** Trong môi trường khám bệnh, việc hai bệnh nhân cùng bấm đặt chung một khung giờ (TimeSlot) là rủi ro nghiêm trọng. MedClinic áp dụng cơ chế **Optimistic Locking (`@Version`)** trên JPA Entity kết hợp giao dịch `@Transactional(isolation = Isolation.READ_COMMITTED)`, loại bỏ hoàn toàn hiện tượng xung đột dữ liệu trên **Microsoft SQL Server**.
-- **Cơ sở dữ liệu Microsoft SQL Server đạt chuẩn 3NF:** Toàn bộ 13 bảng quan hệ được thiết kế chuẩn mực, tối ưu hóa kiểu dữ liệu (`NVARCHAR`, `DECIMAL(12,2)`, `DATETIME2`, `BIT`), hỗ trợ Unicode toàn vẹn tiếng Việt có dấu.
+- **Cơ sở dữ liệu Microsoft SQL Server đạt chuẩn 3NF:** Toàn bộ 16 bảng quan hệ được thiết kế chuẩn mực, tối ưu hóa kiểu dữ liệu (`NVARCHAR`, `DECIMAL(12,2)`, `DATETIME2`, `BIT`), hỗ trợ Unicode toàn vẹn tiếng Việt có dấu.
 - **Phân quyền người dùng dựa trên vai trò (RBAC):** Bảo vệ chặt chẽ các tài nguyên theo 4 vai trò: `ROLE_PATIENT`, `ROLE_DOCTOR`, `ROLE_STAFF`, `ROLE_ADMIN` thông qua Spring Security 6.
 - **Tích hợp đa dịch vụ:** Tự động tạo mã QR Base64 bằng Google ZXing, xuất hóa đơn & toa thuốc chuẩn PDF bằng OpenPDF, và gửi email xác nhận bất đồng bộ `@Async`.
 
@@ -77,7 +77,7 @@ Tại các phòng khám tư nhân quy mô vừa và nhỏ ở Việt Nam, việc
 - [x] **Tra Cứu Nhanh Tiếp Nhận:** Tìm kiếm hồ sơ bệnh nhân qua mã đặt lịch, số điện thoại hoặc họ tên.
 - [x] **Check-in & Cấp STT Tự Động:** Quét mã QR/xác nhận thông tin và cấp số thứ tự khám tự động (`STT-01`, `STT-02`...).
 - [x] **Đăng Ký Khám Vãng Lai (Walk-in):** Đăng ký trực tiếp tại quầy cho người bệnh chưa đặt lịch trước.
-- [x] **Quản Lý Hóa Đơn & Thu Phí:** Quản lý viện phí, xác nhận thanh toán tiền mặt tại quầy hoặc qua cổng VNPay.
+- [x] **Quản Lý Hóa Đơn & Thu Phí:** Quản lý viện phí và xác nhận thanh toán tiền mặt tại quầy. VNPay/IPN là future scope.
 
 ### ⚙️ Phân Hệ Quản Trị Hệ Thống (Admin System)
 - [x] **Bảng Điều Khiển KPI:** Thống kê tổng bệnh nhân, tổng bác sĩ, ca khám trong ngày và tổng doanh thu.
@@ -151,7 +151,7 @@ Toàn bộ tài liệu chuẩn kỹ thuật phần mềm được lưu trữ đ�
 
 1. 📄 [**01_SRS_IEEE830.md**](file:///docs/01_SRS_IEEE830.md): Đặc tả yêu cầu phần mềm theo chuẩn quốc tế **IEEE Std 830-1998** (24 Yêu cầu chức năng + 10 Yêu cầu phi chức năng).
 2. 📐 [**02_UML_DESIGN.md**](file:///docs/02_UML_DESIGN.md): Thiết kế Sơ đồ UML 2.5 (Use Case Diagram, Activity Diagrams, Sequence Diagrams luồng Concurrency, Class Diagram).
-3. 🗄️ [**03_DATABASE_DESIGN_3NF.md**](file:///docs/03_DATABASE_DESIGN_3NF.md): Thiết kế CSDL 13 bảng & Chứng minh chuẩn hóa 3NF kèm Từ điển dữ liệu chi tiết cho SQL Server.
+3. 🗄️ [**03_DATABASE_DESIGN_3NF.md**](file:///docs/03_DATABASE_DESIGN_3NF.md): Thiết kế CSDL 16 bảng & Chứng minh chuẩn hóa 3NF kèm Từ điển dữ liệu chi tiết cho SQL Server.
 4. 🧭 [**04_RTM_MATRIX.md**](file:///docs/04_RTM_MATRIX.md): Ma trận truy vết yêu cầu 2 chiều (Requirements Traceability Matrix).
 5. 🏛️ [**05_SYSTEM_ARCHITECTURE.md**](file:///docs/05_SYSTEM_ARCHITECTURE.md): Tài liệu Kiến trúc Hệ thống chi tiết (Layered Architecture, Design Patterns).
 6. 📋 [**DE_XUAT_CAI_THIEN_MEDCLINIC.md**](file:///docs/DE_XUAT_CAI_THIEN_MEDCLINIC.md): Báo cáo rà soát và đề xuất cải tiến toàn diện cho dự án.
@@ -199,21 +199,26 @@ GO
 4. Nhấp đúp vào **TCP/IP**, chuyển sang thẻ **IP Addresses**, cuộn xuống mục **IPAll** và điền **TCP Port: `1433`** (xóa mục TCP Dynamic Ports nếu có).
 5. Khởi động lại dịch vụ **SQL Server** trong thẻ *SQL Server Services*.
 
-#### 2.3. Cấu hình thông tin đăng nhập trong file cấu hình
-Mở file [`src/main/resources/application-sqlserver.properties`](file:///src/main/resources/application-sqlserver.properties) và điều chỉnh mật khẩu tài khoản `sa` (hoặc tài khoản SQL Server của bạn):
+#### 2.3. Áp dụng schema/reference data và cấu hình secret qua môi trường
+Production dùng `ddl-auto=validate`, vì vậy Hibernate **không tự tạo hoặc sửa schema**. Sau khi tạo database sạch, DBA áp dụng baseline và 4 role hệ thống:
 
-```properties
-# Cấu hình kết nối SQL Server
-spring.datasource.url=jdbc:sqlserver://localhost:1433;databaseName=medclinic_db;encrypt=false;trustServerCertificate=true;sendStringParametersAsUnicode=true
-spring.datasource.driver-class-name=com.microsoft.sqlserver.jdbc.SQLServerDriver
-spring.datasource.username=sa
-spring.datasource.password=YourPassword123
-
-# Cấu hình JPA & Hibernate
-spring.jpa.database-platform=org.hibernate.dialect.SQLServerDialect
-spring.jpa.hibernate.ddl-auto=update
-spring.jpa.defer-datasource-initialization=true
+```powershell
+sqlcmd -S localhost -E -C -d medclinic_db -b -i docs\database\SQLSERVER_BASELINE_SCHEMA_2026-09-19.sql
+sqlcmd -S localhost -E -C -d medclinic_db -b -i docs\database\SQLSERVER_REFERENCE_DATA_2026-09-19.sql
 ```
+
+Không ghi username/password production vào repository. Cung cấp cấu hình qua biến môi trường hoặc secret manager:
+
+```powershell
+$env:DB_URL="jdbc:sqlserver://localhost:1433;databaseName=medclinic_db;encrypt=false;trustServerCertificate=true;sendStringParametersAsUnicode=true"
+$env:DB_USERNAME="<application-login>"
+$env:DB_PASSWORD="<secret>"
+$env:REMEMBER_ME_KEY="<random-secret>"
+$env:MAIL_USERNAME="<smtp-user>"
+$env:MAIL_PASSWORD="<smtp-secret>"
+```
+
+Chi tiết triển khai xem `docs/database/SQLSERVER_RUNBOOK.md` và `docs/database/PRODUCTION_ADMIN_PROVISIONING.md`.
 
 > 💡 **Mẹo chạy nhanh không cần cài SQL Server (Dev In-Memory):** Nếu chưa cài đặt SQL Server trên máy, bạn vẫn có thể khởi chạy ngay lập tức bằng CSDL nhúng **H2 Database** tích hợp sẵn (Profile `dev`), toàn bộ dữ liệu mẫu vẫn tự động nạp bình thường.
 
@@ -230,7 +235,7 @@ mvn clean compile
 mvn spring-boot:run -Dspring-boot.run.profiles=sqlserver
 ```
 
-*(Hoặc đổi dòng số 5 trong file `src/main/resources/application.yml` thành `active: sqlserver` rồi chỉ cần gõ `mvn spring-boot:run`)*.
+Khuyến nghị chọn profile bằng tham số/biến môi trường khi deploy; không sửa `application.yml` chỉ để đổi môi trường chạy.
 
 #### Chạy với H2 In-Memory (Zero-config):
 ```bash
@@ -245,9 +250,9 @@ Console H2 Database (nếu chạy profile dev H2):
 
 ---
 
-## 🔑 Hướng Dẫn Sử Dụng & Tài Khoản Mẫu
+## 🔑 Hướng Dẫn Sử Dụng & Tài Khoản Mẫu (chỉ profile `dev`)
 
-Khi khởi chạy lần đầu tiên, hệ thống sẽ tự động nạp (seed) dữ liệu mẫu bao gồm:
+Khi khởi chạy với profile `dev`, hệ thống sẽ tự động nạp (seed) dữ liệu mẫu bao gồm:
 - **6 Bác sĩ chuyên khoa hàng đầu** (Tim mạch, Răng hàm mặt, Da liễu, Nhi, Tai mũi họng, Cơ xương khớp).
 - **14 ngày ca trực tự động** (Ca sáng 08:00-12:00, Ca chiều 13:30-17:30, mỗi ca 8 khung giờ 30 phút).
 - **15 mặt hàng dược phẩm thiết yếu** có sẵn số lượng tồn kho và đơn giá niêm yết.
@@ -260,6 +265,8 @@ Bảng tài khoản mẫu cho 4 vai trò:
 | 👨‍⚕️ **Bác Sĩ (Doctor)** | `doctor` | `123456` | Bàn khám, gọi số STT, chẩn đoán & kê đơn thuốc, xem lịch trực |
 | 🛎️ **Lễ Tân (Staff)** | `staff` | `123456` | Tra cứu bệnh nhân, check-in cấp STT, tiếp nhận vãng lai, thu viện phí |
 | 🧑‍💼 **Bệnh Nhân (Patient)** | `patient` | `123456` | Đặt lịch khám, nhận mã QR, xem chi tiết lịch hẹn, xem lịch sử bệnh án |
+
+> Production hiện tại dùng `sqlserver` và không seed các tài khoản này. Profile `mysql` được giữ cho roadmap tương lai. Xem [quy trình provisioning admin](docs/database/PRODUCTION_ADMIN_PROVISIONING.md) trước khi triển khai.
 
 > 💡 **Khách vãng lai (Guest):** Có thể tự đăng ký tài khoản bệnh nhân mới tại trang `/register`.
 
@@ -281,9 +288,11 @@ Bảng tài khoản mẫu cho 4 vai trò:
 Dự án được tích hợp bộ kiểm thử tự động với JUnit 5, Mockito và JaCoCo:
 
 ```bash
-# Chạy toàn bộ các bài kiểm thử
-mvn test
+# Chạy toàn bộ verification lifecycle
+mvn verify
 ```
+
+Baseline kiểm chứng ngày 19/09/2026: **63 test case / 34 test class; 56 executed PASS, 7 environment-gated skipped, 0 failure, 0 error**. Các SQL Server integration test chỉ chạy khi chủ động bật environment guard.
 
 ### Các kịch bản kiểm thử trọng yếu:
 - ✅ **Khởi tạo Context & Seed Data:** Đảm bảo toàn bộ Bean, Hibernate Entity, và dữ liệu mẫu nạp thành công (`MedClinicApplicationTests`).
@@ -305,17 +314,17 @@ medclinic-system/
 │   │   │   ├── config/                   # SecurityConfig, DataInitializer
 │   │   │   ├── controller/               # AdminController, DoctorDeskController, StaffReceptionController...
 │   │   │   ├── dto/                      # Data Transfer Objects (Form, Slot, Prescription)
-│   │   │   ├── entity/                   # 13 JPA Entities chuẩn 3NF (tương thích SQL Server)
+│   │   │   ├── entity/                   # 16 JPA Entities chuẩn 3NF (tương thích SQL Server)
 │   │   │   ├── enums/                    # 7 Enums (Status, Role, Shift, Payment...)
 │   │   │   ├── exception/                # Bộ xử lý ngoại lệ nghiệp vụ tập trung
-│   │   │   ├── repository/               # 12 Spring Data JPA Repositories
+│   │   │   ├── repository/               # 15 Spring Data JPA Repositories
 │   │   │   ├── security/                 # CustomUserDetails, CustomUserDetailsService
-│   │   │   ├── service/                  # 10 Services (Appointment, MedicalRecord, Invoice...)
+│   │   │   ├── service/                  # 12 service contract + các implementation/coordinator hỗ trợ
 │   │   │   └── util/                     # Tiện ích QrCodeUtil (ZXing)
 │   │   └── resources/
 │   │       ├── templates/                # Thymeleaf HTML Templates
 │   │       ├── static/                   # File tĩnh (CSS, JS, Images)
-│   │       ├── application.yml           # Cấu hình đa profile (dev, sqlserver, mysql)
+│   │       ├── application.yml           # dev/test H2 + sqlserver chính; mysql giữ cho roadmap tương lai
 │   │       └── application-sqlserver.properties  # Cấu hình kết nối Microsoft SQL Server
 │   └── test/java/com/medclinic/          # Bộ bài kiểm thử tự động JUnit 5 & Mockito
 ├── pom.xml                               # Quản lý thư viện Maven & mssql-jdbc Driver

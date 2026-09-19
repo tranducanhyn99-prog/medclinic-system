@@ -42,7 +42,7 @@ graph TD
     end
 
     subgraph Storage ["Tầng Lưu Trữ (Database Layer)"]
-        DB[(H2 Database / MySQL 8.0 / SQL Server)]
+        DB[(H2 Dev/Test / SQL Server Current+Production / MySQL Future)]
     end
 
     Browser --> Filter
@@ -79,9 +79,10 @@ graph TD
 
 ### 2.3. Business Service Layer & Concurrency Engine (Tầng Nghiệp vụ)
 - **Concurrency Locking (Xử lý đồng thời chống Double Booking):**
-  - Sử dụng **Optimistic Locking** thông qua trường `@Version private Long version;` trên Entity `TimeSlot`.
-  - Kết hợp mức cô lập giao dịch `@Transactional(isolation = Isolation.READ_COMMITTED)`.
-  - Khi 2 request cùng cố gắng đặt 1 slot, giao dịch đầu tiên cập nhật thành công (tăng version từ $0 \rightarrow 1$), giao dịch thứ hai phát hiện xung đột version và ném `OptimisticLockingFailureException`. Hệ thống bắt ngoại lệ và thông báo thân thiện tới người dùng.
+  - Booking khóa hàng `TimeSlot`; check-in khóa `Appointment` và dùng `DailyQueueCounter` theo ngày để cấp `queue_sequence` dạng số. `Appointment`, `TimeSlot`, `Medicine` và counter có `@Version` phù hợp.
+  - Appointment giữ tham chiếu many-to-one tới slot để lịch sử hủy không chặn lần đặt sau. Dữ liệu production cần migration có kiểm soát cho thay đổi unique constraint.
+  - Mã hóa đơn được reserve bằng insert vào `invoice_code_reservations`; tồn kho được đọc bằng pessimistic lock và giá kê đơn được snapshot tại `PrescriptionItem.unitPriceAtTime`.
+  - Lần tạo `DailyQueueCounter` đầu tiên đồng thời trên nhiều node chưa có retry unique-collision; cần xử lý trước khi scale ngang.
 - **Xử lý Bất đồng bộ (Async Processing):**
   - Tích hợp `@EnableAsync` với cấu hình `ThreadPoolTaskExecutor` (Core Pool: 4, Max Pool: 10, Queue: 100).
   - Tác vụ gửi email (`EmailService`) được tách khỏi luồng request chính, loại bỏ độ trễ phản hồi mạng.
@@ -93,6 +94,6 @@ graph TD
 - **Công nghệ:** Spring Data JPA + Hibernate.
 - **Cơ sở dữ liệu:** Cấu hình linh hoạt đa môi trường:
   - Profile `dev`: H2 In-Memory Database (tự động khởi tạo schema và seed data, zero-configuration).
-  - Profile `mysql`: MySQL 8.0 cho môi trường sản xuất / Docker.
-  - Profile `sqlserver`: Microsoft SQL Server.
+  - Profile `sqlserver`: Microsoft SQL Server — database chính cho môi trường hiện tại và production.
+  - Profile `mysql`: giữ lại cho khả năng tương thích/roadmap tương lai; không thuộc phạm vi nghiệm thu hiện tại.
 - **Chuẩn hóa CSDL:** Toàn bộ quan hệ được thiết kế chuẩn mực **3NF**.

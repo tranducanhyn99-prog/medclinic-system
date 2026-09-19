@@ -1,6 +1,9 @@
 package com.medclinic.service.impl;
 
 import com.medclinic.entity.DoctorProfile;
+import com.medclinic.dto.AdminDoctorCreateDto;
+import com.medclinic.entity.Role;
+import com.medclinic.enums.RoleType;
 import com.medclinic.entity.Specialty;
 import com.medclinic.entity.User;
 import com.medclinic.exception.BusinessLogicException;
@@ -8,9 +11,12 @@ import com.medclinic.exception.ResourceNotFoundException;
 import com.medclinic.repository.DoctorProfileRepository;
 import com.medclinic.repository.SpecialtyRepository;
 import com.medclinic.repository.UserRepository;
+import com.medclinic.repository.RoleRepository;
 import com.medclinic.service.DoctorService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
@@ -24,6 +30,8 @@ public class DoctorServiceImpl implements DoctorService {
     private final DoctorProfileRepository doctorProfileRepository;
     private final UserRepository userRepository;
     private final SpecialtyRepository specialtyRepository;
+    private final RoleRepository roleRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     @Transactional(readOnly = true)
@@ -71,19 +79,22 @@ public class DoctorServiceImpl implements DoctorService {
 
     @Override
     @Transactional
+    @PreAuthorize("hasRole('ADMIN')")
     public DoctorProfile save(Long userId, Long specialtyId, String title, int expYears, BigDecimal fee, String bio) {
-        if (doctorProfileRepository.findByUserId(userId).isPresent()) {
-            throw new BusinessLogicException("Người dùng này đã có hồ sơ bác sĩ");
-        }
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy người dùng"));
+        throw new BusinessLogicException("Hãy dùng registerDoctor để tạo hồ sơ bác sĩ kèm tài khoản và giấy phép hành nghề");
+    }
+
+    @Override
+    @Transactional
+    @PreAuthorize("hasRole('ADMIN')")
+    public DoctorProfile update(Long id, Long specialtyId, String title, int expYears, BigDecimal fee, String bio) {
+        validateProfile(title, expYears, fee);
+        DoctorProfile profile = findById(id);
         Specialty specialty = specialtyRepository.findById(specialtyId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy chuyên khoa"));
 
-        DoctorProfile profile = new DoctorProfile();
-        profile.setUser(user);
         profile.setSpecialty(specialty);
-        profile.setTitle(title);
+        profile.setTitle(title.trim());
         profile.setExperienceYears(expYears);
         profile.setConsultationFee(fee);
         profile.setBio(bio);
@@ -92,16 +103,34 @@ public class DoctorServiceImpl implements DoctorService {
 
     @Override
     @Transactional
-    public DoctorProfile update(Long id, Long specialtyId, String title, int expYears, BigDecimal fee, String bio) {
-        DoctorProfile profile = findById(id);
-        Specialty specialty = specialtyRepository.findById(specialtyId)
+    @PreAuthorize("hasRole('ADMIN')")
+    public DoctorProfile registerDoctor(AdminDoctorCreateDto doctorDto) {
+        validateProfile(doctorDto.getTitle(), doctorDto.getExperienceYears(), doctorDto.getConsultationFee());
+        String username = doctorDto.getUsername().trim();
+        String email = doctorDto.getEmail().trim().toLowerCase();
+        String phone = doctorDto.getPhone().trim();
+        String license = doctorDto.getLicenseNumber().trim();
+        if (userRepository.existsByUsername(username)) throw new BusinessLogicException("Tên đăng nhập đã tồn tại");
+        if (userRepository.existsByEmail(email)) throw new BusinessLogicException("Email đã được đăng ký");
+        if (userRepository.existsByPhone(phone)) throw new BusinessLogicException("Số điện thoại đã được đăng ký");
+        if (doctorProfileRepository.findByLicenseNumber(license).isPresent()) throw new BusinessLogicException("Số giấy phép hành nghề đã tồn tại");
+        Specialty specialty = specialtyRepository.findById(doctorDto.getSpecialtyId())
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy chuyên khoa"));
-
-        profile.setSpecialty(specialty);
-        profile.setTitle(title);
-        profile.setExperienceYears(expYears);
-        profile.setConsultationFee(fee);
-        profile.setBio(bio);
+        Role role = roleRepository.findByName(RoleType.ROLE_DOCTOR)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy vai trò ROLE_DOCTOR"));
+        User user = User.builder().username(username).password(passwordEncoder.encode(doctorDto.getPassword()))
+                .fullName(doctorDto.getFullName().trim()).email(email).phone(phone).role(role).isActive(true).build();
+        userRepository.save(user);
+        DoctorProfile profile = new DoctorProfile();
+        profile.setUser(user); profile.setSpecialty(specialty); profile.setLicenseNumber(license);
+        profile.setTitle(doctorDto.getTitle().trim()); profile.setExperienceYears(doctorDto.getExperienceYears());
+        profile.setConsultationFee(doctorDto.getConsultationFee()); profile.setBio(doctorDto.getBio());
         return doctorProfileRepository.save(profile);
+    }
+
+    private void validateProfile(String title, int expYears, BigDecimal fee) {
+        if (title == null || title.trim().isEmpty()) throw new BusinessLogicException("Học vị bác sĩ không được để trống");
+        if (expYears < 0) throw new BusinessLogicException("Số năm kinh nghiệm không hợp lệ");
+        if (fee == null || fee.signum() < 0) throw new BusinessLogicException("Giá khám không hợp lệ");
     }
 }

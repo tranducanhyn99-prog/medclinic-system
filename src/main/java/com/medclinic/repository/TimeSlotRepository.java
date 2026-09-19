@@ -4,14 +4,20 @@ import com.medclinic.entity.TimeSlot;
 import com.medclinic.enums.SlotStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
+import jakarta.persistence.LockModeType;
 
 @Repository
 public interface TimeSlotRepository extends JpaRepository<TimeSlot, Long> {
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT t FROM TimeSlot t WHERE t.id = :id")
+    Optional<TimeSlot> findByIdForUpdate(@Param("id") Long id);
 
     List<TimeSlot> findByScheduleIdAndStatus(Long scheduleId, SlotStatus status);
 

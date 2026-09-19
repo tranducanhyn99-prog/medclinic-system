@@ -31,17 +31,20 @@ public class DoctorProfile {
     @Column(nullable = false, length = 50)
     private String title; // PGS.TS, ThS.BS, BS.CKI, BS.CKII
 
+    // Nullable for existing deployments; new admin registrations validate this field as mandatory.
+    @Column(name = "license_number", length = 50)
+    private String licenseNumber;
+
     @Column(nullable = false)
     private Integer experienceYears;
 
     @Column(nullable = false, precision = 12, scale = 2)
     private BigDecimal consultationFee;
 
-    @Column(columnDefinition = "TEXT")
+    @Lob
     private String bio;
 
     @OneToMany(mappedBy = "doctor", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<DoctorSchedule> schedules = new ArrayList<>();
 }
-

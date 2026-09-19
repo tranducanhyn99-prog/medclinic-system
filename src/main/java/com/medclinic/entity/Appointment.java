@@ -13,7 +13,9 @@ import java.time.LocalDateTime;
 @Table(name = "appointments", indexes = {
         @Index(name = "idx_booking_code", columnList = "booking_code"),
         @Index(name = "idx_appointment_date", columnList = "appointment_date")
-})
+}, uniqueConstraints = @UniqueConstraint(
+        name = "uk_appointment_date_queue_sequence",
+        columnNames = {"appointment_date", "queue_sequence"}))
 @Getter
 @Setter
 @NoArgsConstructor
@@ -36,14 +38,16 @@ public class Appointment {
     @JoinColumn(name = "doctor_id", nullable = false)
     private DoctorProfile doctor;
 
-    @OneToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "time_slot_id", nullable = false, unique = true)
+    // A cancelled appointment keeps its original slot for audit history; a later booking
+    // may legitimately reuse that slot.
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "time_slot_id", nullable = false)
     private TimeSlot timeSlot;
 
     @Column(name = "appointment_date", nullable = false)
     private LocalDate appointmentDate;
 
-    @Column(columnDefinition = "TEXT")
+    @Lob
     private String reason;
 
     @Enumerated(EnumType.STRING)
@@ -53,6 +57,9 @@ public class Appointment {
 
     @Column(length = 20)
     private String queueNumber; // e.g. STT-01, STT-02
+
+    @Column(name = "queue_sequence")
+    private Long queueSequence;
 
     @OneToOne(mappedBy = "appointment", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private MedicalRecord medicalRecord;
@@ -66,5 +73,8 @@ public class Appointment {
 
     @UpdateTimestamp
     private LocalDateTime updatedAt;
+
+    @Version
+    private Long version;
 }
 

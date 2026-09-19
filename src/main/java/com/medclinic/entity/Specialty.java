@@ -22,7 +22,7 @@ public class Specialty {
     @Column(nullable = false, unique = true, length = 100)
     private String name;
 
-    @Column(columnDefinition = "TEXT")
+    @Lob
     private String description;
 
     @Column(length = 100)

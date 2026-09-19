@@ -6,10 +6,10 @@ import com.medclinic.entity.Appointment;
 import com.medclinic.entity.DoctorProfile;
 import com.medclinic.enums.AppointmentStatus;
 import com.medclinic.exception.ResourceNotFoundException;
+import com.medclinic.exception.BusinessLogicException;
 import com.medclinic.security.CustomUserDetails;
 import com.medclinic.service.AppointmentService;
 import com.medclinic.service.DoctorService;
-import com.medclinic.service.InvoiceService;
 import com.medclinic.service.MedicalRecordService;
 import com.medclinic.service.MedicineService;
 import com.medclinic.service.ScheduleService;
@@ -33,7 +33,6 @@ public class DoctorDeskController {
     private final DoctorService doctorService;
     private final AppointmentService appointmentService;
     private final MedicalRecordService medicalRecordService;
-    private final InvoiceService invoiceService;
     private final MedicineService medicineService;
     private final ScheduleService scheduleService;
 
@@ -51,18 +50,25 @@ public class DoctorDeskController {
     public String showExaminationForm(@PathVariable Long appointmentId, 
                                       @AuthenticationPrincipal CustomUserDetails userDetails,
                                       Model model) {
-        Appointment appointment = appointmentService.findById(appointmentId);
-        
-        // Ensure the appointment belongs to the current doctor
-        DoctorProfile doctorProfile = doctorService.findByUserId(userDetails.getId());
-        if (!appointment.getDoctor().getId().equals(doctorProfile.getId())) {
-            throw new ResourceNotFoundException("Không tìm thấy cuộc hẹn cho bác sĩ này");
-        }
+        Appointment appointment = medicalRecordService.getAppointmentForExamination(appointmentId, userDetails.getId());
 
         model.addAttribute("appointment", appointment);
         model.addAttribute("patientHistory", medicalRecordService.getPatientMedicalHistory(appointment.getPatient().getId()));
         model.addAttribute("activeMedicines", medicineService.findAllActive());
         return "doctor/examine";
+    }
+
+    @PostMapping("/start-examination/{appointmentId}")
+    public String startExamination(@PathVariable Long appointmentId,
+                                   @AuthenticationPrincipal CustomUserDetails userDetails,
+                                   RedirectAttributes redirectAttributes) {
+        try {
+            medicalRecordService.startExamination(appointmentId, userDetails.getId());
+            return "redirect:/doctor/examine/" + appointmentId;
+        } catch (BusinessLogicException | ResourceNotFoundException ex) {
+            redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
+            return "redirect:/doctor/desk";
+        }
     }
 
     @PostMapping("/examine/{appointmentId}")
@@ -88,19 +94,14 @@ public class DoctorDeskController {
         }
         
         com.medclinic.entity.MedicalRecord record = medicalRecordService.saveMedicalRecordAndPrescription(
-                userDetails.getId(),
                 appointmentId, 
+                userDetails.getId(),
                 formDto.getSymptoms(), 
                 formDto.getDiagnosis(), 
                 formDto.getDoctorNotes(), 
                 formDto.getReExamDate(), 
                 prescriptionItems
         );
-        
-        BigDecimal medicineFee = (record.getPrescription() != null) 
-                ? record.getPrescription().calculateTotalMedicinePrice() 
-                : BigDecimal.ZERO;
-        invoiceService.createInvoiceForAppointment(appointmentId, medicineFee);
         
         redirectAttributes.addFlashAttribute("successMessage", "Đã lưu kết quả khám thành công");
         return "redirect:/doctor/desk";

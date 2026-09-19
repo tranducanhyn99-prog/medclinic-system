@@ -7,11 +7,17 @@ import com.medclinic.service.DoctorService;
 import com.medclinic.service.MedicineService;
 import com.medclinic.service.SpecialtyService;
 import com.medclinic.service.UserService;
+import com.medclinic.dto.AdminDoctorCreateDto;
+import com.medclinic.dto.AdminMedicineDto;
+import com.medclinic.dto.AdminSpecialtyDto;
+import com.medclinic.exception.BusinessLogicException;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.validation.BindingResult;
 
 import java.math.BigDecimal;
 
@@ -42,17 +48,24 @@ public class AdminController {
 
     @GetMapping("/specialties")
     public String listSpecialties(Model model) {
-        model.addAttribute("specialties", specialtyService.findAll());
+        prepareSpecialties(model);
         return "admin/specialties";
     }
 
     @PostMapping("/specialties")
-    public String addSpecialty(@RequestParam("name") String name,
-                               @RequestParam(value = "description", required = false) String description,
-                               @RequestParam(value = "icon", required = false) String icon,
+    public String addSpecialty(@Valid @ModelAttribute("specialtyForm") AdminSpecialtyDto form,
+                               BindingResult bindingResult, Model model,
                                RedirectAttributes redirectAttributes) {
-        specialtyService.save(name, description, icon);
-        redirectAttributes.addFlashAttribute("successMessage", "Thêm chuyên khoa thành công");
+        if (bindingResult.hasErrors()) { model.addAttribute("specialtyForm", form); prepareSpecialties(model); return "admin/specialties"; }
+        try {
+        if (form.getId() == null) {
+            specialtyService.save(form.getName(), form.getDescription(), form.getIcon());
+            redirectAttributes.addFlashAttribute("successMessage", "Thêm chuyên khoa thành công");
+        } else {
+            specialtyService.update(form.getId(), form.getName(), form.getDescription(), form.getIcon());
+            redirectAttributes.addFlashAttribute("successMessage", "Cập nhật chuyên khoa thành công");
+        }
+        } catch (BusinessLogicException ex) { bindingResult.rejectValue("name", "duplicate", ex.getMessage()); model.addAttribute("specialtyForm", form); prepareSpecialties(model); return "admin/specialties"; }
         return "redirect:/admin/specialties";
     }
 
@@ -65,43 +78,52 @@ public class AdminController {
 
     @GetMapping("/doctors")
     public String listDoctors(Model model) {
-        model.addAttribute("doctors", doctorService.findAll());
-        model.addAttribute("specialties", specialtyService.findAllActive());
+        prepareDoctors(model);
         return "admin/doctors";
     }
 
     @PostMapping("/doctors")
-    public String addDoctor(@RequestParam("userId") Long userId,
-                            @RequestParam("specialtyId") Long specialtyId,
-                            @RequestParam("title") String title,
-                            @RequestParam("experienceYears") Integer experienceYears,
-                            @RequestParam("consultationFee") BigDecimal consultationFee,
-                            @RequestParam(value = "bio", required = false) String bio,
+    public String addDoctor(@Valid @ModelAttribute("doctorForm") AdminDoctorCreateDto form,
+                            BindingResult bindingResult, Model model,
                             RedirectAttributes redirectAttributes) {
-        doctorService.save(userId, specialtyId, title, experienceYears, consultationFee, bio);
+        if (bindingResult.hasErrors()) { model.addAttribute("doctorForm", form); prepareDoctors(model); return "admin/doctors"; }
+        try { doctorService.registerDoctor(form); }
+        catch (BusinessLogicException ex) { bindingResult.reject("doctor", ex.getMessage()); model.addAttribute("doctorForm", form); prepareDoctors(model); return "admin/doctors"; }
         redirectAttributes.addFlashAttribute("successMessage", "Thêm bác sĩ thành công");
+        return "redirect:/admin/doctors";
+    }
+
+    @PostMapping("/doctors/{id}")
+    public String updateDoctor(@PathVariable Long id,
+                               @RequestParam("specialtyId") Long specialtyId,
+                               @RequestParam("title") String title,
+                               @RequestParam("experienceYears") Integer experienceYears,
+                               @RequestParam("consultationFee") BigDecimal consultationFee,
+                               @RequestParam(value = "bio", required = false) String bio,
+                               RedirectAttributes redirectAttributes) {
+        doctorService.update(id, specialtyId, title, experienceYears, consultationFee, bio);
+        redirectAttributes.addFlashAttribute("successMessage", "Cập nhật hồ sơ bác sĩ thành công");
         return "redirect:/admin/doctors";
     }
 
     @GetMapping("/medicines")
     public String listMedicines(Model model) {
-        model.addAttribute("medicines", medicineService.findAll());
+        prepareMedicines(model);
         return "admin/medicines";
     }
 
     @PostMapping("/medicines")
-    public String saveMedicine(@RequestParam(value = "id", required = false) Long id,
-                               @RequestParam("name") String name,
-                               @RequestParam("unit") String unit,
-                               @RequestParam("unitPrice") BigDecimal unitPrice,
-                               @RequestParam("usageGuide") String usageGuide,
-                               @RequestParam("stockQuantity") Integer stockQuantity,
+    public String saveMedicine(@Valid @ModelAttribute("medicineForm") AdminMedicineDto form,
+                               BindingResult bindingResult, Model model,
                                RedirectAttributes redirectAttributes) {
-        if (id != null) {
-            medicineService.update(id, name, unit, unitPrice, usageGuide, stockQuantity);
+        if (bindingResult.hasErrors()) { model.addAttribute("medicineForm", form); prepareMedicines(model); return "admin/medicines"; }
+        try {
+        if (form.getId() != null) {
+            medicineService.update(form.getId(), form.getName(), form.getUnit(), form.getUnitPrice(), form.getUsageGuide(), form.getStockQuantity());
         } else {
-            medicineService.save(name, unit, unitPrice, usageGuide, stockQuantity);
+            medicineService.save(form.getName(), form.getUnit(), form.getUnitPrice(), form.getUsageGuide(), form.getStockQuantity());
         }
+        } catch (BusinessLogicException ex) { bindingResult.rejectValue("name", "duplicate", ex.getMessage()); model.addAttribute("medicineForm", form); prepareMedicines(model); return "admin/medicines"; }
         redirectAttributes.addFlashAttribute("successMessage", "Lưu thuốc thành công");
         return "redirect:/admin/medicines";
     }
@@ -126,4 +148,8 @@ public class AdminController {
         redirectAttributes.addFlashAttribute("successMessage", "Đã cập nhật trạng thái người dùng");
         return "redirect:/admin/users";
     }
+
+    private void prepareSpecialties(Model model) { model.addAttribute("specialties", specialtyService.findAll()); if (!model.containsAttribute("specialtyForm")) model.addAttribute("specialtyForm", new AdminSpecialtyDto()); }
+    private void prepareDoctors(Model model) { model.addAttribute("doctors", doctorService.findAll()); model.addAttribute("specialties", specialtyService.findAllActive()); if (!model.containsAttribute("doctorForm")) model.addAttribute("doctorForm", new AdminDoctorCreateDto()); }
+    private void prepareMedicines(Model model) { model.addAttribute("medicines", medicineService.findAll()); if (!model.containsAttribute("medicineForm")) model.addAttribute("medicineForm", new AdminMedicineDto()); }
 }
