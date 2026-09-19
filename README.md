@@ -167,7 +167,7 @@ graph TD
 | **Sinh mã QR** | Google ZXing (Zebra Crossing) | 3.5.3 | Sinh chuỗi Base64 mã QR cuộc hẹn |
 | **Xuất PDF** | LibrePDF OpenPDF | 2.0.3 | Xuất đơn thuốc & hóa đơn PDF |
 | **Kiểm thử** | JUnit 5, Mockito, JaCoCo | 5.x / 0.8.12 | Unit/integration/concurrency test + quality gate |
-| **CI/CD** | GitHub Actions | Hosted runner | `mvn verify`, artifact JAR và JaCoCo report cho push/PR |
+| **CI/CD** | GitHub Actions | Windows hosted runner | `mvn verify`, artifact JAR và JaCoCo report cho push/PR |
 | **Container** | Docker + Compose | SQL Server 2022 | Build image đa tầng và dựng app + database cho local/demo |
 
 ---
@@ -347,9 +347,9 @@ mvn verify
 Baseline kiểm chứng ngày 19/09/2026: **106 test case / 44 test class; 99 executed PASS, 7 environment-gated skipped, 0 failure, 0 error**. JaCoCo đạt **75.12% line / 61.94% branch**; build sẽ fail nếu xuống dưới **70% line / 50% branch**. Các SQL Server integration test chỉ chạy khi chủ động bật environment guard.
 
 ### CI và quality gate
-- GitHub Actions chạy `mvn verify` trên **JDK 21** cho mọi push/PR vào `main`.
+- GitHub Actions chạy `mvn verify` trên **JDK 21 / Windows hosted runner** cho mọi push/PR vào `main`.
 - JaCoCo kiểm tra ngưỡng **LINE ≥ 70%** và **BRANCH ≥ 50%** ngay trong phase `verify`.
-- Workflow lưu **JaCoCo HTML report** và **application JAR** dưới dạng build artifacts.
+- Workflow luôn lưu **Surefire test report** để chẩn đoán khi fail; khi build thành công sẽ lưu **JaCoCo HTML report** và **application JAR** dưới dạng artifacts.
 
 ### Các kịch bản kiểm thử trọng yếu:
 - ✅ **Khởi tạo Context & Seed Data:** Đảm bảo toàn bộ Bean, Hibernate Entity, và dữ liệu mẫu nạp thành công (`MedClinicApplicationTests`).
