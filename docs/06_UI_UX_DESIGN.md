@@ -95,7 +95,7 @@ Trạng thái lịch hẹn luôn gồm chữ, badge/icon và màu; không dùng 
 
 ## 8. Bằng chứng triển khai
 
-Template được tổ chức theo role tại `src/main/resources/templates/{patient,doctor,staff,admin}`; hai layout dùng chung là `layout/main.html` và `layout/dashboard.html`. Các thay đổi UX được theo dõi trong `tasklist.md` và lịch sử commit theo từng nhánh review.
+Template được tổ chức theo role tại `src/main/resources/templates/{patient,doctor,staff,admin}`; hai layout dùng chung là `layout/main.html` và `layout/dashboard.html`. Bằng chứng triển khai UX được giữ trong test render/accessibility, JaCoCo và lịch sử commit của repository.
 ## 9. Figma handoff — cấu trúc file thiết kế
 
 Khi dựng trên Figma, tạo file `MedClinic UI Kit & Screens` với các Pages sau. Không đặt toàn bộ màn hình và component trên một canvas.

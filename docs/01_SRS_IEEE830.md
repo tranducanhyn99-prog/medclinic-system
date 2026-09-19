@@ -2,7 +2,7 @@
 **Tên dự án:** Hệ thống Quản lý và Đặt lịch khám Phòng khám Tư nhân (MedClinic)  
 **Tiêu chuẩn áp dụng:** IEEE Std 830-1998  
 **Học phần:** Lập trình Web & Công nghệ Phần mềm  
-**Phiên bản:** 1.0 (Giai đoạn 1 - Thiết kế & Nền tảng)  
+**Phiên bản:** 1.1 (Đồng bộ implementation - 19/09/2026)<br>
 
 ---
 
@@ -16,7 +16,7 @@ MedClinic là giải pháp chuyển đổi số toàn diện cho phòng khám đ
 - **Người bệnh (Patient):** Tra cứu chuyên khoa, tìm kiếm bác sĩ, đặt lịch khám theo khung giờ trực tuyến, nhận mã QR check-in qua email, theo dõi lịch sử khám và đơn thuốc điện tử.
 - **Bác sĩ (Doctor):** Quản lý lịch khám cá nhân, tiếp nhận bệnh nhân theo hàng chờ số thứ tự, chẩn đoán bệnh án điện tử, kê đơn thuốc với kho dược phẩm tích hợp, tra cứu tiền sử bệnh nhân.
 - **Lễ tân/Y tá (Staff):** Quét mã QR/tra cứu mã để check-in tiếp nhận, cấp số thứ tự khám (Queue number), tiếp nhận bệnh nhân vãng lai (walk-in), lập hóa đơn viện phí và thu ngân.
-- **Quản trị viên (Admin):** Quản lý hồ sơ bác sĩ, danh mục chuyên khoa, danh mục thuốc, tài khoản người dùng, xem báo cáo doanh thu & biểu đồ thống kê thời gian thực.
+- **Quản trị viên (Admin):** Quản lý hồ sơ bác sĩ, danh mục chuyên khoa, danh mục thuốc, tài khoản người dùng, xem báo cáo doanh thu & biểu đồ thống kê theo dữ liệu giao dịch hiện có.
 
 ### 1.3. Định nghĩa, Từ viết tắt (Definitions & Acronyms)
 | Thuật ngữ | Diễn giải |
@@ -35,7 +35,7 @@ MedClinic là giải pháp chuyển đổi số toàn diện cho phòng khám đ
 
 ### 2.1. Phối cảnh sản phẩm (Product Perspective)
 Hệ thống được phát triển theo mô hình kiến trúc phân tầng chuẩn (Layered Architecture):
-- **Tầng Trình diễn (Presentation Layer):** Thymeleaf Server-Side Rendering + Bootstrap 5.3 + WebSocket Client.
+- **Tầng Trình diễn (Presentation Layer):** Thymeleaf Server-Side Rendering + Bootstrap 5.3 + AJAX REST cho các tương tác động hiện có.
 - **Tầng Bảo mật & Nghiệp vụ (Security & Business Service Layer):** Spring Security 6 RBAC, Spring Data JPA Services, Concurrency Manager, Async Email Engine, OpenPDF & ZXing Utilities.
 - **Tầng Dữ liệu (Data Layer):** Relational Database (H2 Database cho Development/Test / Microsoft SQL Server cho hệ thống hiện tại và Production) đạt chuẩn 3NF. MySQL được giữ ở roadmap tương lai, không thuộc tiêu chí nghiệm thu phiên bản hiện tại.
 
@@ -57,19 +57,20 @@ Hệ thống được phát triển theo mô hình kiến trúc phân tầng chu
 - **FR-AUTH-02 (Đăng nhập & RBAC):** Xác thực người dùng bằng Spring Security 6, mã hóa mật khẩu BCrypt, hỗ trợ chức năng ghi nhớ đăng nhập (Remember-me), chuyển hướng đúng Dashboard theo vai trò người dùng sau khi đăng nhập thành công.
 - **FR-AUTH-03 (Quản lý Hồ sơ cá nhân):** Người dùng có thể cập nhật thông tin cá nhân (Họ tên, SĐT, Địa chỉ) và thực hiện đổi mật khẩu tài khoản.
 - **FR-AUTH-04 (Quản lý Tài khoản người dùng):** Quản trị viên có thể xem danh sách tài khoản, tìm kiếm theo từ khóa và thực hiện khóa / mở khóa tài khoản người dùng.
+- **FR-AUTH-05 (Khôi phục mật khẩu):** Người dùng yêu cầu đặt lại mật khẩu qua email. Hệ thống chỉ lưu SHA-256 hash của token, token hết hạn sau 24 giờ, chỉ dùng một lần và phản hồi theo cách không tiết lộ email có tồn tại hay không.
 
 ### 3.2. Phân hệ Quản lý Chuyên khoa & Hồ sơ Bác sĩ (Doctor & Specialty Management)
 - **FR-SPEC-01 (Quản lý Chuyên khoa):** Quản trị viên có thể thêm mới, sửa, bật/tắt trạng thái hoạt động của chuyên khoa (Tim mạch, Răng hàm mặt, Da liễu, Nhi khoa, Tai mũi họng, Cơ xương khớp).
-- **FR-DOC-01 (Quản lý Bác sĩ):** Quản trị viên tạo và chỉnh sửa hồ sơ bác sĩ gồm: Học hàm/học vị (PGS.TS, ThS.BS, BS.CKI), số năm kinh nghiệm, giá khám tư vấn, chuyên khoa phụ trách, tiểu sử công tác.
+- **FR-DOC-01 (Quản lý Bác sĩ):** Quản trị viên tạo và chỉnh sửa hồ sơ bác sĩ gồm tài khoản đăng nhập, số giấy phép hành nghề, học hàm/học vị, số năm kinh nghiệm, giá khám tư vấn, chuyên khoa phụ trách và tiểu sử công tác.
 - **FR-DOC-02 (Tra cứu & Lọc Bác sĩ):** Khách/Bệnh nhân có thể tìm kiếm, lọc bác sĩ theo chuyên khoa, mức phí khám tối đa, hoặc từ khóa tên bác sĩ.
-- **FR-DOC-03 (Sinh Lịch trực & Khung giờ khám):** Hệ thống tự động thiết lập ca khám (Ca sáng: 08:00 - 12:00, Ca chiều: 13:30 - 17:30) và phân chia thành các TimeSlot cố định 30 phút.
+- **FR-DOC-03 (Xem Lịch trực cá nhân):** Bác sĩ xem lịch phân ca và TimeSlot đã lưu trong khoảng 14 ngày tới. Dữ liệu mẫu ở profile `dev` có thể được seed tự động; UI Admin quản trị lịch trực chưa thuộc phạm vi hiện hành.
 
 ### 3.3. Phân hệ Đặt lịch & Kiểm soát Đồng thời (Appointment Booking & Concurrency Control)
 - **FR-BOOK-01 (Xem Slot trống):** Bệnh nhân chọn Bác sĩ và Ngày khám, hệ thống sử dụng AJAX để tải danh sách các khung giờ còn khả dụng (`AVAILABLE`).
 - **FR-BOOK-02 (Đặt lịch khám):** Bệnh nhân chọn khung giờ, nhập lý do khám/triệu chứng và gửi yêu cầu đặt lịch.
-- **FR-BOOK-03 (Bảo vệ Concurrency Lock):** Hệ thống sử dụng **Optimistic Locking (`@Version`)** trên TimeSlot kết hợp **Unique Database Constraint** để ngăn chặn 100% tình trạng Double Booking khi nhiều người cùng đặt 1 slot tại cùng 1 thời điểm.
+- **FR-BOOK-03 (Bảo vệ Concurrency Lock):** Hệ thống khóa bản ghi TimeSlot khi ghi (`findByIdForUpdate`), kiểm tra trạng thái `AVAILABLE` và duy trì `@Version` để phát hiện cập nhật cạnh tranh. Transaction và kiểm tra trạng thái đảm bảo một slot không được xác nhận cho hai lịch hẹn đồng thời.
 - **FR-BOOK-04 (Mã Đặt lịch & Mã QR):** Hệ thống tự động sinh Mã lịch hẹn duy nhất (format: `MED-YYMMDD-XXXX`) và tạo chuỗi Base64 mã QR check-in.
-- **FR-BOOK-05 (Gửi Email Bất đồng bộ):** Hệ thống gửi email xác nhận đặt lịch tự động trong background task (`@Async`) mà không làm nghẽn luồng xử lý web của người dùng.
+- **FR-BOOK-05 (Gửi Email sau commit):** Booking/hủy lịch phát sự kiện trong transaction; `AppointmentEmailListener` xử lý bất đồng bộ (`@Async`) ở pha `AFTER_COMMIT`, vì vậy lỗi email không rollback dữ liệu nghiệp vụ đã commit.
 - **FR-BOOK-06 (Hủy lịch hẹn):** Bệnh nhân có thể hủy lịch hẹn trước giờ khám. Hệ thống tự động giải phóng TimeSlot về trạng thái `AVAILABLE` và gửi email thông báo hủy.
 
 ### 3.4. Phân hệ Quầy Tiếp nhận & Check-in (Reception & Check-in Desk)
@@ -99,18 +100,27 @@ Hệ thống được phát triển theo mô hình kiến trúc phân tầng chu
 
 ### 4.1. Hiệu năng & Khả năng đáp ứng (Performance)
 - **NFR-PERF-01:** Với các trang công khai và portal đã nêu trong `docs/performance/TEST_PLAN.md`, p95 thời gian tải tài liệu HTML sau warm-up dưới 1,5 giây trong môi trường nghiệm thu được ghi nhận. Kết quả baseline phải kèm cấu hình môi trường; khi chưa có kết quả, yêu cầu ở trạng thái chưa xác minh.
-- **NFR-PERF-02:** Các tác vụ gửi email hoặc sinh mã QR/PDF phải chạy bất đồng bộ hoặc tối ưu bộ nhớ stream, không gây tràn bộ nhớ JVM.
+- **NFR-PERF-02:** Email chạy bất đồng bộ sau commit; QR và PDF được sinh trong bộ nhớ/stream với kích thước hữu hạn, không tạo file tạm ngoài ý muốn.
 
 ### 4.2. Bảo mật & An toàn thông tin (Security)
 - **NFR-SEC-01:** Toàn bộ mật khẩu lưu trữ trong CSDL phải được băm bằng thuật toán **BCrypt** với salt ngẫu nhiên.
 - **NFR-SEC-02:** Phòng chống tấn công **CSRF (Cross-Site Request Forgery)** trên toàn bộ các biểu mẫu POST/PUT/DELETE.
 - **NFR-SEC-03:** Kiểm soát truy cập nghiêm ngặt ở cả tầng Filter URL và tầng Service method (`@PreAuthorize`).
 - **NFR-SEC-04:** Chống **SQL Injection** thông qua cơ chế Parameterized Query của Spring Data JPA.
+- **NFR-SEC-05:** Token khôi phục mật khẩu chỉ lưu dưới dạng SHA-256 hash, có hạn 24 giờ, có `used_at`, và response yêu cầu reset không làm lộ email có tồn tại hay không.
 
 ### 4.3. Tính toàn vẹn dữ liệu & Xử lý đồng thời (Data Integrity & Concurrency)
-- **NFR-ACID-01:** Mọi thao tác đặt lịch, cập nhật bệnh án, trừ kho thuốc và sinh hóa đơn phải tuân thủ nghiêm ngặt tính chất **ACID** thông qua transaction `@Transactional(isolation = Isolation.READ_COMMITTED)`.
-- **NFR-ACID-02:** Cơ chế Optimistic Lock đảm bảo tính nhất quán tuyệt đối, không có hiện tượng mất mát dữ liệu (Lost Update) hoặc đặt trùng lịch (Double Booking).
+- **NFR-ACID-01:** Các workflow đặt lịch, check-in, hoàn tất bệnh án, trừ kho và lập hóa đơn được bao trong transaction Spring. Booking khai báo `READ_COMMITTED`; các transaction còn lại dùng isolation mặc định của datasource/SQL Server.
+- **NFR-ACID-02:** Kết hợp row lock, `@Version`, unique/filter index cho queue và kiểm tra trạng thái nghiệp vụ để giảm race condition, lost update và double booking; các trường hợp cạnh tranh chính phải có integration test.
 
 ### 4.4. Tính khả dụng & Trải nghiệm người dùng (Usability & UX)
 - **NFR-USAB-01:** Giao diện Responsive chuẩn Bootstrap 5.3, hiển thị tối ưu trên máy tính để bàn, máy tính bảng và điện thoại di động.
 - **NFR-USAB-02:** Phản hồi tương tác thân thiện qua hộp thoại SweetAlert2 và thông báo Toast rõ ràng.
+
+
+## 5. PHẠM VI TƯƠNG LAI (FUTURE SCOPE)
+- WebSocket/SSE cho hàng chờ và cập nhật trạng thái live.
+- VNPay redirect/IPN/callback với kiểm tra chữ ký và idempotency.
+- Đánh giá bác sĩ sau ca khám.
+- UI Admin quản trị lịch trực/TimeSlot.
+- Notification center hoàn chỉnh trên nền entity/repository hiện có.

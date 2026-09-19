@@ -12,15 +12,16 @@
 | **FR-AUTH-02** | Đăng nhập & RBAC Security | UC1 | `users`, `roles` | `CustomUserDetailsService`, `SecurityConfig` | `TC-AUTH-02` |
 | **FR-AUTH-03** | Quản lý Profile & Đổi mật khẩu | UC1 | `users` | `UserService.updateUserProfile()`, `AuthController` | `TC-AUTH-03` |
 | **FR-AUTH-04** | Quản trị viên Khóa / Mở tài khoản | UC16 | `users` | `UserService.toggleUserStatus()`, `AdminController` | `TC-AUTH-04` |
+| **FR-AUTH-05** | Khôi phục mật khẩu an toàn | UC1 | `users`, `password_reset_tokens` | `PasswordResetServiceImpl`, `AuthController` | `PasswordResetServiceTest` |
 | **FR-SPEC-01** | Quản lý Chuyên khoa (CRUD) | UC13 | `specialties` | `SpecialtyService`, `AdminController` | `TC-SPEC-01` |
 | **FR-DOC-01** | Quản lý Hồ sơ Bác sĩ | UC14 | `doctor_profiles` | `DoctorService`, `AdminController` | `TC-DOC-01` |
-| **FR-DOC-02** | Tìm kiếm & Lọc Bác sĩ | UC2 | `doctor_profiles`, `specialties` | `DoctorService.filterDoctors()`, `HomeController` | `TC-DOC-02` |
-| **FR-DOC-03** | Tự động sinh Ca & Slot 30 phút | UC14 | `doctor_schedules`, `time_slots` | `ScheduleService.createOrGetSchedule()` | `TC-SCH-01` |
-| **FR-BOOK-01** | Xem danh sách Slot trống (AJAX) | UC3 | `time_slots` | `ApiController.getAvailableSlots()` | `TC-BOOK-01` |
+| **FR-DOC-02** | Tìm kiếm & Lọc Bác sĩ | UC2 | `doctor_profiles`, `specialties` | `DoctorService.filterDoctors()`, `PublicDoctorController` | `TC-DOC-02` |
+| **FR-DOC-03** | Xem lịch trực cá nhân | UC14 | `doctor_schedules`, `time_slots` | `ScheduleService.findByDoctorAndDateRange()`, `DoctorDeskController` | `TC-SCH-01` |
+| **FR-BOOK-01** | Xem danh sách Slot trống (AJAX) | UC3 | `time_slots` | `ApiController.getDoctorSlots()`, `ScheduleService.getAvailableSlots()` | `TC-BOOK-01` |
 | **FR-BOOK-02** | Đặt lịch khám trực tuyến | UC3 | `appointments`, `time_slots` | `AppointmentService.bookAppointment()` | `TC-BOOK-02` |
-| **FR-BOOK-03** | Chống Double Booking (Optimistic Lock) | UC3 | `time_slots.version` | `@Version`, `AppointmentService` | `TC-CONCURRENCY-01`|
+| **FR-BOOK-03** | Chống Double Booking | UC3 | `time_slots.version` | `TimeSlotRepository.findByIdForUpdate()`, `@Version`, `AppointmentServiceImpl` | `ConcurrentBookingIntegrationTest`, `SqlServerConcurrentBookingIntegrationTest` |
 | **FR-BOOK-04** | Sinh mã QR & Mã đặt lịch | UC3 | `appointments.booking_code` | `QrCodeUtil.generateQrCodeBase64()` | `TC-QR-01` |
-| **FR-BOOK-05** | Gửi Email xác nhận bất đồng bộ | UC3 | - | `EmailService.sendBookingConfirmationEmail()` | `TC-MAIL-01` |
+| **FR-BOOK-05** | Gửi Email xác nhận bất đồng bộ sau commit | UC3 | - | `AppointmentEmailListener`, `EmailService` | `AppointmentEmailIntegrationTest` |
 | **FR-BOOK-06** | Bệnh nhân Hủy lịch hẹn | UC4 | `appointments`, `time_slots` | `AppointmentService.cancelAppointment()` | `TC-BOOK-03` |
 | **FR-REC-01** | Tra cứu tiếp nhận lịch hẹn | UC6 | `appointments` | `StaffReceptionController.receptionDesk()` | `TC-REC-01` |
 | **FR-REC-02** | Check-in & Cấp số thứ tự (STT) | UC7 | `appointments.queue_number`, `appointments.queue_sequence`, `daily_queue_counters` | `AppointmentService.checkInAppointment()`, `DailyQueueCounterAllocator` | `TC-REC-02` |
@@ -30,7 +31,7 @@
 | **FR-EXAM-03** | Kê đơn thuốc & Trừ tồn kho | UC12 | `prescriptions`, `medicines` | `MedicalRecordService`, `MedicineRepository` | `TC-EXAM-03` |
 | **FR-EXAM-04** | Xuất Đơn thuốc ra file PDF | UC5 | `medical_records`, `prescriptions` | `PdfExportService.exportPrescriptionPdf()` | `TC-PDF-01` |
 | **FR-BILL-01** | Tự động sinh Hóa đơn viện phí | UC9 | `invoices` | `InvoiceService.createInvoiceForAppointment()` | `TC-BILL-01` |
-| **FR-BILL-02** | Thu viện phí tiền mặt; VNPay/IPN là backlog chưa triển khai | UC9 | `invoices` | `InvoiceService.processPayment()` | `TC-BILL-02` |
+| **FR-BILL-02** | Thu viện phí tiền mặt; VNPAY enum dành cho roadmap và hiện bị từ chối | UC9 | `invoices` | `InvoiceService.processPayment()` | `TC-BILL-02` |
 | **FR-BILL-03** | Xuất Hóa đơn ra file PDF | UC9 | `invoices` | `PdfExportService.exportInvoicePdf()` | `TC-PDF-02` |
 | **FR-ADMIN-01**| Dashboard thống kê KPI & Doanh thu| UC17 | `invoices`, `appointments` | `DashboardService.getDashboardStatistics()` | `TC-STAT-01` |
 | **FR-ADMIN-02**| Biểu đồ phân bổ ca khám & tỷ lệ trạng thái | UC17 | `appointments`, `invoices` | `DashboardService`, `AdminController` | `TC-STAT-02` |

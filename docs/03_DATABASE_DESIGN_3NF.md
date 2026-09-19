@@ -31,6 +31,7 @@ erDiagram
     DAILY_QUEUE_COUNTERS ||--|| APPOINTMENTS : "allocates_daily_sequence"
     INVOICE_CODE_RESERVATIONS ||--|| INVOICES : "reserves_unique_code"
     USERS ||--o{ NOTIFICATIONS : "receives"
+    USERS ||--o{ PASSWORD_RESET_TOKENS : "owns_reset_tokens"
 ```
 
 ---
@@ -43,7 +44,7 @@ erDiagram
 - **Định nghĩa:** Một quan hệ đạt 1NF nếu và chỉ nếu mọi thuộc tính đều chứa các giá trị nguyên tử (Atomic values), không chứa tập hợp hay danh sách lặp lại trong một cột.
 - **Áp dụng trong MedClinic:**
   - Danh mục thuốc trong một đơn thuốc không lưu dưới dạng mảng JSON/chuỗi phân tách dấu phẩy trong bảng `prescriptions`, mà được tách thành từng bản ghi riêng biệt trong bảng `prescription_items`.
-  - Mọi bảng đều có Khóa chính đơn nhất (`id` kiểu `BIGINT AUTO_INCREMENT`).
+  - Mọi bảng đều có Khóa chính đơn nhất (`id` kiểu `BIGINT IDENTITY`).
 
 ### 2.2. Chuẩn hóa Cấp 2 (2NF - Second Normal Form)
 - **Định nghĩa:** Một quan hệ đạt 2NF nếu đạt 1NF và mọi thuộc tính không khóa đều phụ thuộc hàm đầy đủ vào toàn bộ khóa chính (Không tồn tại phụ thuộc bộ phận vào một phần của khóa chính ghép).
@@ -63,108 +64,109 @@ erDiagram
 ### 3.1. Bảng `roles` (Vai trò người dùng)
 | Tên Cột | Kiểu Dữ Liệu | Ràng Buộc | Ý Nghĩa / Diễn Giải |
 | :--- | :--- | :--- | :--- |
-| `id` | BIGINT | PK, AUTO_INCREMENT | Khóa chính |
-| `name` | VARCHAR(50) | NOT NULL, UNIQUE | Tên quyền (`ROLE_PATIENT`, `ROLE_DOCTOR`, `ROLE_STAFF`, `ROLE_ADMIN`) |
-| `description` | VARCHAR(255) | NULL | Diễn giải chức năng vai trò |
+| `id` | BIGINT | PK, IDENTITY | Khóa chính |
+| `name` | NVARCHAR(50) | NOT NULL, UNIQUE | Tên quyền (`ROLE_PATIENT`, `ROLE_DOCTOR`, `ROLE_STAFF`, `ROLE_ADMIN`) |
+| `description` | NVARCHAR(255) | NULL | Diễn giải chức năng vai trò |
 
 ### 3.2. Bảng `users` (Tài khoản người dùng)
 | Tên Cột | Kiểu Dữ Liệu | Ràng Buộc | Ý Nghĩa / Diễn Giải |
 | :--- | :--- | :--- | :--- |
-| `id` | BIGINT | PK, AUTO_INCREMENT | Khóa chính |
-| `username` | VARCHAR(50) | NOT NULL, UNIQUE | Tên đăng nhập hệ thống |
-| `password` | VARCHAR(255) | NOT NULL | Mật khẩu đã băm bằng giải thuật BCrypt |
-| `full_name` | VARCHAR(100) | NOT NULL | Họ và tên đầy đủ |
-| `email` | VARCHAR(100) | NOT NULL, UNIQUE | Địa chỉ email liên hệ |
-| `phone` | VARCHAR(20) | NULL | Số điện thoại di động |
-| `gender` | VARCHAR(10) | NULL | Giới tính (`MALE`, `FEMALE`, `OTHER`) |
+| `id` | BIGINT | PK, IDENTITY | Khóa chính |
+| `username` | NVARCHAR(50) | NOT NULL, UNIQUE | Tên đăng nhập hệ thống |
+| `password` | NVARCHAR(255) | NOT NULL | Mật khẩu đã băm bằng giải thuật BCrypt |
+| `full_name` | NVARCHAR(100) | NOT NULL | Họ và tên đầy đủ |
+| `email` | NVARCHAR(100) | NOT NULL, UNIQUE | Địa chỉ email liên hệ |
+| `phone` | NVARCHAR(20) | NULL | Số điện thoại di động |
+| `gender` | NVARCHAR(10) | NULL | Giới tính (`MALE`, `FEMALE`, `OTHER`) |
 | `date_of_birth`| DATE | NULL | Ngày tháng năm sinh |
-| `address` | VARCHAR(255) | NULL | Địa chỉ cư trú |
-| `avatar_url` | VARCHAR(255) | NULL | Đường dẫn ảnh đại diện |
+| `address` | NVARCHAR(255) | NULL | Địa chỉ cư trú |
+| `avatar_url` | NVARCHAR(255) | NULL | Đường dẫn ảnh đại diện |
 | `role_id` | BIGINT | NOT NULL, FK -> `roles(id)` | Vai trò người dùng |
-| `is_active` | BOOLEAN | NOT NULL, DEFAULT TRUE | Trạng thái kích hoạt tài khoản |
-| `created_at` | DATETIME | NOT NULL | Thời điểm tạo tài khoản |
-| `updated_at` | DATETIME | NULL | Thời điểm cập nhật cuối |
+| `is_active` | BIT | NOT NULL, DEFAULT TRUE | Trạng thái kích hoạt tài khoản |
+| `created_at` | DATETIME2 | NOT NULL | Thời điểm tạo tài khoản |
+| `updated_at` | DATETIME2 | NULL | Thời điểm cập nhật cuối |
 
 ### 3.3. Bảng `specialties` (Chuyên khoa khám bệnh)
 | Tên Cột | Kiểu Dữ Liệu | Ràng Buộc | Ý Nghĩa / Diễn Giải |
 | :--- | :--- | :--- | :--- |
-| `id` | BIGINT | PK, AUTO_INCREMENT | Khóa chính |
-| `name` | VARCHAR(100) | NOT NULL, UNIQUE | Tên chuyên khoa (Tim mạch, Nhi khoa...) |
-| `description` | TEXT | NULL | Mô tả chi tiết phạm vi khám |
-| `icon` | VARCHAR(100) | NULL | Mã class Icon Bootstrap |
-| `is_active` | BOOLEAN | NOT NULL, DEFAULT TRUE | Trạng thái hoạt động |
+| `id` | BIGINT | PK, IDENTITY | Khóa chính |
+| `name` | NVARCHAR(100) | NOT NULL, UNIQUE | Tên chuyên khoa (Tim mạch, Nhi khoa...) |
+| `description` | NVARCHAR(MAX) | NULL | Mô tả chi tiết phạm vi khám |
+| `icon` | NVARCHAR(100) | NULL | Mã class Icon Bootstrap |
+| `is_active` | BIT | NOT NULL, DEFAULT TRUE | Trạng thái hoạt động |
 
 ### 3.4. Bảng `doctor_profiles` (Hồ sơ chuyên môn Bác sĩ)
 | Tên Cột | Kiểu Dữ Liệu | Ràng Buộc | Ý Nghĩa / Diễn Giải |
 | :--- | :--- | :--- | :--- |
-| `id` | BIGINT | PK, AUTO_INCREMENT | Khóa chính |
+| `id` | BIGINT | PK, IDENTITY | Khóa chính |
 | `user_id` | BIGINT | NOT NULL, UNIQUE, FK -> `users(id)` | Khóa ngoại tài khoản người dùng |
 | `specialty_id` | BIGINT | NOT NULL, FK -> `specialties(id)` | Khóa ngoại chuyên khoa trực thuộc |
-| `title` | VARCHAR(50) | NOT NULL | Học hàm/học vị (PGS.TS, ThS.BS, BS.CKII) |
+| `title` | NVARCHAR(50) | NOT NULL | Học hàm/học vị (PGS.TS, ThS.BS, BS.CKII) |
+| `license_number` | NVARCHAR(50) | NULL trong schema legacy; bắt buộc khi tạo bác sĩ mới | Số giấy phép hành nghề |
 | `experience_years`| INT | NOT NULL | Số năm kinh nghiệm công tác |
 | `consultation_fee`| DECIMAL(12,2) | NOT NULL | Giá tiền khám tư vấn cơ bản (VNĐ) |
-| `bio` | TEXT | NULL | Tiểu sử quá trình đào tạo và công tác |
+| `bio` | NVARCHAR(MAX) | NULL | Tiểu sử quá trình đào tạo và công tác |
 
 ### 3.5. Bảng `doctor_schedules` (Lịch làm việc ca của Bác sĩ)
 | Tên Cột | Kiểu Dữ Liệu | Ràng Buộc | Ý Nghĩa / Diễn Giải |
 | :--- | :--- | :--- | :--- |
-| `id` | BIGINT | PK, AUTO_INCREMENT | Khóa chính |
+| `id` | BIGINT | PK, IDENTITY | Khóa chính |
 | `doctor_id` | BIGINT | NOT NULL, FK -> `doctor_profiles(id)` | Khóa ngoại bác sĩ |
 | `work_date` | DATE | NOT NULL | Ngày trực khám |
-| `shift` | VARCHAR(20) | NOT NULL | Ca trực (`MORNING`, `AFTERNOON`) |
+| `shift` | NVARCHAR(20) | NOT NULL | Ca trực (`MORNING`, `AFTERNOON`) |
 | `max_patients` | INT | NOT NULL, DEFAULT 8 | Số bệnh nhân tối đa trong ca |
 | *Constraint* | UNIQUE (`doctor_id`, `work_date`, `shift`) | Đảm bảo mỗi bác sĩ chỉ có 1 ca sáng/chiều trong 1 ngày |
 
 ### 3.6. Bảng `time_slots` (Khung giờ khám 30 phút & Concurrency Lock)
 | Tên Cột | Kiểu Dữ Liệu | Ràng Buộc | Ý Nghĩa / Diễn Giải |
 | :--- | :--- | :--- | :--- |
-| `id` | BIGINT | PK, AUTO_INCREMENT | Khóa chính |
+| `id` | BIGINT | PK, IDENTITY | Khóa chính |
 | `schedule_id` | BIGINT | NOT NULL, FK -> `doctor_schedules(id)` | Khóa ngoại ca trực |
 | `start_time` | TIME | NOT NULL | Giờ bắt đầu (VD: 08:00) |
 | `end_time` | TIME | NOT NULL | Giờ kết thúc (VD: 08:30) |
-| `status` | VARCHAR(20) | NOT NULL | Trạng thái (`AVAILABLE`, `BOOKED`, `BLOCKED`) |
+| `status` | NVARCHAR(20) | NOT NULL | Trạng thái (`AVAILABLE`, `BOOKED`, `BLOCKED`) |
 | `version` | BIGINT | NOT NULL, DEFAULT 0 | **Optimistic Locking Version** chống Double Booking |
 
 ### 3.7. Bảng `appointments` (Lịch hẹn khám bệnh)
 | Tên Cột | Kiểu Dữ Liệu | Ràng Buộc | Ý Nghĩa / Diễn Giải |
 | :--- | :--- | :--- | :--- |
-| `id` | BIGINT | PK, AUTO_INCREMENT | Khóa chính |
-| `booking_code` | VARCHAR(30) | NOT NULL, UNIQUE, INDEX | Mã lịch hẹn (VD: `MED-260831-A1B2`) |
+| `id` | BIGINT | PK, IDENTITY | Khóa chính |
+| `booking_code` | NVARCHAR(30) | NOT NULL, UNIQUE, INDEX | Mã lịch hẹn (VD: `MED-260831-A1B2`) |
 | `patient_id` | BIGINT | NOT NULL, FK -> `users(id)` | Khóa ngoại bệnh nhân |
 | `doctor_id` | BIGINT | NOT NULL, FK -> `doctor_profiles(id)` | Khóa ngoại bác sĩ |
 | `time_slot_id` | BIGINT | NOT NULL, FK -> `time_slots(id)`| Khung giờ khám; nhiều appointment lịch sử được phép tham chiếu cùng slot sau khi hủy |
 | `appointment_date`| DATE | NOT NULL, INDEX | Ngày khám thực tế |
-| `reason` | TEXT | NULL | Lý do khám & Triệu chứng ban đầu |
-| `status` | VARCHAR(30) | NOT NULL | `CONFIRMED`, `CHECKED_IN`, `IN_PROGRESS`, `COMPLETED`, `CANCELLED`, `NO_SHOW` |
-| `queue_number` | VARCHAR(20) | NULL | Số thứ tự tiếp nhận trong ngày (VD: `STT-01`) |
+| `reason` | NVARCHAR(MAX) | NULL | Lý do khám & Triệu chứng ban đầu |
+| `status` | NVARCHAR(30) | NOT NULL | `CONFIRMED`, `CHECKED_IN`, `IN_PROGRESS`, `COMPLETED`, `CANCELLED`, `NO_SHOW` |
+| `queue_number` | NVARCHAR(20) | NULL | Số thứ tự tiếp nhận trong ngày (VD: `STT-01`) |
 | `queue_sequence` | BIGINT | NULL, UNIQUE cùng `appointment_date` | Giá trị số dùng để sắp hàng queue đúng sau 99 |
 | `version` | BIGINT | NOT NULL | Optimistic locking khi đổi trạng thái appointment |
-| `created_at` | DATETIME | NOT NULL | Thời điểm đặt lịch |
-| `updated_at` | DATETIME | NULL | Thời điểm cập nhật cuối |
+| `created_at` | DATETIME2 | NOT NULL | Thời điểm đặt lịch |
+| `updated_at` | DATETIME2 | NULL | Thời điểm cập nhật cuối |
 
 ### 3.8. Bảng `medical_records` (Hồ sơ bệnh án điện tử)
 | Tên Cột | Kiểu Dữ Liệu | Ràng Buộc | Ý Nghĩa / Diễn Giải |
 | :--- | :--- | :--- | :--- |
-| `id` | BIGINT | PK, AUTO_INCREMENT | Khóa chính |
+| `id` | BIGINT | PK, IDENTITY | Khóa chính |
 | `appointment_id`| BIGINT | NOT NULL, UNIQUE, FK -> `appointments(id)`| Liên kết lịch hẹn |
 | `doctor_id` | BIGINT | NOT NULL, FK -> `doctor_profiles(id)` | Bác sĩ khám |
 | `patient_id` | BIGINT | NOT NULL, FK -> `users(id)` | Bệnh nhân |
-| `symptoms` | TEXT | NOT NULL | Triệu chứng lâm sàng ghi nhận |
-| `diagnosis` | TEXT | NOT NULL | Kết luận chẩn đoán y khoa |
-| `doctor_notes` | TEXT | NULL | Lời dặn, chế độ dinh dưỡng |
+| `symptoms` | NVARCHAR(MAX) | NOT NULL | Triệu chứng lâm sàng ghi nhận |
+| `diagnosis` | NVARCHAR(MAX) | NOT NULL | Kết luận chẩn đoán y khoa |
+| `doctor_notes` | NVARCHAR(MAX) | NULL | Lời dặn, chế độ dinh dưỡng |
 | `re_exam_date` | DATE | NULL | Ngày hẹn tái khám |
-| `created_at` | DATETIME | NOT NULL | Thời điểm hoàn tất khám |
+| `created_at` | DATETIME2 | NOT NULL | Thời điểm hoàn tất khám |
 
 ### 3.9. Bảng `medicines` (Danh mục thuốc & Kho dược)
 | Tên Cột | Kiểu Dữ Liệu | Ràng Buộc | Ý Nghĩa / Diễn Giải |
 | :--- | :--- | :--- | :--- |
-| `id` | BIGINT | PK, AUTO_INCREMENT | Khóa chính |
-| `name` | VARCHAR(150) | NOT NULL, UNIQUE | Tên thuốc biệt dược / hoạt chất |
-| `unit` | VARCHAR(30) | NOT NULL | Đơn vị tính (Viên, Hộp, Vỉ, Chai, Gói) |
+| `id` | BIGINT | PK, IDENTITY | Khóa chính |
+| `name` | NVARCHAR(150) | NOT NULL, UNIQUE | Tên thuốc biệt dược / hoạt chất |
+| `unit` | NVARCHAR(30) | NOT NULL | Đơn vị tính (Viên, Hộp, Vỉ, Chai, Gói) |
 | `unit_price` | DECIMAL(12,2)| NOT NULL | Đơn giá bán lẻ (VNĐ) |
-| `usage_guide` | VARCHAR(255) | NULL | Hướng dẫn sử dụng cơ bản |
+| `usage_guide` | NVARCHAR(255) | NULL | Hướng dẫn sử dụng cơ bản |
 | `stock_quantity`| INT | NOT NULL, DEFAULT 1000 | Số lượng tồn trong kho |
-| `is_active` | BOOLEAN | NOT NULL, DEFAULT TRUE | Trạng thái kinh doanh |
+| `is_active` | BIT | NOT NULL, DEFAULT TRUE | Trạng thái kinh doanh |
 | `version` | BIGINT | NOT NULL | Optimistic locking khi trừ tồn kho |
 
 ### 3.10. Bảng `prescriptions` & `prescription_items` (Đơn thuốc & Chi tiết đơn thuốc)
@@ -174,21 +176,21 @@ erDiagram
 ### 3.11. Bảng `invoices` (Hóa đơn thanh toán viện phí)
 | Tên Cột | Kiểu Dữ Liệu | Ràng Buộc | Ý Nghĩa / Diễn Giải |
 | :--- | :--- | :--- | :--- |
-| `id` | BIGINT | PK, AUTO_INCREMENT | Khóa chính |
+| `id` | BIGINT | PK, IDENTITY | Khóa chính |
 | `appointment_id`| BIGINT | NOT NULL, UNIQUE, FK -> `appointments(id)`| Liên kết ca khám |
-| `invoice_code` | VARCHAR(30) | NOT NULL, UNIQUE, INDEX | Mã hóa đơn tài chính (`INV-YYMMDD-XXXX`) |
+| `invoice_code` | NVARCHAR(30) | NOT NULL, UNIQUE, INDEX | Mã hóa đơn tài chính (`INV-YYMMDD-XXXX`) |
 | `consultation_fee`| DECIMAL(12,2)| NOT NULL | Tiền công khám bác sĩ |
 | `medicine_fee` | DECIMAL(12,2)| NOT NULL, DEFAULT 0 | Tổng tiền thuốc trong đơn |
 | `total_amount` | DECIMAL(12,2)| NOT NULL | Tổng tiền thanh toán (`consultation_fee + medicine_fee`) |
-| `payment_method`| VARCHAR(20) | NOT NULL | Hiện nhận `CASH`; `VNPAY` chỉ được mở sau khi có redirect/IPN/callback |
-| `payment_status`| VARCHAR(20) | NOT NULL | `UNPAID`, `PAID`, `REFUNDED` |
-| `paid_at` | DATETIME | NULL | Thời điểm thanh toán |
-| `created_at` | DATETIME | NOT NULL | Thời điểm lập hóa đơn |
+| `payment_method`| NVARCHAR(20) | NOT NULL | Hiện nhận `CASH`; `VNPAY` chỉ được mở sau khi có redirect/IPN/callback |
+| `payment_status`| NVARCHAR(20) | NOT NULL | `UNPAID`, `PAID`, `REFUNDED` |
+| `paid_at` | DATETIME2 | NULL | Thời điểm thanh toán |
+| `created_at` | DATETIME2 | NOT NULL | Thời điểm lập hóa đơn |
 
 ### 3.12. Bảng `daily_queue_counters` (Bộ cấp số thứ tự theo ngày)
 | Tên Cột | Kiểu Dữ Liệu | Ràng Buộc | Ý Nghĩa / Diễn Giải |
 | :--- | :--- | :--- | :--- |
-| `id` | BIGINT | PK, AUTO_INCREMENT | Khóa chính |
+| `id` | BIGINT | PK, IDENTITY | Khóa chính |
 | `queue_date` | DATE | NOT NULL, UNIQUE | Một counter cho mỗi ngày khám |
 | `next_sequence` | BIGINT | NOT NULL | Sequence kế tiếp để cấp STT |
 | `version` | BIGINT | NOT NULL | Optimistic locking cho counter |
@@ -196,15 +198,17 @@ erDiagram
 ### 3.13. Bảng `invoice_code_reservations` (Giữ chỗ mã hóa đơn)
 | Tên Cột | Kiểu Dữ Liệu | Ràng Buộc | Ý Nghĩa / Diễn Giải |
 | :--- | :--- | :--- | :--- |
-| `invoice_code` | VARCHAR(30) | PK, UNIQUE | Bản ghi reservation được insert trước khi phát hành hóa đơn để xử lý collision mã |
+| `invoice_code` | NVARCHAR(30) | PK, UNIQUE | Bản ghi reservation được insert trước khi phát hành hóa đơn để xử lý collision mã |
 
-### 3.14. B?ng `notifications` (Th?ng b?o n?i b?)
+### 3.14. Bảng `notifications` (Thông báo nội bộ)
 - `id` BIGINT IDENTITY PK; `user_id` FK -> `users(id)`; `title` NVARCHAR(150) NOT NULL; `content` NVARCHAR(MAX) NOT NULL; `type` NVARCHAR(50) NULL; `is_read` BIT NOT NULL; `created_at` DATETIME2 NOT NULL.
+- Hiện project mới có entity/repository; notification center hoàn chỉnh thuộc roadmap.
 
-### 3.15. B?ng `password_reset_tokens` (Token kh?i ph?c m?t kh?u)
-- `id` BIGINT IDENTITY PK; `user_id` FK -> `users(id)`; `token_hash` NVARCHAR(64) NOT NULL UNIQUE + index; `expires_at` DATETIME2 NOT NULL; `used_at` DATETIME2 NULL; `created_at` DATETIME2 NOT NULL. Ch? l?u hash token, kh?ng l?u token th?.
+### 3.15. Bảng `password_reset_tokens` (Token khôi phục mật khẩu)
+- `id` BIGINT IDENTITY PK; `user_id` FK -> `users(id)`; `token_hash` NVARCHAR(64) NOT NULL UNIQUE + index; `expires_at` DATETIME2 NOT NULL; `used_at` DATETIME2 NULL; `created_at` DATETIME2 NOT NULL.
+- Chỉ lưu SHA-256 hash token, không lưu token thô; token hết hạn sau 24 giờ và chỉ dùng một lần.
 
-> SQL Server d?ng `NVARCHAR`/`NVARCHAR(MAX)` th?ng qua `hibernate.use_nationalized_character_data=true` ?? b?o to?n ti?ng Vi?t tr?n server collation `SQL_Latin1_General_CP1_CI_AS`.
+> SQL Server dùng `NVARCHAR`/`NVARCHAR(MAX)` thông qua `hibernate.use_nationalized_character_data=true` để bảo toàn Unicode tiếng Việt trên collation `SQL_Latin1_General_CP1_CI_AS`.
 
 ## 4. Triển khai migration
 

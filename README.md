@@ -51,7 +51,7 @@ Tại các phòng khám tư nhân quy mô vừa và nhỏ ở Việt Nam, việc
 - Tự động tạo hóa đơn viện phí, hỗ trợ thanh toán tiền mặt tại quầy và xuất PDF đơn thuốc/hóa đơn chuẩn y khoa. VNPay/IPN được giữ trong roadmap tương lai.
 
 ### Điểm nổi bật & Thách thức kỹ thuật
-- **Kiểm soát đồng thời chống Double Booking:** Trong môi trường khám bệnh, việc hai bệnh nhân cùng bấm đặt chung một khung giờ (TimeSlot) là rủi ro nghiêm trọng. MedClinic áp dụng cơ chế **Optimistic Locking (`@Version`)** trên JPA Entity kết hợp giao dịch `@Transactional(isolation = Isolation.READ_COMMITTED)`, loại bỏ hoàn toàn hiện tượng xung đột dữ liệu trên **Microsoft SQL Server**.
+- **Kiểm soát đồng thời chống Double Booking:** Trong môi trường khám bệnh, việc hai bệnh nhân cùng bấm đặt chung một khung giờ (TimeSlot) là rủi ro nghiêm trọng. Luồng đặt lịch khóa bản ghi TimeSlot khi ghi (`findByIdForUpdate`) và vẫn duy trì `@Version` để phát hiện cập nhật cạnh tranh. Kết hợp transaction `READ_COMMITTED`, trạng thái slot và ràng buộc CSDL giúp booking thất bại an toàn khi có tranh chấp.
 - **Cơ sở dữ liệu Microsoft SQL Server đạt chuẩn 3NF:** Toàn bộ 16 bảng quan hệ được thiết kế chuẩn mực, tối ưu hóa kiểu dữ liệu (`NVARCHAR`, `DECIMAL(12,2)`, `DATETIME2`, `BIT`), hỗ trợ Unicode toàn vẹn tiếng Việt có dấu.
 - **Phân quyền người dùng dựa trên vai trò (RBAC):** Bảo vệ chặt chẽ các tài nguyên theo 4 vai trò: `ROLE_PATIENT`, `ROLE_DOCTOR`, `ROLE_STAFF`, `ROLE_ADMIN` thông qua Spring Security 6.
 - **Tích hợp đa dịch vụ:** Tự động tạo mã QR Base64 bằng Google ZXing, xuất hóa đơn & toa thuốc chuẩn PDF bằng OpenPDF, và gửi email xác nhận bất đồng bộ `@Async`.
@@ -62,7 +62,7 @@ Tại các phòng khám tư nhân quy mô vừa và nhỏ ở Việt Nam, việc
 
 ### 🧑‍💼 Phân Hệ Bệnh Nhân (Patient Portal)
 - [x] **Tra cứu & Tìm kiếm:** Xem danh sách bác sĩ chuyên khoa, học hàm/học vị, số năm kinh nghiệm và giá khám.
-- [x] **Đặt lịch thông minh:** Chọn ngày, chuyên khoa, bác sĩ và khung giờ trống được tải thời gian thực bằng AJAX REST API.
+- [x] **Đặt lịch thông minh:** Chọn ngày, chuyên khoa, bác sĩ và khung giờ trống được tải động bằng AJAX REST API.
 - [x] **Mã QR Cuộc Hẹn:** Tự động nhận mã đặt lịch (`MED-YYMMDD-XXXX`) và mã QR định dạng Base64 dùng để check-in tức thì tại quầy.
 - [x] **Quản lý & Hủy lịch:** Theo dõi danh sách lịch hẹn sắp tới, hủy lịch khám trực tuyến (tự động hoàn trả slot trống).
 - [x] **Sổ tay Bệnh Án Điện Tử:** Tra cứu lịch sử chẩn đoán, lời dặn bác sĩ và đơn thuốc các lần khám trước.
@@ -147,14 +147,14 @@ graph TD
 
 ## 📚 Tài Liệu Kỹ Thuật Phần Mềm
 
-Toàn bộ tài liệu chuẩn kỹ thuật phần mềm được lưu trữ đầy đủ trong thư mục [`docs/`](file:///docs/):
+Toàn bộ tài liệu chuẩn kỹ thuật phần mềm được lưu trữ đầy đủ trong thư mục [`docs/`](docs/):
 
-1. 📄 [**01_SRS_IEEE830.md**](file:///docs/01_SRS_IEEE830.md): Đặc tả yêu cầu phần mềm theo chuẩn quốc tế **IEEE Std 830-1998** (24 Yêu cầu chức năng + 10 Yêu cầu phi chức năng).
-2. 📐 [**02_UML_DESIGN.md**](file:///docs/02_UML_DESIGN.md): Thiết kế Sơ đồ UML 2.5 (Use Case Diagram, Activity Diagrams, Sequence Diagrams luồng Concurrency, Class Diagram).
-3. 🗄️ [**03_DATABASE_DESIGN_3NF.md**](file:///docs/03_DATABASE_DESIGN_3NF.md): Thiết kế CSDL 16 bảng & Chứng minh chuẩn hóa 3NF kèm Từ điển dữ liệu chi tiết cho SQL Server.
-4. 🧭 [**04_RTM_MATRIX.md**](file:///docs/04_RTM_MATRIX.md): Ma trận truy vết yêu cầu 2 chiều (Requirements Traceability Matrix).
-5. 🏛️ [**05_SYSTEM_ARCHITECTURE.md**](file:///docs/05_SYSTEM_ARCHITECTURE.md): Tài liệu Kiến trúc Hệ thống chi tiết (Layered Architecture, Design Patterns).
-6. 🎨 [**06_UI_UX_DESIGN.md**](file:///docs/06_UI_UX_DESIGN.md): Đặc tả giao diện, responsive và accessibility.
+1. 📄 [**01_SRS_IEEE830.md**](docs/01_SRS_IEEE830.md): Đặc tả yêu cầu phần mềm theo chuẩn quốc tế **IEEE Std 830-1998** (28 Yêu cầu chức năng + 11 Yêu cầu phi chức năng).
+2. 📐 [**02_UML_DESIGN.md**](docs/02_UML_DESIGN.md): Thiết kế Sơ đồ UML 2.5 (Use Case Diagram, Activity Diagrams, Sequence Diagrams luồng Concurrency, Class Diagram).
+3. 🗄️ [**03_DATABASE_DESIGN_3NF.md**](docs/03_DATABASE_DESIGN_3NF.md): Thiết kế CSDL 16 bảng & Chứng minh chuẩn hóa 3NF kèm Từ điển dữ liệu chi tiết cho SQL Server.
+4. 🧭 [**04_RTM_MATRIX.md**](docs/04_RTM_MATRIX.md): Ma trận truy vết yêu cầu 2 chiều (Requirements Traceability Matrix).
+5. 🏛️ [**05_SYSTEM_ARCHITECTURE.md**](docs/05_SYSTEM_ARCHITECTURE.md): Tài liệu Kiến trúc Hệ thống chi tiết (Layered Architecture, Design Patterns).
+6. 🎨 [**06_UI_UX_DESIGN.md**](docs/06_UI_UX_DESIGN.md): Đặc tả giao diện, responsive và accessibility.
 
 ---
 

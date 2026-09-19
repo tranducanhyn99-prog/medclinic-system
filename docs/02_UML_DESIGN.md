@@ -12,7 +12,7 @@
 ```mermaid
 graph TD
     subgraph MedClinic System
-        UC1[Đăng ký & Đăng nhập]
+        UC1[Đăng ký, Đăng nhập & Khôi phục mật khẩu]
         UC2[Tra cứu Bác sĩ & Chuyên khoa]
         UC3[Đặt lịch khám theo Khung giờ]
         UC4[Quản lý Lịch hẹn & Hủy lịch]
@@ -23,7 +23,7 @@ graph TD
         UC8[Tiếp nhận Bệnh nhân Vãng lai]
         UC9[Thu viện phí & Xuất Hóa đơn PDF]
         
-        UC10[Xem Hàng chờ khám trong ngày]
+        UC10[Xem Hàng chờ & Lịch trực cá nhân]
         UC11[Chẩn đoán & Ghi Bệnh án điện tử]
         UC12[Kê đơn thuốc & Trừ kho dược]
         
@@ -93,7 +93,7 @@ graph TD
   2. Lễ tân nhập Mã đặt lịch (hoặc quét QR / nhập SĐT bệnh nhân) vào ô tìm kiếm.
   3. Hệ thống hiển thị thông tin lịch hẹn của bệnh nhân trong ngày.
   4. Lễ tân đối chiếu và bấm nút "Check-in (Cấp STT)".
-  5. Hệ thống đếm số lượng ca khám đã check-in trong ngày $\rightarrow$ Tự động gán mã `STT-XX` (ví dụ: `STT-01`, `STT-02`).
+  5. Hệ thống gọi `DailyQueueCounterAllocator.allocateNext(appointmentDate)` để lấy `queue_sequence` duy nhất theo ngày, sau đó định dạng `STT-XX`.
   6. Trạng thái lịch hẹn chuyển sang `CHECKED_IN`.
   7. Bệnh nhân xuất hiện trên hàng chờ khám của Bác sĩ phụ trách.
 - **Post-conditions:** Lịch hẹn có số thứ tự, sẵn sàng cho Bác sĩ gọi vào khám.
@@ -174,7 +174,8 @@ sequenceDiagram
     participant AppSvc as AppointmentService
     participant SlotRepo as TimeSlotRepository
     participant AppRepo as AppointmentRepository
-    participant EmailSvc as EmailService (Async)
+    participant Event as AppointmentEmailEvent
+    participant EmailListener as AppointmentEmailListener
 
     Patient->>UI: Chọn Bác sĩ ID=10 & Ngày 2026-09-01
     UI->>ApiCtrl: GET /api/public/doctors/10/slots?date=2026-09-01
@@ -184,12 +185,12 @@ sequenceDiagram
     
     Patient->>UI: Chọn Slot 08:30 (ID=100) & Nhập triệu chứng
     Patient->>UI: Bấm "Xác nhận đặt lịch"
-    UI->>AppCtrl: POST /patient/appointments/book (doctorId, date, slotId=100, reason)
+    UI->>AppCtrl: POST /patient/booking (doctorId, date, slotId=100, reason)
     AppCtrl->>AppSvc: bookAppointment(patientId, bookingRequest)
     
     rect rgb(230, 245, 255)
         note over AppSvc,SlotRepo: Bắt đầu Giao dịch (@Transactional Isolation.READ_COMMITTED)
-        AppSvc->>SlotRepo: findById(100)
+        AppSvc->>SlotRepo: findByIdForUpdate(100)
         SlotRepo-->>AppSvc: Trả về TimeSlot (status=AVAILABLE, version=0)
         
         alt Khung giờ đã bị người khác đặt trước
@@ -202,8 +203,11 @@ sequenceDiagram
         end
     end
     
-    AppSvc->>EmailSvc: sendBookingConfirmationEmail(appointment)
+    AppSvc->>Event: publishEvent(BOOKED)
     AppSvc-->>AppCtrl: Trả về Appointment đã lưu
+    note over Event,EmailListener: Sau transaction COMMIT
+    Event->>EmailListener: AFTER_COMMIT + @Async
+    EmailListener-->>Patient: Gửi email xác nhận
     AppCtrl-->>UI: Redirect /patient/appointments/{id}
     UI-->>Patient: Hiển thị Lịch hẹn & Mã QR check-in
 ```
@@ -235,12 +239,12 @@ sequenceDiagram
     
     rect rgb(240, 255, 240)
         note over MedRecSvc,DB: Giao dịch lưu trữ & cập nhật kho
-        MedRecSvc->>MedRepo: findById(medicineId)
-        MedRecSvc->>MedRepo: Trừ số lượng tồn kho (stockQuantity - 10)
+        MedRecSvc->>MedRepo: findByIdForUpdate(medicineId)
+        MedRecSvc->>MedRepo: Kiểm tra active/tồn kho, trừ stock và snapshot unitPriceAtTime
         MedRecSvc->>DB: Lưu MedicalRecord & PrescriptionItems
         MedRecSvc->>DB: Cập nhật Appointment status = COMPLETED
         MedRecSvc->>InvSvc: createInvoiceForAppointment(appointment, totalMedicineFee)
-        InvSvc->>DB: Lưu Invoice (status = UNPAID, totalAmount = Khám + Thuốc)
+        InvSvc->>DB: Reserve invoice code rồi lưu Invoice (UNPAID, totalAmount = Khám + Thuốc)
     end
     
     MedRecSvc-->>DocCtrl: Hoàn tất lưu bệnh án
@@ -264,6 +268,7 @@ classDiagram
         +Gender gender
         +LocalDate dateOfBirth
         +String address
+        +String avatarUrl
         +Role role
         +Boolean isActive
         +LocalDateTime createdAt
@@ -288,6 +293,7 @@ classDiagram
         +User user
         +Specialty specialty
         +String title
+        +String licenseNumber
         +Integer experienceYears
         +BigDecimal consultationFee
         +String bio
@@ -322,6 +328,8 @@ classDiagram
         +String reason
         +AppointmentStatus status
         +String queueNumber
+        +Long queueSequence
+        +Long version
         +MedicalRecord medicalRecord
         +Invoice invoice
     }
@@ -351,6 +359,7 @@ classDiagram
         +Prescription prescription
         +Medicine medicine
         +Integer quantity
+        +BigDecimal unitPriceAtTime
         +String dosage
         +String frequency
         +String instructions
@@ -365,6 +374,25 @@ classDiagram
         +String usageGuide
         +Integer stockQuantity
         +Boolean isActive
+    }
+
+    class PasswordResetToken {
+        +Long id
+        +User user
+        +String tokenHash
+        +LocalDateTime expiresAt
+        +LocalDateTime usedAt
+    }
+
+    class DailyQueueCounter {
+        +Long id
+        +LocalDate queueDate
+        +Long nextSequence
+        +Long version
+    }
+
+    class InvoiceCodeReservation {
+        +String invoiceCode
     }
 
     class Invoice {

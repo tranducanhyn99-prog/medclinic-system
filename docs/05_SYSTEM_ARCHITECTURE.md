@@ -76,16 +76,17 @@ graph TD
   - `ROLE_STAFF`: Truy cập `/staff/**`
   - `ROLE_ADMIN`: Truy cập `/admin/**`
 - **Mã hóa:** Giải thuật băm mật khẩu `BCryptPasswordEncoder` với salt ngẫu nhiên.
+- **Password reset:** Token thô chỉ gửi qua email; CSDL lưu SHA-256 hash trong `password_reset_tokens`, hạn 24 giờ và đánh dấu `used_at` sau khi dùng.
 
 ### 2.3. Business Service Layer & Concurrency Engine (Tầng Nghiệp vụ)
 - **Concurrency Locking (Xử lý đồng thời chống Double Booking):**
   - Booking khóa hàng `TimeSlot`; check-in khóa `Appointment` và dùng `DailyQueueCounter` theo ngày để cấp `queue_sequence` dạng số. `Appointment`, `TimeSlot`, `Medicine` và counter có `@Version` phù hợp.
   - Appointment giữ tham chiếu many-to-one tới slot để lịch sử hủy không chặn lần đặt sau. Dữ liệu production cần migration có kiểm soát cho thay đổi unique constraint.
   - Mã hóa đơn được reserve bằng insert vào `invoice_code_reservations`; tồn kho được đọc bằng pessimistic lock và giá kê đơn được snapshot tại `PrescriptionItem.unitPriceAtTime`.
-  - Lần tạo `DailyQueueCounter` đầu tiên đồng thời trên nhiều node chưa có retry unique-collision; cần xử lý trước khi scale ngang.
+  - `DailyQueueCounterAllocator` retry tối đa 8 lần khi nhiều node cùng tạo counter đầu ngày và gặp unique-collision; writer chạy transaction riêng để mỗi lần retry có trạng thái sạch.
 - **Xử lý Bất đồng bộ (Async Processing):**
   - Tích hợp `@EnableAsync` với cấu hình `ThreadPoolTaskExecutor` (Core Pool: 4, Max Pool: 10, Queue: 100).
-  - Tác vụ gửi email (`EmailService`) được tách khỏi luồng request chính, loại bỏ độ trễ phản hồi mạng.
+  - Booking/hủy lịch phát `AppointmentEmailEvent`; `AppointmentEmailListener` dùng `@TransactionalEventListener(AFTER_COMMIT)` + `@Async`, nên email chỉ gửi sau commit và lỗi SMTP không rollback dữ liệu nghiệp vụ.
 - **Động cơ Xuất PDF & QR Code:**
   - `OpenPDF`: Sinh tài liệu PDF đơn thuốc và hóa đơn bằng luồng `ByteArrayOutputStream`, truyền trực tiếp qua `InputStreamResource` không ghi rác ra ổ đĩa máy chủ.
   - `ZXing`: Sinh mã QR định danh Base64 nhúng thẳng vào HTML hoặc gửi qua email.
