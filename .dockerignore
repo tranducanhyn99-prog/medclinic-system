@@ -1,0 +1,12 @@
+target/
+.git/
+.github/
+.vscode/
+.idea/
+*.iml
+*.log
+*.tmp
+~$*.docx
+.env
+MedClinic.eapx
+docs/
