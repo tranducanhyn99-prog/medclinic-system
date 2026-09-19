@@ -2,7 +2,7 @@
 **Dự án:** MedClinic - Phòng Khám Tư Nhân  
 **Mục đích:** Đảm bảo 100% yêu cầu chức năng (FR) trong SRS được ánh xạ tới Sơ đồ Use Case, Bảng CSDL, Lớp Service/Controller và Kế hoạch kiểm thử.  
 
-**Lưu ý kiểm chứng (19/09/2026):** Cột `Test Case ID` là định danh kế hoạch, không tự khẳng định test tự động đã tồn tại. Full `mvn verify` hiện tại có 63 test case trên 34 test class: 56 executed pass, 0 failure, 0 error và 7 environment-gated case được skip theo environment guard. Coverage thực tế gồm service/controller/security, public và authenticated render, concurrent booking/stock, start examination, email after-commit, PDF Unicode, bootstrap profile, invoice-code reservation, responsive/accessibility contracts và SQL Server deployment-artifact contracts. Xem trạng thái chi tiết tại `docs/08_SOURCE_REVIEW_TASKLIST_2026-09-17.md`.
+**Lưu ý kiểm chứng (19/09/2026):** Cột `Test Case ID` là định danh kế hoạch, không tự khẳng định test tự động đã tồn tại. Full `mvn verify` hiện tại có 63 test case trên 34 test class: 56 executed pass, 0 failure, 0 error và 7 environment-gated case được skip theo environment guard. Coverage thực tế gồm service/controller/security, public và authenticated render, concurrent booking/stock, start examination, email after-commit, PDF Unicode, bootstrap profile, invoice-code reservation, responsive/accessibility contracts và SQL Server deployment-artifact contracts. Chi tiết coverage và tiêu chí nghiệm thu được duy trì trực tiếp trong RTM, `docs/performance/TEST_PLAN.md` và báo cáo JaCoCo của Maven.
 
 ---
 

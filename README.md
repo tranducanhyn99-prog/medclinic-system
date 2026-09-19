@@ -154,7 +154,7 @@ Toàn bộ tài liệu chuẩn kỹ thuật phần mềm được lưu trữ đ�
 3. 🗄️ [**03_DATABASE_DESIGN_3NF.md**](file:///docs/03_DATABASE_DESIGN_3NF.md): Thiết kế CSDL 16 bảng & Chứng minh chuẩn hóa 3NF kèm Từ điển dữ liệu chi tiết cho SQL Server.
 4. 🧭 [**04_RTM_MATRIX.md**](file:///docs/04_RTM_MATRIX.md): Ma trận truy vết yêu cầu 2 chiều (Requirements Traceability Matrix).
 5. 🏛️ [**05_SYSTEM_ARCHITECTURE.md**](file:///docs/05_SYSTEM_ARCHITECTURE.md): Tài liệu Kiến trúc Hệ thống chi tiết (Layered Architecture, Design Patterns).
-6. 📋 [**DE_XUAT_CAI_THIEN_MEDCLINIC.md**](file:///docs/DE_XUAT_CAI_THIEN_MEDCLINIC.md): Báo cáo rà soát và đề xuất cải tiến toàn diện cho dự án.
+6. 🎨 [**06_UI_UX_DESIGN.md**](file:///docs/06_UI_UX_DESIGN.md): Đặc tả giao diện, responsive và accessibility.
 
 ---
 

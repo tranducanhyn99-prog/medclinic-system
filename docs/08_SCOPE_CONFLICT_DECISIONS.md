@@ -7,7 +7,7 @@
 
 | Mục | Quyết định | Bằng chứng / hệ quả |
 |---|---|---|
-| Trạng thái task | Chỉ đánh dấu hoàn tất sau khi mã nguồn, build và kiểm thử phù hợp có bằng chứng. | `docs/08_SOURCE_REVIEW_TASKLIST_2026-09-17.md` là danh sách theo dõi hiện tại. |
+| Trạng thái kiểm chứng | Chỉ công bố tính năng hoàn tất sau khi mã nguồn, build và kiểm thử phù hợp có bằng chứng. | Bằng chứng được giữ trong test source, JaCoCo, `docs/performance/TEST_PLAN.md` và tài liệu triển khai tương ứng. |
 | RTM | Mã `TC-*` trong RTM là kế hoạch kiểm thử, trừ khi cột kiểm chứng nêu rõ class/method nguồn và một lần chạy thành công. | Tránh đồng nhất ID kế hoạch với test đã chạy. |
 | Tài liệu CSDL/DOCX | Không regenerate DOCX khi build source còn lỗi hoặc mô hình entity đang thay đổi. | Generated artifact chỉ được thay sau khi generator chạy thành công và QA render. |
 | WebSocket, VNPay, audit trail | Giữ là backlog; không suy diễn đã có tính năng từ dependency, entity hoặc mô tả thiết kế. | Không thấy luồng realtime, callback VNPay hoặc audit trail đầy đủ trong review nguồn. |
