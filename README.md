@@ -7,7 +7,11 @@
 [![Spring Security](https://img.shields.io/badge/Spring%20Security-6.x-green.svg?style=for-the-badge&logo=springsecurity)](https://spring.io/projects/spring-security)
 [![Thymeleaf](https://img.shields.io/badge/Thymeleaf-3.x-005F0E.svg?style=for-the-badge&logo=thymeleaf)](https://www.thymeleaf.org/)
 [![Database](https://img.shields.io/badge/Database-SQL%20Server%20%7C%20H2-004880.svg?style=for-the-badge&logo=microsoftsqlserver)](https://www.microsoft.com/sql-server/)
-[![Tests](https://img.shields.io/badge/Tests-56%20Executed%20Passing-success.svg?style=for-the-badge&logo=junit5)](https://junit.org/junit5/)
+[![CI](https://github.com/tranducanhyn99-prog/medclinic-system/actions/workflows/ci.yml/badge.svg)](https://github.com/tranducanhyn99-prog/medclinic-system/actions/workflows/ci.yml)
+[![Line Coverage](https://img.shields.io/badge/Line%20Coverage-71.13%25-brightgreen.svg?style=for-the-badge)](https://github.com/tranducanhyn99-prog/medclinic-system/actions/workflows/ci.yml)
+[![Branch Coverage](https://img.shields.io/badge/Branch%20Coverage-60.28%25-brightgreen.svg?style=for-the-badge)](https://github.com/tranducanhyn99-prog/medclinic-system/actions/workflows/ci.yml)
+[![Tests](https://img.shields.io/badge/Tests-94%20total%20%7C%2087%20executed-success.svg?style=for-the-badge&logo=junit5)](https://junit.org/junit5/)
+[![Docker](https://img.shields.io/badge/Docker-Compose%20Ready-2496ED.svg?style=for-the-badge&logo=docker)](compose.yml)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](LICENSE)
 
 *Giải pháp số hóa quy trình y tế toàn diện: Đặt lịch khám trực tuyến, Bàn khám Bác sĩ điện tử, Tiếp nhận tự động & Bệnh án điện tử chống Double Booking trên nền tảng **Microsoft SQL Server**.*
@@ -51,12 +55,33 @@ Tại các phòng khám tư nhân quy mô vừa và nhỏ ở Việt Nam, việc
 - Tự động tạo hóa đơn viện phí, hỗ trợ thanh toán tiền mặt tại quầy và xuất PDF đơn thuốc/hóa đơn chuẩn y khoa. VNPay/IPN được giữ trong roadmap tương lai.
 
 ### Điểm nổi bật & Thách thức kỹ thuật
-- **Kiểm soát đồng thời chống Double Booking:** Trong môi trường khám bệnh, việc hai bệnh nhân cùng bấm đặt chung một khung giờ (TimeSlot) là rủi ro nghiêm trọng. Luồng đặt lịch khóa bản ghi TimeSlot khi ghi (`findByIdForUpdate`) và vẫn duy trì `@Version` để phát hiện cập nhật cạnh tranh. Kết hợp transaction `READ_COMMITTED`, trạng thái slot và ràng buộc CSDL giúp booking thất bại an toàn khi có tranh chấp.
+- **Kiểm soát đồng thời chống Double Booking:** Luồng đặt lịch khóa bản ghi TimeSlot khi ghi (`findByIdForUpdate`) và vẫn duy trì `@Version` để phát hiện cập nhật cạnh tranh. Kết hợp transaction `READ_COMMITTED`, trạng thái slot và ràng buộc CSDL giúp booking thất bại an toàn khi có tranh chấp.
 - **Cơ sở dữ liệu Microsoft SQL Server đạt chuẩn 3NF:** Toàn bộ 16 bảng quan hệ được thiết kế chuẩn mực, tối ưu hóa kiểu dữ liệu (`NVARCHAR`, `DECIMAL(12,2)`, `DATETIME2`, `BIT`), hỗ trợ Unicode toàn vẹn tiếng Việt có dấu.
 - **Phân quyền người dùng dựa trên vai trò (RBAC):** Bảo vệ chặt chẽ các tài nguyên theo 4 vai trò: `ROLE_PATIENT`, `ROLE_DOCTOR`, `ROLE_STAFF`, `ROLE_ADMIN` thông qua Spring Security 6.
 - **Tích hợp đa dịch vụ:** Tự động tạo mã QR Base64 bằng Google ZXing, xuất hóa đơn & toa thuốc chuẩn PDF bằng OpenPDF, và gửi email xác nhận bất đồng bộ `@Async`.
 
 ---
+
+## 💼 Điểm nhấn kỹ thuật cho Portfolio / CV
+
+| Năng lực | Minh chứng trong project |
+| :--- | :--- |
+| **Concurrency & Transaction** | Row lock + `@Version`, chống double-booking, cấp STT đồng thời, khóa tồn kho và rollback nghiệp vụ |
+| **SQL Server production-readiness** | Baseline 16 bảng, `ddl-auto=validate`, Unicode `NVARCHAR`, migration/runbook và integration test có guard |
+| **Security** | Spring Security RBAC 4 vai trò, CSRF, BCrypt, remember-me secret ngoài repo, password-reset token SHA-256 dùng một lần |
+| **Quality Engineering** | 94 test case, 87 executed PASS, JaCoCo **71.13% line / 60.28% branch**, quality gate trên `mvn verify` |
+| **CI/CD & Delivery** | GitHub Actions cho push/PR, artifact JAR + JaCoCo report, Dockerfile multi-stage và SQL Server Compose |
+| **UX & Accessibility** | Responsive dashboard, keyboard/focus contract, ARIA/live-region audit và UI smoke đa kích thước |
+
+## 🖼️ Giao diện thực tế
+
+<p align="center">
+  <img src="docs/assets/readme/home.png" alt="Trang chủ MedClinic" width="92%" />
+</p>
+<p align="center">
+  <img src="docs/assets/readme/doctors.png" alt="Danh sách bác sĩ MedClinic" width="49%" />
+  <img src="docs/assets/readme/login.png" alt="Đăng nhập MedClinic" width="49%" />
+</p>
 
 ## ✨ Tính Năng Nổi Bật (Key Features)
 
@@ -141,7 +166,9 @@ graph TD
 | **Biểu đồ** | Chart.js | 4.x | Biểu đồ trực quan hóa số liệu KPI tại trang Admin |
 | **Sinh mã QR** | Google ZXing (Zebra Crossing) | 3.5.3 | Sinh chuỗi Base64 mã QR cuộc hẹn |
 | **Xuất PDF** | LibrePDF OpenPDF | 2.0.3 | Xuất đơn thuốc & hóa đơn PDF |
-| **Kiểm thử** | JUnit 5, Mockito | Mới nhất | Unit Test nghiệp vụ và kiểm thử đồng thời |
+| **Kiểm thử** | JUnit 5, Mockito, JaCoCo | 5.x / 0.8.12 | Unit/integration/concurrency test + quality gate |
+| **CI/CD** | GitHub Actions | Hosted runner | `mvn verify`, artifact JAR và JaCoCo report cho push/PR |
+| **Container** | Docker + Compose | SQL Server 2022 | Build image đa tầng và dựng app + database cho local/demo |
 
 ---
 
@@ -166,14 +193,39 @@ Toàn bộ tài liệu chuẩn kỹ thuật phần mềm được lưu trữ đ�
 - **SQL Server Management Studio (SSMS):** Công cụ quản trị trực quan ([Tải SSMS](https://learn.microsoft.com/en-us/sql/ssms/download-sql-server-management-studio-ssms))
 - **Apache Maven:** Phiên bản 3.9+ (hoặc dùng Maven Wrapper)
 - **Git:** Quản lý mã nguồn ([Tải Git](https://git-scm.com/))
+- **Docker Desktop (tùy chọn):** Dùng cho cách chạy nhanh toàn bộ App + SQL Server bằng Compose
 
 ---
 
 ### Bước 1: Clone kho mã nguồn
 ```bash
-git clone https://github.com/<YOUR_USERNAME>/medclinic-system.git
+git clone https://github.com/tranducanhyn99-prog/medclinic-system.git
 cd medclinic-system
 ```
+
+---
+
+### Cách chạy nhanh bằng Docker Compose
+
+```bash
+# Linux/macOS
+cp .env.example .env
+
+# Windows PowerShell
+# Copy-Item .env.example .env
+```
+
+Đổi các giá trị mẫu trong `.env`, đặc biệt `MSSQL_SA_PASSWORD` và `REMEMBER_ME_KEY`, sau đó:
+
+```bash
+docker compose up --build
+```
+
+Compose sẽ khởi động SQL Server 2022, đợi database healthy, tạo `medclinic_db`, áp dụng baseline 16 bảng + reference roles nếu database còn sạch, rồi mới khởi động ứng dụng tại **http://localhost:8080**.
+
+> Cấu hình Compose dùng tài khoản `sa` cho **local/demo để giảm bước setup**. Production vẫn phải dùng application login tối thiểu quyền theo `docs/database/SQLSERVER_RUNBOOK.md`.
+
+Dừng stack bằng `docker compose down`; muốn xóa cả dữ liệu demo thì dùng `docker compose down -v`.
 
 ---
 
@@ -292,7 +344,12 @@ Dự án được tích hợp bộ kiểm thử tự động với JUnit 5, Mock
 mvn verify
 ```
 
-Baseline kiểm chứng ngày 19/09/2026: **63 test case / 34 test class; 56 executed PASS, 7 environment-gated skipped, 0 failure, 0 error**. Các SQL Server integration test chỉ chạy khi chủ động bật environment guard.
+Baseline kiểm chứng ngày 19/09/2026: **94 test case / 40 test class; 87 executed PASS, 7 environment-gated skipped, 0 failure, 0 error**. JaCoCo đạt **71.13% line / 60.28% branch**; build sẽ fail nếu xuống dưới **70% line / 50% branch**. Các SQL Server integration test chỉ chạy khi chủ động bật environment guard.
+
+### CI và quality gate
+- GitHub Actions chạy `mvn verify` trên **JDK 21** cho mọi push/PR vào `main`.
+- JaCoCo kiểm tra ngưỡng **LINE ≥ 70%** và **BRANCH ≥ 50%** ngay trong phase `verify`.
+- Workflow lưu **JaCoCo HTML report** và **application JAR** dưới dạng build artifacts.
 
 ### Các kịch bản kiểm thử trọng yếu:
 - ✅ **Khởi tạo Context & Seed Data:** Đảm bảo toàn bộ Bean, Hibernate Entity, và dữ liệu mẫu nạp thành công (`MedClinicApplicationTests`).
@@ -307,7 +364,12 @@ Baseline kiểm chứng ngày 19/09/2026: **63 test case / 34 test class; 56 exe
 
 ```
 medclinic-system/
-├── docs/                                 # Toàn bộ tài liệu chuẩn kỹ thuật (SRS, UML, CSDL, RTM, Kiến trúc)
+├── .github/workflows/ci.yml              # CI: JDK 21 + mvn verify + JaCoCo + artifacts
+├── docker/sqlserver/init-db.sh            # Khởi tạo SQL Server demo có kiểm tra schema
+├── docs/                                 # Tài liệu chuẩn kỹ thuật + ảnh portfolio
+├── Dockerfile                            # Multi-stage build, runtime non-root
+├── compose.yml                           # App + SQL Server 2022 + init job
+├── .env.example                          # Mẫu biến môi trường local/demo, không chứa secret thật
 ├── src/
 │   ├── main/
 │   │   ├── java/com/medclinic/
@@ -324,8 +386,7 @@ medclinic-system/
 │   │   └── resources/
 │   │       ├── templates/                # Thymeleaf HTML Templates
 │   │       ├── static/                   # File tĩnh (CSS, JS, Images)
-│   │       ├── application.yml           # dev/test H2 + sqlserver chính; mysql giữ cho roadmap tương lai
-│   │       └── application-sqlserver.properties  # Cấu hình kết nối Microsoft SQL Server
+│   │       └── application.yml           # Profiles dev H2 / sqlserver / mysql-roadmap; nhận secret qua env
 │   └── test/java/com/medclinic/          # Bộ bài kiểm thử tự động JUnit 5 & Mockito
 ├── pom.xml                               # Quản lý thư viện Maven & mssql-jdbc Driver
 └── README.md                             # Tài liệu giới thiệu & hướng dẫn dự án (Chuẩn freeCodeCamp)

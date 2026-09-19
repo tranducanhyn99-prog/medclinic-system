@@ -11,7 +11,7 @@ import java.time.LocalDate;
 /** Keeps H2/dev and integration tests offline while exercising after-commit events. */
 @Service
 @Primary
-@Profile("dev")
+@Profile({"dev", "demo"})
 @Slf4j
 public class DevelopmentEmailService implements EmailService {
     @Override

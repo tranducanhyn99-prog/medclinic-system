@@ -19,10 +19,10 @@ class DataInitializerBootstrapTest {
     @Autowired private DoctorProfileRepository doctorProfileRepository;
 
     @Test
-    void sampleDataInitializerIsLimitedToDevProfile() {
+    void sampleDataInitializerIsLimitedToDevOrDemoProfiles() {
         Profile profile = DataInitializer.class.getAnnotation(Profile.class);
         assertNotNull(profile);
-        assertArrayEquals(new String[]{"dev"}, profile.value());
+        assertArrayEquals(new String[]{"dev", "demo"}, profile.value());
     }
 
     @Test
