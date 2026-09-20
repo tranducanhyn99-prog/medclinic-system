@@ -167,6 +167,7 @@
             color: #38bdf8;
         }
     </style>
+    <link rel="stylesheet" th:href="@{/css/medclinic-design-system.css}">
 </head>
 <body>
     <a class="skip-link" href="#main-content">Bỏ qua điều hướng, đến nội dung chính</a>
@@ -190,6 +191,11 @@
                     <li class="nav-item">
                         <a class="nav-link nav-link-med" th:href="@{/}">
                             <i class="bi bi-house me-1 text-secondary"></i> Trang chủ
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link nav-link-med" th:href="@{/doctors}">
+                            <i class="bi bi-person-badge me-1 text-secondary"></i> Tìm bác sĩ
                         </a>
                     </li>
                     <li class="nav-item" sec:authorize="hasRole('PATIENT') or !isAuthenticated()">

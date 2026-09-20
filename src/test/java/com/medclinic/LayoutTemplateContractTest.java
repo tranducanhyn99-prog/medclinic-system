@@ -119,7 +119,7 @@ class LayoutTemplateContractTest {
             assertTrue(register.contains("for=\"" + id + "\""), "missing label association for " + id);
         }
         assertTrue(register.contains("<h1 class=\"h3"));
-        assertTrue(home.contains("<h2 class=\"h3 fw-bold text-dark\">"));
+        assertTrue(home.contains("id=\"processTitle\""));
         assertTrue(home.contains("<h3 class=\"h6 fw-bold mb-2\">"));
         assertTrue(main.contains("<h2 class=\"h6 text-white"));
     }

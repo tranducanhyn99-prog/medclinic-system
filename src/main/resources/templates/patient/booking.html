@@ -46,7 +46,7 @@
     <div class="container py-4">
 
         <!-- Page Header -->
-        <div class="d-flex flex-wrap align-items-center justify-content-between mb-4 pb-2 border-bottom">
+        <div class="mc-page-header align-items-end border-bottom pb-3">
             <div>
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb mb-1 small">
@@ -54,7 +54,7 @@
                         <li class="breadcrumb-item active" aria-current="page">Đặt lịch khám</li>
                     </ol>
                 </nav>
-                <h1 class="h3 fw-bold text-dark mb-0">
+                <h1 class="mc-page-title">
                     <i class="bi bi-calendar-plus text-primary me-2"></i>Đặt Lịch Khám Bệnh
                 </h1>
             </div>
@@ -64,14 +64,14 @@
         </div>
 
         <form th:action="@{/patient/booking}" method="post" id="bookingForm">
-            <div class="row g-4">
+            <div class="row g-4 mc-booking-layout">
                 <!-- Left Column: Form Steps -->
                 <div class="col-lg-8">
 
                     <!-- Step 1 & 2: Chuyên Khoa & Bác Sĩ -->
-                    <div class="card card-custom p-4 mb-4">
-                        <h2 class="h5 fw-bold text-dark mb-3 d-flex align-items-center">
-                            <span class="badge bg-primary rounded-circle me-2 d-inline-flex align-items-center justify-content-center" style="width: 26px; height: 26px;">1</span>
+                    <div class="mc-booking-step">
+                        <h2 class="h5 fw-bold mb-0 mc-booking-step-head">
+                            <span class="mc-booking-step-index">1</span>
                             Chọn Chuyên Khoa & Bác Sĩ Phụ Trách
                         </h2>
 
@@ -127,9 +127,9 @@
                     </div>
 
                     <!-- Step 3 & 4: Ngày Khám & Chọn Khung Giờ (Time Slots) -->
-                    <div class="card card-custom p-4 mb-4">
-                        <h2 class="h5 fw-bold text-dark mb-3 d-flex align-items-center">
-                            <span class="badge bg-primary rounded-circle me-2 d-inline-flex align-items-center justify-content-center" style="width: 26px; height: 26px;">2</span>
+                    <div class="mc-booking-step">
+                        <h2 class="h5 fw-bold mb-0 mc-booking-step-head">
+                            <span class="mc-booking-step-index">2</span>
                             Chọn Ngày Khám & Khung Giờ Còn Trống
                         </h2>
 
@@ -167,7 +167,7 @@
                             </div>
 
                             <!-- Slots Grid -->
-                            <div id="slotGrid" class="row row-cols-2 row-cols-sm-3 row-cols-md-4 g-2 d-none" role="group" aria-label="C?c khung gi? kh?m kh? d?ng">
+                            <div id="slotGrid" class="row row-cols-2 row-cols-sm-3 row-cols-md-4 g-2 d-none" role="group" aria-label="Các khung giờ khám khả dụng">
                                 <!-- Generated dynamically via JavaScript -->
                             </div>
 
@@ -178,9 +178,9 @@
                     </div>
 
                     <!-- Step 5: Lý Do Khám -->
-                    <div class="card card-custom p-4 mb-4">
-                        <h2 class="h5 fw-bold text-dark mb-3 d-flex align-items-center">
-                            <span class="badge bg-primary rounded-circle me-2 d-inline-flex align-items-center justify-content-center" style="width: 26px; height: 26px;">3</span>
+                    <div class="mc-booking-step">
+                        <h2 class="h5 fw-bold mb-0 mc-booking-step-head">
+                            <span class="mc-booking-step-index">3</span>
                             Thông Tin Bệnh Nhân & Triệu Chứng
                         </h2>
 
@@ -198,28 +198,28 @@
 
                 <!-- Right Column: Live Booking Summary -->
                 <div class="col-lg-4">
-                    <div class="card card-custom p-4 summary-card shadow-sm border-primary border-opacity-25">
+                    <div class="mc-booking-summary p-4">
                         <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
                             <h2 class="h6 fw-bold text-dark mb-0">Tóm Tắt Phiếu Hẹn</h2>
                             <span class="badge bg-primary-subtle text-primary small">Trực Tuyến</span>
                         </div>
 
                         <div class="small mb-3">
-                            <div class="d-flex justify-content-between py-1.5 border-bottom border-light">
+                            <div class="mc-summary-row">
                                 <span class="text-muted">Chuyên khoa:</span>
-                                <span class="fw-semibold text-end" id="sumSpecialty">Chưa chọn</span>
+                                <span class="mc-summary-value" id="sumSpecialty">Chưa chọn</span>
                             </div>
-                            <div class="d-flex justify-content-between py-1.5 border-bottom border-light">
+                            <div class="mc-summary-row">
                                 <span class="text-muted">Bác sĩ:</span>
-                                <span class="fw-semibold text-end" id="sumDoctor">Chưa chọn</span>
+                                <span class="mc-summary-value" id="sumDoctor">Chưa chọn</span>
                             </div>
-                            <div class="d-flex justify-content-between py-1.5 border-bottom border-light">
+                            <div class="mc-summary-row">
                                 <span class="text-muted">Ngày khám:</span>
-                                <span class="fw-semibold text-end" id="sumDate">Chưa chọn</span>
+                                <span class="mc-summary-value" id="sumDate">Chưa chọn</span>
                             </div>
-                            <div class="d-flex justify-content-between py-1.5 border-bottom border-light">
+                            <div class="mc-summary-row">
                                 <span class="text-muted">Giờ khám:</span>
-                                <span class="fw-bold text-primary text-end" id="sumSlot">Chưa chọn</span>
+                                <span class="mc-summary-value text-primary" id="sumSlot">Chưa chọn</span>
                             </div>
                             <div class="d-flex justify-content-between py-2 mt-2 bg-light p-2 rounded-2">
                                 <span class="fw-bold text-dark">Tiền khám tạm tính:</span>
@@ -367,7 +367,7 @@ document.addEventListener('DOMContentLoaded', function () {
         selectedSlotId.value = '';
         sumSlot.textContent = 'Chưa chọn';
         submitBtn.disabled = true;
-        slotSelectionStatus.textContent = '';
+                            slotSelectionStatus.textContent = 'Đã chọn khung giờ ' + this.dataset.timeText;
     }
 
     // AJAX Fetch Time Slots
@@ -431,7 +431,7 @@ document.addEventListener('DOMContentLoaded', function () {
                             selectedSlotId.value = this.dataset.slotId;
                             sumSlot.textContent = this.dataset.timeText;
                             submitBtn.disabled = false;
-                            slotSelectionStatus.textContent = '?? ch?n khung gi? ' + this.dataset.timeText;
+                            slotSelectionStatus.textContent = 'Đã chọn khung giờ ' + this.dataset.timeText;
                         });
                     }
 
