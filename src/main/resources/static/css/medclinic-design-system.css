@@ -1031,3 +1031,184 @@ main.container-fluid {
 .mc-auth-narrow {
     max-width: 32rem;
 }
+
+/* Operational workflows: doctor & staff */
+.mc-workflow-card {
+    padding: 1.25rem;
+    border: 1px solid var(--mc-border);
+    border-radius: var(--mc-radius-lg);
+    background: var(--mc-surface);
+    box-shadow: var(--mc-shadow-sm);
+}
+.mc-workflow-card + .mc-workflow-card { margin-top: 1rem; }
+.mc-step-title {
+    display: flex;
+    align-items: center;
+    gap: .65rem;
+    margin: 0 0 1rem;
+    color: var(--mc-text);
+    font-size: 1rem;
+    font-weight: 730;
+}
+.mc-step-index {
+    width: 1.75rem;
+    height: 1.75rem;
+    display: grid;
+    place-items: center;
+    flex: 0 0 1.75rem;
+    border-radius: 999px;
+    background: var(--mc-primary-soft);
+    color: var(--mc-primary);
+    font-size: .78rem;
+    font-weight: 800;
+}
+.mc-operational-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .55rem;
+}
+.mc-patient-summary {
+    padding: 1.15rem;
+    border: 1px solid var(--mc-border);
+    border-radius: var(--mc-radius-lg);
+    background: var(--mc-surface);
+    box-shadow: var(--mc-shadow-sm);
+}
+.mc-patient-avatar {
+    width: 2.75rem;
+    height: 2.75rem;
+    display: grid;
+    place-items: center;
+    flex: 0 0 2.75rem;
+    border-radius: .75rem;
+    background: var(--mc-primary-soft);
+    color: var(--mc-primary);
+    font-weight: 750;
+}
+.patient-sticky-card {
+    position: sticky;
+    top: 5.5rem;
+}
+.medicine-row:hover {
+    background: var(--mc-surface-subtle);
+}
+.filter-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    min-height: 2.25rem;
+    padding: .45rem .75rem;
+    border: 1px solid transparent;
+    border-radius: .6rem;
+    color: var(--mc-text-muted);
+    font-size: .8rem;
+    font-weight: 650;
+    text-decoration: none;
+    transition: background-color .15s ease, color .15s ease, border-color .15s ease;
+}
+.filter-tab:hover {
+    color: var(--mc-primary);
+    background: var(--mc-primary-soft);
+}
+.filter-tab.active {
+    color: var(--mc-primary);
+    background: var(--mc-primary-soft);
+    border-color: #c8e1e8;
+}
+.filter-tab .badge {
+    font-size: .7rem;
+    min-width: 1.35rem;
+}
+.mc-filter-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .35rem;
+    margin-bottom: 1rem;
+}
+.slot-btn {
+    border: 1px solid var(--mc-border-strong);
+    background: var(--mc-surface);
+    color: #344054;
+    font-weight: 650;
+    padding: .55rem .7rem;
+    border-radius: .55rem;
+    transition: background-color .15s ease, border-color .15s ease, color .15s ease;
+    font-size: .85rem;
+    text-align: center;
+    cursor: pointer;
+}
+.slot-btn:hover:not(:disabled) {
+    border-color: var(--mc-primary);
+    color: var(--mc-primary);
+    background: var(--mc-primary-soft);
+}
+.slot-btn.selected {
+    background: var(--mc-primary) !important;
+    color: #fff !important;
+    border-color: var(--mc-primary) !important;
+    box-shadow: 0 0 0 .18rem rgba(15,111,143,.12);
+}
+.slot-btn:disabled {
+    background: #f2f4f7;
+    color: #98a2b3;
+    border-color: #eaecf0;
+    cursor: not-allowed;
+    text-decoration: line-through;
+}
+.mc-schedule-card {
+    height: 100%;
+    overflow: hidden;
+    border: 1px solid var(--mc-border);
+    border-radius: var(--mc-radius-lg);
+    background: var(--mc-surface);
+    box-shadow: var(--mc-shadow-sm);
+}
+.mc-schedule-card .card-header,
+.mc-schedule-card .card-footer {
+    background: var(--mc-surface-subtle);
+}
+.mc-schedule-slot {
+    display: inline-flex;
+    align-items: center;
+    padding: .32rem .5rem;
+    border-radius: 999px;
+    border: 1px solid var(--mc-border);
+    background: #f8fafc;
+    color: #475467;
+    font-size: .74rem;
+    font-weight: 650;
+    line-height: 1;
+}
+.mc-schedule-slot.is-available {
+    border-color: #b7dcc6;
+    background: #eef8f1;
+    color: var(--mc-success);
+}
+.mc-schedule-slot.is-booked {
+    border-color: #bfd7df;
+    background: var(--mc-primary-soft);
+    color: var(--mc-primary);
+}
+@media (max-width: 767.98px) {
+    .mc-operational-actions { width: 100%; }
+    .mc-operational-actions .btn,
+    .mc-operational-actions a.btn { flex: 1 1 auto; justify-content: center; }
+    .patient-sticky-card { position: static; }
+    .mc-filter-tabs {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        padding-bottom: .25rem;
+        scrollbar-width: thin;
+    }
+    .filter-tab { flex: 0 0 auto; }
+    .mc-workflow-card { padding: 1rem; }
+}
+.mc-qr-reader {
+    width: 100%;
+    max-width: 23.75rem;
+    margin: 0 auto;
+    overflow: hidden;
+    border: 1px solid var(--mc-border);
+    border-radius: var(--mc-radius-md);
+}

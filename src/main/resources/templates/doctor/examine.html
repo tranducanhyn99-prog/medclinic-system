@@ -4,21 +4,12 @@
       layout:decorate="~{layout/dashboard}">
 <head>
     <title>Bàn Khám Bệnh & Kê Đơn Thuốc - MedClinic</title>
-    <style>
-        .patient-sticky-card {
-            position: sticky;
-            top: 80px;
-        }
-        .medicine-row:hover {
-            background-color: #f8fafc;
-        }
-    </style>
 </head>
 <body>
 <div layout:fragment="content">
 
     <!-- Top Header -->
-    <div class="d-flex flex-wrap align-items-center justify-content-between mb-4 pb-2 border-bottom">
+    <div class="mc-page-header align-items-end border-bottom pb-3">
         <div>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-1 small">
@@ -26,7 +17,7 @@
                     <li class="breadcrumb-item active" aria-current="page">Hồ sơ khám bệnh</li>
                 </ol>
             </nav>
-            <h3 class="fw-bold text-dark mb-0">
+            <h3 class="mc-page-title">
                 <i class="bi bi-clipboard2-pulse-fill text-primary me-2"></i>Bàn Khám Lâm Sàng & Kê Đơn Thuốc
             </h3>
         </div>
@@ -45,13 +36,13 @@
             <div class="patient-sticky-card">
 
                 <!-- Patient Card -->
-                <div class="card card-portal p-4 mb-3 shadow-sm border-top border-4 border-primary">
+                <div class="mc-patient-summary mb-3">
                     <div class="d-flex align-items-center gap-3 mb-3">
-                        <div class="rounded-circle bg-primary bg-opacity-10 text-primary p-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                        <div class="mc-patient-avatar">
                             <i class="bi bi-person-fill fs-4"></i>
                         </div>
                         <div>
-                            <h5 class="fw-bold text-dark mb-0" th:text="${appointment.patient.fullName}">Nguyễn Văn Bệnh Nhân</h5>
+                            <h5 class="mc-page-title" th:text="${appointment.patient.fullName}">Nguyễn Văn Bệnh Nhân</h5>
                             <span class="text-secondary small" th:text="${appointment.patient.gender != null ? appointment.patient.gender.displayName : 'Chưa rõ giới tính'}">Nam</span>
                             <span class="text-secondary small" th:if="${appointment.patient.dateOfBirth != null}" th:text="${' • ' + #temporals.format(appointment.patient.dateOfBirth, 'dd/MM/yyyy')}"> • 1990</span>
                         </div>
@@ -70,7 +61,7 @@
                 </div>
 
                 <!-- Previous Medical History Accordion -->
-                <div class="card card-portal p-3 shadow-sm">
+                <div class="mc-workflow-card p-3">
                     <h6 class="fw-bold text-dark mb-2 d-flex align-items-center justify-content-between">
                         <span><i class="bi bi-clock-history text-secondary me-2"></i>Tiền Sử Khám Bệnh</span>
                         <span class="badge bg-secondary rounded-pill" th:text="${#lists.size(patientHistory)}">0</span>
@@ -113,8 +104,8 @@
             <form th:action="@{/doctor/examine/{appointmentId}(appointmentId=${appointment.id})}" method="post" id="examinationForm">
 
                 <!-- Section 1: Clinical Diagnosis -->
-                <div class="card card-portal p-4 mb-4 shadow-sm">
-                    <h5 class="fw-bold text-dark mb-3 d-flex align-items-center">
+                <div class="mc-workflow-card mb-4">
+                    <h5 class="mc-step-title">
                         <i class="bi bi-file-earmark-medical-fill text-primary me-2"></i>
                         1. Khám Lâm Sàng & Chẩn Đoán Y Khoa
                     </h5>
@@ -137,9 +128,9 @@
                 </div>
 
                 <!-- Section 2: Dynamic Prescription Table -->
-                <div class="card card-portal p-4 mb-4 shadow-sm">
+                <div class="mc-workflow-card mb-4">
                     <div class="d-flex flex-wrap align-items-center justify-content-between mb-3">
-                        <h5 class="fw-bold text-dark mb-0 d-flex align-items-center">
+                        <h5 class="mc-step-title mb-0">
                             <i class="bi bi-capsule-fill text-success me-2"></i>
                             2. Kê Đơn Thuốc Điện Tử
                         </h5>
@@ -149,7 +140,7 @@
                     </div>
 
                     <div class="table-responsive mb-3">
-                        <table class="table table-bordered align-middle small" id="medicineTable">
+                        <table class="table table-bordered mc-data-table align-middle" id="medicineTable">
                             <thead class="table-light">
                                 <tr>
                                     <th style="min-width: 200px;">Tên Thuốc / Dược Phẩm</th>
@@ -178,8 +169,8 @@
                 </div>
 
                 <!-- Section 3: Notes & Re-examination -->
-                <div class="card card-portal p-4 mb-4 shadow-sm">
-                    <h5 class="fw-bold text-dark mb-3 d-flex align-items-center">
+                <div class="mc-workflow-card mb-4">
+                    <h5 class="mc-step-title">
                         <i class="bi bi-calendar-event-fill text-warning me-2"></i>
                         3. Lời Dặn & Hẹn Ngày Tái Khám
                     </h5>
@@ -198,7 +189,7 @@
                 </div>
 
                 <!-- Bottom Action Bar -->
-                <div class="card card-portal p-3 shadow-sm d-flex flex-row align-items-center justify-content-between">
+                <div class="mc-workflow-card d-flex flex-row align-items-center justify-content-between">
                     <a th:href="@{/doctor/desk}" class="btn btn-outline-secondary">
                         <i class="bi bi-arrow-left me-1"></i> Quay lại Hàng Chờ
                     </a>

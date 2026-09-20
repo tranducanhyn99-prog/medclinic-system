@@ -9,12 +9,12 @@
 <div layout:fragment="content">
 
     <!-- Top Header -->
-    <div class="d-flex flex-wrap align-items-center justify-content-between mb-4 pb-2 border-bottom">
+    <div class="mc-page-header align-items-end border-bottom pb-3">
         <div>
-            <h3 class="fw-bold text-dark mb-1">
+            <h3 class="mc-page-title">
                 <i class="bi bi-credit-card-fill text-success me-2"></i>Quản Lý Viện Phí & Quầy Thu Ngân
             </h3>
-            <p class="text-secondary small mb-0">Xác nhận thanh toán tiền mặt tại quầy hoặc qua cổng VNPay và xuất hóa đơn chuẩn y khoa.</p>
+            <p class="mc-page-subtitle">Xác nhận thanh toán tiền mặt tại quầy hoặc qua cổng VNPay và xuất hóa đơn chuẩn y khoa.</p>
         </div>
         <div>
             <a th:href="@{/staff/reception}" class="btn btn-sm btn-outline-primary">
@@ -26,31 +26,31 @@
     <!-- Metric Cards -->
     <div class="row g-3 mb-4">
         <div class="col-sm-4">
-            <div class="card card-portal p-3 border-start border-4 border-primary">
+            <div class="mc-kpi-card">
                 <div class="text-muted small">Tổng Hóa Đơn Khám</div>
-                <h4 class="fw-bold mb-0 text-dark" th:text="${#lists.size(invoices)}">0</h4>
+                <h4 class="mc-kpi-value" th:text="${#lists.size(invoices)}">0</h4>
             </div>
         </div>
         <div class="col-sm-4">
-            <div class="card card-portal p-3 border-start border-4 border-warning">
+            <div class="mc-kpi-card">
                 <div class="text-muted small">Hóa Đơn Chờ Thanh Toán</div>
-                <h4 class="fw-bold mb-0 text-warning"
+                <h4 class="mc-kpi-value"
                     th:text="${#lists.size(invoices.?[paymentStatus.name() == 'UNPAID'])}">0</h4>
             </div>
         </div>
         <div class="col-sm-4">
-            <div class="card card-portal p-3 border-start border-4 border-success">
+            <div class="mc-kpi-card">
                 <div class="text-muted small">Hóa Đơn Đã Quyết Toán</div>
-                <h4 class="fw-bold mb-0 text-success"
+                <h4 class="mc-kpi-value"
                     th:text="${#lists.size(invoices.?[paymentStatus.name() == 'PAID'])}">0</h4>
             </div>
         </div>
     </div>
 
     <!-- Invoices Table -->
-    <div class="card card-portal shadow-sm">
-        <div class="card-header bg-white py-3 border-bottom d-flex align-items-center justify-content-between">
-            <h6 class="fw-bold text-dark mb-0">
+    <div class="mc-data-card">
+        <div class="mc-data-toolbar">
+            <h6 class="mc-data-title">
                 <i class="bi bi-receipt text-primary me-2"></i>Danh Sách Hóa Đơn Viện Phí
             </h6>
             <button type="button" class="btn btn-sm btn-light border" id="refreshBillingBtn" aria-label="Làm mới danh sách hóa đơn">
@@ -68,7 +68,7 @@
 
             <!-- Table -->
             <div th:unless="${#lists.isEmpty(invoices)}" class="table-responsive">
-                <table class="table table-hover align-middle mb-0 small">
+                <table class="table mc-data-table align-middle mb-0">
                     <thead class="table-light text-uppercase">
                         <tr>
                             <th>Mã Hóa Đơn</th>
@@ -87,19 +87,19 @@
                             <!-- Invoice Code -->
                             <td>
                                 <strong class="text-primary" th:text="${inv.invoiceCode}">INV-260916-0001</strong>
-                                <div class="text-muted" style="font-size: 0.75rem;" th:text="${#temporals.format(inv.createdAt, 'dd/MM/yyyy HH:mm')}">16/09/2026</div>
+                                <div class="mc-cell-meta" th:text="${#temporals.format(inv.createdAt, 'dd/MM/yyyy HH:mm')}">16/09/2026</div>
                             </td>
 
                             <!-- Patient -->
                             <td>
                                 <div class="fw-bold text-dark" th:text="${inv.appointment.patient.fullName}">Nguyễn Văn Bệnh Nhân</div>
-                                <div class="text-secondary" style="font-size: 0.75rem;" th:text="${inv.appointment.patient.phone}">0901234567</div>
+                                <div class="mc-cell-meta" th:text="${inv.appointment.patient.phone}">0901234567</div>
                             </td>
 
                             <!-- Doctor -->
                             <td>
                                 <div class="fw-semibold text-dark" th:text="${inv.appointment.doctor.title + ' ' + inv.appointment.doctor.user.fullName}">BS. Nguyễn Văn A</div>
-                                <div class="text-secondary" style="font-size: 0.75rem;" th:text="${inv.appointment.doctor.specialty.name}">Nội tổng quát</div>
+                                <div class="mc-cell-meta" th:text="${inv.appointment.doctor.specialty.name}">Nội tổng quát</div>
                             </td>
 
                             <!-- Fees -->

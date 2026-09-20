@@ -9,12 +9,12 @@
 <div layout:fragment="content">
 
     <!-- Top Header -->
-    <div class="d-flex flex-wrap align-items-center justify-content-between mb-4 pb-2 border-bottom">
+    <div class="mc-page-header align-items-end border-bottom pb-3">
         <div>
-            <h3 class="fw-bold text-dark mb-1">
+            <h3 class="mc-page-title">
                 <i class="bi bi-calendar3-week-fill text-primary me-2"></i>Lịch Trực & Khung Giờ Công Tác (14 Ngày Tới)
             </h3>
-            <p class="text-secondary small mb-0">Theo dõi ca trực và tình trạng kín chỗ của từng khung giờ khám 30 phút.</p>
+            <p class="mc-page-subtitle">Theo dõi ca trực và tình trạng kín chỗ của từng khung giờ khám 30 phút.</p>
         </div>
         <div>
             <a th:href="@{/doctor/desk}" class="btn btn-sm btn-outline-primary">
@@ -33,7 +33,7 @@
     <!-- Schedule Grid -->
     <div th:unless="${#lists.isEmpty(schedules)}" class="row g-4">
         <div th:each="sch : ${schedules}" class="col-md-6 col-xl-4">
-            <div class="card card-portal h-100 shadow-sm border-top border-4 border-primary">
+            <div class="mc-schedule-card">
 
                 <!-- Card Header: Date & Shift -->
                 <div class="card-header bg-white py-3 border-bottom d-flex align-items-center justify-content-between">
@@ -49,9 +49,9 @@
                     <label class="form-label text-muted small fw-semibold mb-2">Danh Sách Khung Giờ:</label>
                     <div class="d-flex flex-wrap gap-1.5">
                         <div th:each="slot : ${sch.timeSlots}">
-                            <span class="badge py-1.5 px-2"
-                                  th:classappend="${slot.status.name() == 'AVAILABLE' ? 'bg-success-subtle text-success border border-success' :
-                                                   (slot.status.name() == 'BOOKED' ? 'bg-primary text-white' : 'bg-secondary-subtle text-secondary border border-secondary')}"
+                            <span class="mc-schedule-slot"
+                                  th:classappend="${slot.status.name() == 'AVAILABLE' ? 'is-available' :
+                                                   (slot.status.name() == 'BOOKED' ? 'is-booked' : '')}"
                                   th:title="${slot.status.name() == 'BOOKED' ? 'Đã có bệnh nhân đặt' : 'Còn trống'}"
                                   th:text="${slot.timeRangeFormatted}">08:00 - 08:30</span>
                         </div>

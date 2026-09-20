@@ -9,12 +9,12 @@
 <div layout:fragment="content">
 
     <!-- Top Header -->
-    <div class="d-flex flex-wrap align-items-center justify-content-between mb-4 pb-2 border-bottom">
+    <div class="mc-page-header align-items-end border-bottom pb-3">
         <div>
-            <h1 class="h3 fw-bold text-dark mb-1">
+            <h1 class="mc-page-title">
                 <i class="bi bi-heart-pulse-fill text-danger me-2"></i>Bàn Khám Bác Sĩ & Hàng Chờ Hôm Nay
             </h1>
-            <div class="text-secondary small">
+            <div class="mc-page-subtitle">
                 Bác sĩ: <strong class="text-dark" th:text="${doctorProfile.title + ' ' + doctorProfile.user.fullName}">BS. Nguyễn Văn A</strong>
                 • Chuyên khoa: <span class="badge bg-primary-subtle text-primary" th:text="${doctorProfile.specialty.name}">Nội tổng quát</span>
             </div>
@@ -30,13 +30,13 @@
     <!-- Metric Bar -->
     <div class="row g-3 mb-4">
         <div class="col-sm-6 col-lg-3">
-            <div class="card card-portal p-3 border-start border-4 border-primary">
+            <div class="mc-kpi-card">
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
                         <div class="text-muted small">Tổng Lượt Khám</div>
-                        <div class="h4 fw-bold mb-0 text-dark" th:text="${#lists.size(todayQueue)}">0</div>
+                        <div class="mc-kpi-value" th:text="${#lists.size(todayQueue)}">0</div>
                     </div>
-                    <div class="rounded-circle bg-primary bg-opacity-10 text-primary p-2">
+                    <div class="mc-kpi-icon">
                         <i class="bi bi-people fs-4"></i>
                     </div>
                 </div>
@@ -44,14 +44,14 @@
         </div>
 
         <div class="col-sm-6 col-lg-3">
-            <div class="card card-portal p-3 border-start border-4 border-warning">
+            <div class="mc-kpi-card">
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
                         <div class="text-muted small">Đang Chờ Gọi Khám</div>
-                        <div class="h4 fw-bold mb-0 text-warning"
+                        <div class="mc-kpi-value"
                             th:text="${#lists.size(todayQueue.?[status.name() == 'CHECKED_IN'])}">0</div>
                     </div>
-                    <div class="rounded-circle bg-warning bg-opacity-10 text-warning p-2">
+                    <div class="mc-kpi-icon">
                         <i class="bi bi-hourglass-split fs-4"></i>
                     </div>
                 </div>
@@ -59,14 +59,14 @@
         </div>
 
         <div class="col-sm-6 col-lg-3">
-            <div class="card card-portal p-3 border-start border-4 border-info">
+            <div class="mc-kpi-card">
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
                         <div class="text-muted small">Đang Thăm Khám</div>
-                        <div class="h4 fw-bold mb-0 text-info"
+                        <div class="mc-kpi-value"
                             th:text="${#lists.size(todayQueue.?[status.name() == 'IN_PROGRESS'])}">0</div>
                     </div>
-                    <div class="rounded-circle bg-info bg-opacity-10 text-info p-2">
+                    <div class="mc-kpi-icon">
                         <i class="bi bi-activity fs-4"></i>
                     </div>
                 </div>
@@ -74,14 +74,14 @@
         </div>
 
         <div class="col-sm-6 col-lg-3">
-            <div class="card card-portal p-3 border-start border-4 border-success">
+            <div class="mc-kpi-card">
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
                         <div class="text-muted small">Đã Khám Xong</div>
-                        <div class="h4 fw-bold mb-0 text-success"
+                        <div class="mc-kpi-value"
                             th:text="${#lists.size(todayQueue.?[status.name() == 'COMPLETED'])}">0</div>
                     </div>
-                    <div class="rounded-circle bg-success bg-opacity-10 text-success p-2">
+                    <div class="mc-kpi-icon">
                         <i class="bi bi-check2-circle fs-4"></i>
                     </div>
                 </div>
@@ -90,16 +90,16 @@
     </div>
 
     <!-- Today Queue Table -->
-    <div class="card card-portal shadow-sm">
-        <div class="card-header bg-white py-3 border-bottom d-flex align-items-center justify-content-between">
-            <h2 class="h6 fw-bold text-dark mb-0">
+    <div class="mc-data-card">
+        <div class="mc-data-toolbar">
+            <h2 class="mc-data-title">
                 <i class="bi bi-list-ol text-primary me-2"></i>Hàng Chờ Khám Lâm Sàng Hôm Nay
             </h2>
             <div class="d-flex align-items-center gap-2">
                 <span id="doctorQueueRealtimeStatus" class="badge text-bg-light border" role="status" aria-live="polite">
                     <i class="bi bi-broadcast-pin me-1"></i> Đang kết nối realtime
                 </span>
-                <button class="btn btn-sm btn-light border" id="refreshDoctorQueueBtn" type="button" aria-label="L?m m?i h?ng ch? kh?m">
+                <button class="btn btn-sm btn-light border" id="refreshDoctorQueueBtn" type="button" aria-label="L&#224;m m&#7899;i h&#224;ng ch&#7901; kh&#225;m">
                     <i class="bi bi-arrow-clockwise me-1"></i> Làm mới danh sách
                 </button>
             </div>
@@ -115,7 +115,7 @@
 
             <!-- Table -->
             <div th:unless="${#lists.isEmpty(todayQueue)}" class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
+                <table class="table mc-data-table align-middle mb-0">
                     <thead class="table-light small text-uppercase">
                         <tr>
                             <th style="width: 100px;" class="text-center">Số TT</th>
@@ -141,12 +141,12 @@
                             <!-- Time Slot -->
                             <td>
                                 <span class="fw-semibold text-dark" th:text="${apt.timeSlot.timeRangeFormatted}">08:00 - 08:30</span>
-                                <div class="text-muted" style="font-size: 0.75rem;" th:text="${apt.bookingCode}">MED-xxxx</div>
+                                <div class="mc-cell-meta" th:text="${apt.bookingCode}">MED-xxxx</div>
                             </td>
 
                             <!-- Patient Info -->
                             <td>
-                                <div class="fw-bold text-dark fs-6" th:text="${apt.patient.fullName}">Nguyễn Văn Bệnh Nhân</div>
+                                <div class="mc-cell-title" th:text="${apt.patient.fullName}">Nguyễn Văn Bệnh Nhân</div>
                                 <div class="small text-secondary">
                                     <span th:text="${apt.patient.gender != null ? apt.patient.gender.displayName : 'Chưa rõ'}">Nam</span> •
                                     <span th:text="${'SĐT: ' + (apt.patient.phone != null ? apt.patient.phone : 'Chưa có')}">0901234567</span>

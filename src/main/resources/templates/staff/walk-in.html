@@ -4,35 +4,12 @@
       layout:decorate="~{layout/dashboard}">
 <head>
     <title>Đăng Ký Khám Vãng Lai (Walk-in) - MedClinic</title>
-    <style>
-        .slot-btn {
-            border: 1.5px solid #cbd5e1;
-            background-color: #ffffff;
-            color: #334155;
-            font-weight: 600;
-            padding: 0.5rem 0.65rem;
-            border-radius: 0.4rem;
-            font-size: 0.85rem;
-            cursor: pointer;
-        }
-        .slot-btn.selected {
-            background-color: #0284c7 !important;
-            color: #ffffff !important;
-            border-color: #0284c7 !important;
-        }
-        .slot-btn:disabled {
-            background-color: #f1f5f9;
-            color: #94a3b8;
-            cursor: not-allowed;
-            text-decoration: line-through;
-        }
-    </style>
 </head>
 <body>
 <div layout:fragment="content">
 
     <!-- Top Header -->
-    <div class="d-flex flex-wrap align-items-center justify-content-between mb-4 pb-2 border-bottom">
+    <div class="mc-page-header align-items-end border-bottom pb-3">
         <div>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-1 small">
@@ -40,7 +17,7 @@
                     <li class="breadcrumb-item active" aria-current="page">Tiếp nhận vãng lai</li>
                 </ol>
             </nav>
-            <h3 class="fw-bold text-dark mb-0">
+            <h3 class="mc-page-title">
                 <i class="bi bi-person-plus-fill text-primary me-2"></i>Đăng Ký Khám Trực Tiếp Tại Quầy (Walk-in)
             </h3>
         </div>
@@ -53,23 +30,23 @@
 
     <div class="row justify-content-center">
         <div class="col-lg-9">
-            <div class="card card-portal p-4 p-md-5 shadow-sm">
+            <div class="mc-workflow-card p-md-4">
 
                 <form th:action="@{/staff/walk-in}" method="post" id="walkInForm">
 
                     <!-- Patient Info Section -->
-                    <h5 class="fw-bold text-dark mb-3 pb-2 border-bottom">
+                    <h5 class="mc-step-title">
                         <i class="bi bi-person-vcard text-primary me-2"></i>1. Thông Tin Bệnh Nhân
                     </h5>
 
                     <div class="row g-3 mb-4">
                         <div class="col-md-6">
                             <label for="fullName" class="form-label fw-semibold small">Họ và tên bệnh nhân <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" id="fullName" name="fullName" placeholder="Nhập họ tên đầy đủ..." required autofocus>
+                            <input type="text" class="form-control" id="fullName" name="fullName" autocomplete="name" placeholder="Nhập họ tên đầy đủ..." required autofocus>
                         </div>
                         <div class="col-md-6">
                             <label for="phone" class="form-label fw-semibold small">Số điện thoại liên hệ <span class="text-danger">*</span></label>
-                            <input type="tel" class="form-control" id="phone" name="phone" placeholder="Nhập số điện thoại (10 số)..." required>
+                            <input type="tel" class="form-control" id="phone" name="phone" autocomplete="tel" placeholder="Nhập số điện thoại (10 số)..." required>
                         </div>
                         <div class="col-md-4">
                             <label for="dateOfBirth" class="form-label fw-semibold small">Ngày sinh</label>
@@ -86,13 +63,13 @@
                         </div>
                         <div class="col-md-4">
                             <label for="address" class="form-label fw-semibold small">Địa chỉ</label>
-                            <input type="text" class="form-control" id="address" name="address" placeholder="Địa chỉ liên hệ">
+                            <input type="text" class="form-control" id="address" name="address" autocomplete="street-address" placeholder="Địa chỉ liên hệ">
                         </div>
                     </div>
                     <p class="small text-muted mb-4">Hồ sơ vãng lai không tạo tài khoản đăng nhập. Bệnh nhân có thể đăng ký tài khoản sau bằng email đã xác thực.</p>
 
                     <!-- Medical Assignment Section -->
-                    <h5 class="fw-bold text-dark mb-3 pb-2 border-bottom">
+                    <h5 class="mc-step-title">
                         <i class="bi bi-hospital text-success me-2"></i>2. Chỉ Định Khám & Khung Giờ
                     </h5>
 
@@ -152,7 +129,7 @@
                     </div>
 
                     <!-- Actions -->
-                    <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+                    <div class="mc-operational-actions justify-content-between pt-3 border-top">
                         <a th:href="@{/staff/reception}" class="btn btn-outline-secondary">Hủy bỏ</a>
                         <button type="submit" class="btn btn-med-primary px-4 py-2" id="btnSubmitWalkIn" disabled>
                             <i class="bi bi-check2-circle fs-5 me-1"></i> Đăng Ký Khám & Cấp STT Ngay
