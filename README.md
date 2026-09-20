@@ -68,7 +68,7 @@ Tại các phòng khám tư nhân quy mô vừa và nhỏ ở Việt Nam, việc
 | :--- | :--- |
 | **Concurrency & Transaction** | Row lock + `@Version`, chống double-booking, cấp STT đồng thời, khóa tồn kho và rollback nghiệp vụ |
 | **Realtime Messaging** | Spring WebSocket/STOMP user destination; queue event chỉ broadcast `AFTER_COMMIT`, không phát khi transaction rollback |
-| **SQL Server production-readiness** | Flyway V1/V2, legacy baseline opt-in có guard, `ddl-auto=validate`, Unicode `NVARCHAR` và SQL Server integration test |
+| **SQL Server production-readiness** | Flyway V1/V2/V3, legacy baseline opt-in có guard, `ddl-auto=validate`, Unicode `NVARCHAR` và SQL Server integration test |
 | **Security** | RBAC, CSRF, BCrypt, session-fixation protection, Secure/HttpOnly/SameSite cookies, per-IP rate limit cho login/reset và audit log |
 | **Observability** | Spring Boot Actuator + Micrometer; public health chỉ trả status, metrics yêu cầu ADMIN, custom security counters |
 | **Quality Engineering** | 128 test case, 120 executed PASS, JaCoCo **78.52% line / 64.22% branch**, quality gate trên `mvn verify` |
@@ -164,7 +164,7 @@ graph TD
 | **Bảo mật** | Spring Security | 6.x | Xác thực, phân quyền 4 vai trò (RBAC), CSRF, BCrypt |
 | **Cơ sở dữ liệu chính** | **Microsoft SQL Server** | **2019 / 2022** | Hệ quản trị CSDL quan hệ chính thức cho dự án |
 | **Driver CSDL** | Microsoft JDBC Driver for SQL Server (`mssql-jdbc`) | 12.6+ | Kết nối hiệu năng cao, bảo mật TLS/SSL |
-| **Schema migration** | Flyway + `flyway-sqlserver` | 10.10.0 | V1/V2 versioning, legacy baseline adoption, chạy trước Hibernate validate |
+| **Schema migration** | Flyway + `flyway-sqlserver` | 10.10.0 | V1/V2/V3 versioning, legacy baseline adoption, chạy trước Hibernate validate |
 | **Cơ sở dữ liệu Test** | H2 Database In-Memory | 2.x | Chạy kiểm thử tự động và chạy thử nghiệm zero-config |
 | **ORM / JPA** | Hibernate / Spring Data JPA | 6.5.3 | Quản lý thực thể, Optimistic Lock (`@Version`) |
 | **Giao diện** | Thymeleaf + Layout Dialect | 3.x | Template Engine kết xuất server-side |
@@ -231,7 +231,7 @@ cp .env.example .env
 docker compose up --build
 ```
 
-Compose sẽ khởi động SQL Server 2022, đợi database healthy, tạo `medclinic_db` và kiểm tra schema safety (`0` hoặc `16` bảng ứng dụng). Sau đó app khởi động tại **http://localhost:8080**; Flyway tự chạy migration V1/V2 trước khi Hibernate `validate`.
+Compose sẽ khởi động SQL Server 2022, đợi database healthy, tạo `medclinic_db` và kiểm tra schema safety (`0` hoặc `16` bảng ứng dụng). Sau đó app khởi động tại **http://localhost:8080**; Flyway tự chạy migration V1/V2/V3 trước khi Hibernate `validate`. Cả SQL Server và application đều có healthcheck. SQL Server container mặc định publish ở host port `14333` (`SQLSERVER_HOST_PORT`) để không xung đột SQL Server Windows trên `1433`; app trong Compose vẫn kết nối nội bộ `sqlserver:1433`. Chi tiết nghiệm thu runtime xem `docs/11_DOCKER_RUNTIME_ACCEPTANCE.md`.
 
 > Cấu hình Compose dùng tài khoản `sa` cho **local/demo để giảm bước setup**. Production vẫn phải dùng application login tối thiểu quyền theo `docs/database/SQLSERVER_RUNBOOK.md`.
 
@@ -264,11 +264,11 @@ GO
 #### 2.3. Flyway migration và cấu hình secret qua môi trường
 Production dùng Flyway làm schema owner và `ddl-auto=validate`, vì vậy Hibernate **không tự tạo hoặc sửa schema**.
 
-Với database mới, DBA chỉ tạo database rỗng và cấu hình quyền/secret. Khi application khởi động bằng profile `sqlserver`, Flyway tự tạo `flyway_schema_history`, áp dụng `V1__baseline_schema.sql` rồi `V2__reference_roles.sql`; Hibernate `validate` chạy sau migration.
+Với database mới, DBA chỉ tạo database rỗng và cấu hình quyền/secret. Khi application khởi động bằng profile `sqlserver`, Flyway tự tạo `flyway_schema_history`, áp dụng `V1__baseline_schema.sql`, `V2__reference_roles.sql` rồi `V3__restore_jdbc_session_state.sql`; Hibernate `validate` chạy sau migration.
 
-Với database legacy đã có đúng baseline 16 bảng nhưng chưa có Flyway history, phải backup + pre-check trước. Production mặc định giữ `baseline-on-migrate=false`; chỉ trong lần adoption có chủ đích mới đặt `SPRING_FLYWAY_BASELINE_ON_MIGRATE=true` để Flyway ghi baseline version 1 rồi chạy các migration sau V1 (hiện là V2). Sau khi `flyway_schema_history` được tạo, bỏ opt-in này. Không baseline schema dở dang hoặc không rõ nguồn gốc.
+Với database legacy đã có đúng baseline 16 bảng nhưng chưa có Flyway history, phải backup + pre-check trước. Production mặc định giữ `baseline-on-migrate=false`; chỉ trong lần adoption có chủ đích mới đặt `SPRING_FLYWAY_BASELINE_ON_MIGRATE=true` để Flyway ghi baseline version 1 rồi chạy các migration sau V1 (hiện là V2 và V3). Sau khi `flyway_schema_history` được tạo, bỏ opt-in này. Không baseline schema dở dang hoặc không rõ nguồn gốc.
 
-Các file `docs/database/SQLSERVER_BASELINE_SCHEMA_2026-09-19.sql` và `SQLSERVER_REFERENCE_DATA_2026-09-19.sql` vẫn được giữ làm bản review/audit; test tự động bảo đảm chúng đồng bộ với Flyway V1/V2.
+Các file `docs/database/SQLSERVER_BASELINE_SCHEMA_2026-09-19.sql` và `SQLSERVER_REFERENCE_DATA_2026-09-19.sql` vẫn được giữ làm bản review/audit; test tự động bảo đảm chúng đồng bộ với Flyway V1/V2; V3 khôi phục trạng thái JDBC session (`NOCOUNT OFF`) sau reference-data migration.
 
 Không ghi username/password production vào repository. Cung cấp cấu hình qua biến môi trường hoặc secret manager:
 

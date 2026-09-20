@@ -6,6 +6,7 @@
 - Schema management: Flyway 10.10.0 (Spring Boot managed) + `flyway-sqlserver`.
 - Migration V1: `src/main/resources/db/migration/sqlserver/V1__baseline_schema.sql`.
 - Migration V2: `src/main/resources/db/migration/sqlserver/V2__reference_roles.sql`.
+- Migration V3: `src/main/resources/db/migration/sqlserver/V3__restore_jdbc_session_state.sql` (khôi phục `NOCOUNT OFF` cho JDBC session).
 - Hibernate production mode: `ddl-auto=validate`, chạy sau Flyway.
 - First-admin template: `SQLSERVER_ADMIN_PROVISIONING_TEMPLATE.sql`.
 - Application artifact: `target/medclinic-system-1.0.0.jar` với profile `sqlserver`.
@@ -16,8 +17,8 @@
 
 Hai đường migration đã PASS:
 
-1. **Fresh database:** Flyway tạo `flyway_schema_history`, chạy V1 rồi V2; history kết thúc ở version 2 và Hibernate `validate` startup thành công.
-2. **Legacy adoption:** test dựng đúng baseline 16 bảng nhưng không có history; production-safe default giữ baseline OFF, còn test bật opt-in riêng cho bước adoption để Flyway ghi `BASELINE` version 1, chạy V2 và Hibernate `validate` startup thành công.
+1. **Fresh database:** Flyway tạo `flyway_schema_history`, chạy V1, V2 rồi V3; history kết thúc ở version 3 và Hibernate `validate` startup thành công.
+2. **Legacy adoption:** test dựng đúng baseline 16 bảng nhưng không có history; production-safe default giữ baseline OFF, còn test bật opt-in riêng cho bước adoption để Flyway ghi `BASELINE` version 1, chạy V2, V3 và Hibernate `validate` startup thành công.
 
 Test drop `medclinic_flyway_it` sau khi hoàn tất. `SqlServerFlywayArtifactsTest` còn xác minh V1/V2 luôn đồng bộ nội dung với các SQL review/audit trong `docs/database/`.
 
@@ -29,7 +30,7 @@ Baseline schema trước khi chuyển sang Flyway đã được recreate từ ze
 
 Admin provisioning template đã được kiểm thử với QA-only values và non-production hash. Tài khoản được join đúng `ROLE_ADMIN`; chạy lại cùng username bị chặn bằng SQL Server error 51001 (`Admin username already exists`).
 
-Các SQL này hiện được giữ làm bản review/audit, còn runtime migration dùng Flyway V1/V2. Contract test ngăn hai bản drift khỏi nhau.
+Các SQL này hiện được giữ làm bản review/audit, còn runtime migration dùng Flyway V1/V2/V3. Contract test ngăn hai bản drift khỏi nhau.
 
 ## Application release smoke đã xác nhận trước đó
 
@@ -41,7 +42,7 @@ Sau khi đưa Flyway vào, migration integration test startup cùng `MedClinicAp
 
 `docker/sqlserver/init-db.sh` chỉ tạo `medclinic_db` nếu chưa tồn tại. Khi chưa có `flyway_schema_history`, script chỉ chấp nhận schema rỗng hoặc legacy 16 bảng; khi history đã tồn tại, script không hard-code số bảng để Flyway có thể quản lý các version tương lai. Script không tự apply baseline/reference SQL; app/Flyway chịu trách nhiệm versioning schema.
 
-Docker runtime vẫn chưa được đánh dấu verified trong đợt này vì cấu hình Docker Desktop/WSL trên máy local đang tạm dừng theo kế hoạch. Chỉ static/config verification được phép ghi nhận cho đến khi chạy `docker compose up` thành công.
+Docker runtime đã được nghiệm thu trên Docker Desktop/WSL2: `hello-world` PASS; fresh `docker compose down -v` + `docker compose up -d --build` PASS; SQL Server và application đều `healthy`, init job exit 0, application `RestartCount=0`, Flyway V1/V2/V3 success và volume persistence PASS sau restart container. Compose mặc định publish SQL Server ở host `14333` để có thể chạy song song với `MSSQLSERVER` Windows trên `1433`.
 
 ## Still external to local acceptance
 
@@ -52,6 +53,5 @@ Các mục sau **chưa** được đánh dấu production-complete:
 - Manual screen-reader release smoke.
 - Final DBA backup/change approval và deployment-window smoke.
 - Production admin identity thật và bootstrap-password rotation/handoff.
-- Docker Compose runtime acceptance trên máy/container host đã cấu hình hoàn chỉnh.
 
 Các mục này cần credential, hạ tầng hoặc human verification thật và không được giả lập thành bằng chứng đã hoàn thành.

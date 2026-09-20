@@ -34,11 +34,14 @@ class SqlServerFlywayMigrationIntegrationTest {
         try {
             recreateMigrationDatabase(masterJdbc);
             try (ConfigurableApplicationContext context =
-                         startSqlServerApplication(migrationUrl, username, password, false)) {
+                         startSqlServerApplication(migrationUrl, username, password, false, true)) {
                 JdbcTemplate jdbc = context.getBean(JdbcTemplate.class);
                 assertSchemaAndRoles(jdbc);
                 assertEquals("SQL", historyType(jdbc, "1"));
                 assertEquals("SQL", historyType(jdbc, "2"));
+                assertEquals("SQL", historyType(jdbc, "3"));
+                assertEquals(9, jdbc.queryForObject("select count(*) from users", Integer.class));
+                assertEquals(6, jdbc.queryForObject("select count(*) from doctor_profiles", Integer.class));
             }
 
             recreateMigrationDatabase(masterJdbc);
@@ -48,11 +51,12 @@ class SqlServerFlywayMigrationIntegrationTest {
             assertFalse(tableExists(legacyJdbc, "flyway_schema_history"));
 
             try (ConfigurableApplicationContext context =
-                         startSqlServerApplication(migrationUrl, username, password, true)) {
+                         startSqlServerApplication(migrationUrl, username, password, true, false)) {
                 JdbcTemplate jdbc = context.getBean(JdbcTemplate.class);
                 assertSchemaAndRoles(jdbc);
                 assertEquals("BASELINE", historyType(jdbc, "1"));
                 assertEquals("SQL", historyType(jdbc, "2"));
+                assertEquals("SQL", historyType(jdbc, "3"));
             }
         } finally {
             dropMigrationDatabase(masterJdbc);
@@ -60,11 +64,12 @@ class SqlServerFlywayMigrationIntegrationTest {
     }
 
     private ConfigurableApplicationContext startSqlServerApplication(
-            String url, String username, String password, boolean baselineOnMigrate) {
+            String url, String username, String password,
+            boolean baselineOnMigrate, boolean demoProfile) {
         return new SpringApplicationBuilder(MedClinicApplication.class)
                 .web(WebApplicationType.SERVLET)
                 .run(
-                        "--spring.profiles.active=sqlserver",
+                        "--spring.profiles.active=" + (demoProfile ? "sqlserver,demo" : "sqlserver"),
                         "--server.port=0",
                         "--spring.datasource.url=" + url,
                         "--spring.datasource.username=" + username,
@@ -110,7 +115,7 @@ class SqlServerFlywayMigrationIntegrationTest {
     private void assertSchemaAndRoles(JdbcTemplate jdbc) {
         assertEquals(16, applicationTableCount(jdbc));
         assertTrue(tableExists(jdbc, "flyway_schema_history"));
-        assertEquals(2, jdbc.queryForObject(
+        assertEquals(3, jdbc.queryForObject(
                 "select count(*) from flyway_schema_history where success = 1",
                 Integer.class));
         assertEquals(4, jdbc.queryForObject(

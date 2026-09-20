@@ -63,3 +63,9 @@ Không trỏ test này vào production database vì profile acceptance dùng `sp
 - Full `mvn verify`: **128 test case / 55 test class; 120 executed PASS, 8 environment-gated skipped, 0 failure, 0 error**.
 - JaCoCo: **78,52% line / 64,22% branch**, vượt gate 70% line / 50% branch.
 - `git diff --check`: PASS.
+
+## 6. Docker runtime acceptance
+
+Docker Desktop/WSL2 đã được nghiệm thu thật trên máy QA local. Fresh `docker compose down -v` + `docker compose up -d --build` PASS; SQL Server và application đều `healthy`, init job exit 0, application fresh startup có `RestartCount=0`, Flyway V1/V2/V3 success và named volume giữ dữ liệu qua restart.
+
+Full verify khi bật toàn bộ SQL Server integration tests: **128/128 executed PASS, 0 skipped, 0 failure, 0 error**; JaCoCo **82,55% line / 66,42% branch**. Chi tiết bằng chứng runtime xem `docs/11_DOCKER_RUNTIME_ACCEPTANCE.md`.

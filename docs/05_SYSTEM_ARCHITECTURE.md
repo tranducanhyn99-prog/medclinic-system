@@ -104,7 +104,7 @@ graph TD
   - Profile `dev`: H2 In-Memory Database (tự động khởi tạo schema và seed data, zero-configuration).
   - Profile `sqlserver`: Microsoft SQL Server — database chính cho môi trường hiện tại và production.
   - Profile `mysql`: giữ lại cho khả năng tương thích/roadmap tương lai; không thuộc phạm vi nghiệm thu hiện tại.
-- **Schema versioning:** Profile `sqlserver` dùng Flyway V1/V2 chạy trước Hibernate; `ddl-auto=validate` chỉ xác minh mapping sau migration. Database legacy 16 bảng chỉ được nhận quản lý bằng baseline version 1 khi operator bật opt-in sau pre-check/backup; mặc định production không tự baseline.
+- **Schema versioning:** Profile `sqlserver` dùng Flyway V1/V2/V3 chạy trước Hibernate; `ddl-auto=validate` chỉ xác minh mapping sau migration. Database legacy 16 bảng chỉ được nhận quản lý bằng baseline version 1 khi operator bật opt-in sau pre-check/backup; mặc định production không tự baseline.
 - **Migration safety:** Docker init chỉ áp dụng guard `0`/`16` khi chưa có Flyway history; khi history đã tồn tại, versioning thuộc Flyway/Hibernate. Migration test destructive chạy trên database disposable `medclinic_flyway_it`, không dùng production database.
 - **Chuẩn hóa CSDL:** Toàn bộ quan hệ được thiết kế chuẩn mực **3NF**.
 

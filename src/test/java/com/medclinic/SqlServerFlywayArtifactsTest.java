@@ -23,6 +23,9 @@ class SqlServerFlywayArtifactsTest {
         assertEquals(
                 normalized(DATABASE_DOCS.resolve("SQLSERVER_REFERENCE_DATA_2026-09-19.sql")),
                 normalized(MIGRATIONS.resolve("V2__reference_roles.sql")));
+        String sessionStateMigration = normalized(
+                MIGRATIONS.resolve("V3__restore_jdbc_session_state.sql"));
+        assertTrue(sessionStateMigration.contains("SET NOCOUNT OFF;"));
     }
 
     @Test
@@ -49,6 +52,8 @@ class SqlServerFlywayArtifactsTest {
         assertFalse(script.contains("SQLSERVER_BASELINE_SCHEMA_2026-09-19.sql"));
         assertFalse(script.contains("SQLSERVER_REFERENCE_DATA_2026-09-19.sql"));
         assertTrue(compose.contains("SPRING_FLYWAY_BASELINE_ON_MIGRATE: \"true\""));
+        assertTrue(compose.contains("${SQLSERVER_HOST_PORT:-14333}:1433"));
+        assertTrue(compose.contains("/actuator/health"));
     }
 
     private String normalized(Path path) throws IOException {
