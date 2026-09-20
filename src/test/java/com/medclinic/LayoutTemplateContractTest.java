@@ -112,13 +112,13 @@ class LayoutTemplateContractTest {
         String home = read("home/index.html");
         String main = read("layout/main.html");
 
-        assertTrue(login.contains("<h1 class=\"h3"));
+        assertTrue(login.contains("id=\"loginTitle\""));
         assertTrue(login.contains("label for=\"usernameInput\""));
         assertTrue(login.contains("label for=\"passwordInput\""));
         for (String id : new String[]{"fullName", "username", "password", "confirmPassword", "email", "phone", "gender", "dateOfBirth", "address"}) {
             assertTrue(register.contains("for=\"" + id + "\""), "missing label association for " + id);
         }
-        assertTrue(register.contains("<h1 class=\"h3"));
+        assertTrue(register.contains("id=\"registerTitle\""));
         assertTrue(home.contains("id=\"processTitle\""));
         assertTrue(home.contains("<h3 class=\"h6 fw-bold mb-2\">"));
         assertTrue(main.contains("<h2 class=\"h6 text-white"));

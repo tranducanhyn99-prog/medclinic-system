@@ -7,89 +7,97 @@
 </head>
 <body>
 <div layout:fragment="content">
-    <div class="container py-5">
-        <div class="row justify-content-center">
-            <div class="col-md-8 col-lg-7">
-                <div class="card card-custom p-4 p-md-5 border-0 shadow">
-                    <div class="text-center mb-4">
-                        <div class="rounded-circle bg-primary bg-opacity-10 text-primary p-3 d-inline-flex align-items-center justify-content-center mb-2" style="width: 70px; height: 70px;">
-                            <i class="bi bi-person-plus-fill fs-1"></i>
-                        </div>
-                        <h1 class="h3 fw-bold text-dark mb-1">Đăng Ký Tài Khoản Bệnh Nhân</h1>
-                        <p class="text-muted small">Tạo hồ sơ bệnh nhân điện tử để đặt lịch khám nhanh chóng</p>
-                    </div>
+    <div class="container">
+        <section class="mc-auth-section" aria-labelledby="registerTitle">
+            <div class="mc-auth-single">
+                <div class="mc-auth-eyebrow">Hồ sơ bệnh nhân</div>
+                <h1 class="mc-auth-title" id="registerTitle">Tạo tài khoản MedClinic</h1>
+                <p class="mc-auth-subtitle">Tạo hồ sơ một lần để đặt lịch, nhận mã check-in và theo dõi lịch khám thuận tiện hơn.</p>
 
-                    <form th:action="@{/register}" th:object="${registerDto}" method="post">
+                <form th:action="@{/register}" th:object="${registerDto}" method="post" class="mc-auth-form">
+                    <section class="mc-form-section" aria-labelledby="accountSectionTitle">
+                        <h2 class="mc-form-section-title" id="accountSectionTitle">Thông tin tài khoản</h2>
+                        <p class="mc-form-section-copy">Thông tin dùng để đăng nhập và nhận thông báo từ hệ thống.</p>
                         <div class="row g-3">
                             <div class="col-md-6">
-                                <label for="fullName" class="form-label small fw-semibold text-muted">Họ và tên <span class="text-danger">*</span></label>
-                                <input type="text" th:field="*{fullName}" class="form-control" th:classappend="${#fields.hasErrors('fullName')} ? 'is-invalid'" placeholder="Ví dụ: Nguyễn Văn An">
-                                <div class="invalid-feedback" th:errors="*{fullName}"></div>
-                            </div>
-
-                            <div class="col-md-6">
-                                <label for="username" class="form-label small fw-semibold text-muted">Tên đăng nhập <span class="text-danger">*</span></label>
-                                <input type="text" th:field="*{username}" class="form-control" th:classappend="${#fields.hasErrors('username')} ? 'is-invalid'" placeholder="Ít nhất 3 ký tự">
+                                <label for="username" class="form-label">Tên đăng nhập <span class="text-danger">*</span></label>
+                                <input type="text" th:field="*{username}" class="form-control"
+                                       th:classappend="${#fields.hasErrors('username')} ? 'is-invalid'"
+                                       placeholder="Ít nhất 3 ký tự" autocomplete="username">
                                 <div class="invalid-feedback" th:errors="*{username}"></div>
                             </div>
-
                             <div class="col-md-6">
-                                <label for="password" class="form-label small fw-semibold text-muted">Mật khẩu <span class="text-danger">*</span></label>
-                                <input type="password" th:field="*{password}" class="form-control" th:classappend="${#fields.hasErrors('password')} ? 'is-invalid'" placeholder="Ít nhất 6 ký tự">
-                                <div class="invalid-feedback" th:errors="*{password}"></div>
-                            </div>
-
-                            <div class="col-md-6">
-                                <label for="confirmPassword" class="form-label small fw-semibold text-muted">Xác nhận mật khẩu <span class="text-danger">*</span></label>
-                                <input type="password" th:field="*{confirmPassword}" class="form-control" th:classappend="${#fields.hasErrors('confirmPassword')} ? 'is-invalid'" placeholder="Nhập lại mật khẩu">
-                                <div class="invalid-feedback" th:errors="*{confirmPassword}"></div>
-                            </div>
-
-                            <div class="col-md-6">
-                                <label for="email" class="form-label small fw-semibold text-muted">Email <span class="text-danger">*</span></label>
-                                <input type="email" th:field="*{email}" class="form-control" th:classappend="${#fields.hasErrors('email')} ? 'is-invalid'" placeholder="email@example.com">
+                                <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
+                                <input type="email" th:field="*{email}" class="form-control"
+                                       th:classappend="${#fields.hasErrors('email')} ? 'is-invalid'"
+                                       placeholder="email@example.com" autocomplete="email">
                                 <div class="invalid-feedback" th:errors="*{email}"></div>
                             </div>
-
                             <div class="col-md-6">
-                                <label for="phone" class="form-label small fw-semibold text-muted">Số điện thoại <span class="text-danger">*</span></label>
-                                <input type="text" th:field="*{phone}" class="form-control" th:classappend="${#fields.hasErrors('phone')} ? 'is-invalid'" placeholder="0901234567">
+                                <label for="password" class="form-label">Mật khẩu <span class="text-danger">*</span></label>
+                                <input type="password" th:field="*{password}" class="form-control"
+                                       th:classappend="${#fields.hasErrors('password')} ? 'is-invalid'"
+                                       placeholder="Ít nhất 6 ký tự" autocomplete="new-password">
+                                <div class="invalid-feedback" th:errors="*{password}"></div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="confirmPassword" class="form-label">Xác nhận mật khẩu <span class="text-danger">*</span></label>
+                                <input type="password" th:field="*{confirmPassword}" class="form-control"
+                                       th:classappend="${#fields.hasErrors('confirmPassword')} ? 'is-invalid'"
+                                       placeholder="Nhập lại mật khẩu" autocomplete="new-password">
+                                <div class="invalid-feedback" th:errors="*{confirmPassword}"></div>
+                            </div>
+                        </div>
+                    </section>
+                    <section class="mc-form-section" aria-labelledby="patientSectionTitle">
+                        <h2 class="mc-form-section-title" id="patientSectionTitle">Thông tin cá nhân</h2>
+                        <p class="mc-form-section-copy">Thông tin cơ bản giúp phòng khám xác nhận đúng hồ sơ khi bạn đến khám.</p>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="fullName" class="form-label">Họ và tên <span class="text-danger">*</span></label>
+                                <input type="text" th:field="*{fullName}" class="form-control"
+                                       th:classappend="${#fields.hasErrors('fullName')} ? 'is-invalid'"
+                                       placeholder="Ví dụ: Nguyễn Văn An" autocomplete="name">
+                                <div class="invalid-feedback" th:errors="*{fullName}"></div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="phone" class="form-label">Số điện thoại <span class="text-danger">*</span></label>
+                                <input type="tel" th:field="*{phone}" class="form-control"
+                                       th:classappend="${#fields.hasErrors('phone')} ? 'is-invalid'"
+                                       placeholder="0901234567" autocomplete="tel">
                                 <div class="invalid-feedback" th:errors="*{phone}"></div>
                             </div>
-
                             <div class="col-md-6">
-                                <label for="gender" class="form-label small fw-semibold text-muted">Giới tính</label>
+                                <label for="gender" class="form-label">Giới tính</label>
                                 <select th:field="*{gender}" class="form-select">
                                     <option th:value="${T(com.medclinic.enums.Gender).MALE}">Nam</option>
                                     <option th:value="${T(com.medclinic.enums.Gender).FEMALE}">Nữ</option>
                                     <option th:value="${T(com.medclinic.enums.Gender).OTHER}">Khác</option>
                                 </select>
                             </div>
-
                             <div class="col-md-6">
-                                <label for="dateOfBirth" class="form-label small fw-semibold text-muted">Ngày sinh</label>
-                                <input type="date" th:field="*{dateOfBirth}" class="form-control">
+                                <label for="dateOfBirth" class="form-label">Ngày sinh</label>
+                                <input type="date" th:field="*{dateOfBirth}" class="form-control" autocomplete="bday">
                             </div>
-
                             <div class="col-12">
-                                <label for="address" class="form-label small fw-semibold text-muted">Địa chỉ cư trú</label>
-                                <input type="text" th:field="*{address}" class="form-control" placeholder="Số nhà, đường, phường/xã, quận/huyện...">
+                                <label for="address" class="form-label">Địa chỉ cư trú</label>
+                                <input type="text" th:field="*{address}" class="form-control"
+                                       placeholder="Số nhà, đường, phường/xã, quận/huyện..."
+                                       autocomplete="street-address">
                             </div>
                         </div>
+                    </section>
 
-                        <button type="submit" class="btn btn-med-primary w-100 py-3 fw-bold mt-4 mb-3">
-                            <i class="bi bi-person-check-fill me-2"></i> Hoàn Tất Đăng Ký
-                        </button>
-
-                        <div class="text-center small text-muted">
-                            Đã có tài khoản? <a th:href="@{/login}" class="text-primary fw-semibold">Đăng nhập tại đây</a>
-                        </div>
-                    </form>
-                </div>
+                    <button type="submit" class="btn btn-med-primary mc-auth-submit mt-4">
+                        <i class="bi bi-person-check-fill me-2"></i>Hoàn tất đăng ký
+                    </button>
+                    <div class="mc-auth-links">
+                        Đã có tài khoản? <a th:href="@{/login}">Đăng nhập</a>
+                    </div>
+                </form>
             </div>
-        </div>
+        </section>
     </div>
 </div>
 </body>
 </html>
-

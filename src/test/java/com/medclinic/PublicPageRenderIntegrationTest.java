@@ -23,12 +23,12 @@ class PublicPageRenderIntegrationTest {
         mockMvc.perform(get("/login"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("auth/login"))
-                .andExpect(content().string(containsString("Tài khoản Demo Nhanh")))
+                .andExpect(content().string(containsString("data-username=\"patient\"")))
                 .andExpect(content().string(containsString("name=\"_csrf\"")));
         mockMvc.perform(get("/register"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("auth/register"))
-                .andExpect(content().string(containsString("Hoàn Tất Đăng Ký")))
+                .andExpect(content().string(containsString("id=\"registerTitle\"")))
                 .andExpect(content().string(containsString("name=\"_csrf\"")));
     }
 }

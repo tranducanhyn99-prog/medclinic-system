@@ -7,76 +7,93 @@
 </head>
 <body>
 <div layout:fragment="content">
-    <div class="container py-5">
-        <div class="row justify-content-center">
-            <div class="col-lg-8">
-                <div class="card card-custom p-4 p-md-5 border-0 shadow mb-4">
-                    <div class="d-flex align-items-center mb-4 pb-3 border-bottom">
-                        <div class="rounded-circle bg-primary bg-opacity-10 text-primary p-3 d-inline-flex align-items-center justify-content-center me-3" style="width: 60px; height: 60px;">
-                            <i class="bi bi-person-badge fs-2"></i>
-                        </div>
-                        <div>
-                            <h4 class="fw-bold mb-1" th:text="${user.fullName}">Nguyễn Văn An</h4>
-                            <span class="badge bg-primary px-3 py-1" th:text="${user.role.name.displayName}">Bệnh nhân</span>
-                        </div>
-                    </div>
+    <div class="container py-4 py-md-5">
+        <div class="mc-profile-shell">
+            <div class="mc-page-header">
+                <div>
+                    <div class="mc-auth-eyebrow">Tài khoản</div>
+                    <h1 class="mc-page-title">Hồ sơ cá nhân</h1>
+                    <p class="mc-page-subtitle">Cập nhật thông tin liên hệ và quản lý bảo mật cho tài khoản của bạn.</p>
+                </div>
+            </div>
 
-                    <form th:action="@{/profile}" method="post" class="mb-5">
-                        <h5 class="fw-bold mb-3 text-secondary"><i class="bi bi-info-circle me-2"></i> Thông Tin Cá Nhân</h5>
+            <div class="mc-profile-card mb-4">
+                <div class="mc-profile-identity">
+                    <div class="mc-profile-avatar"><span th:text="${#strings.substring(user.fullName, 0, 1)}">U</span></div>
+                    <div>
+                        <h2 class="mc-profile-name" th:text="${user.fullName}">Nguyễn Văn An</h2>
+                        <span class="badge bg-primary-subtle text-primary border border-primary mt-1"
+                              th:text="${user.role.name.displayName}">Bệnh nhân</span>
+                    </div>
+                </div>
+                <form th:action="@{/profile}" method="post">
+                    <div class="mc-form-section">
+                        <h2 class="mc-form-section-title">Thông tin cá nhân</h2>
+                        <p class="mc-form-section-copy">Tên đăng nhập và email được khóa để tránh thay đổi nhầm định danh tài khoản.</p>
                         <div class="row g-3">
                             <div class="col-md-6">
-                                <label class="form-label small fw-semibold text-muted">Tên đăng nhập</label>
-                                <input type="text" class="form-control" th:value="${user.username}" disabled readonly>
+                                <label for="profileUsername" class="form-label">Tên đăng nhập</label>
+                                <input id="profileUsername" type="text" class="form-control mc-readonly-field"
+                                       th:value="${user.username}" disabled readonly autocomplete="username">
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label small fw-semibold text-muted">Email</label>
-                                <input type="email" class="form-control" th:value="${user.email}" disabled readonly>
+                                <label for="profileEmail" class="form-label">Email</label>
+                                <input id="profileEmail" type="email" class="form-control mc-readonly-field"
+                                       th:value="${user.email}" disabled readonly autocomplete="email">
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label small fw-semibold text-muted">Họ và tên</label>
-                                <input type="text" name="fullName" class="form-control" th:value="${user.fullName}" required>
+                                <label for="profileFullName" class="form-label">Họ và tên</label>
+                                <input id="profileFullName" type="text" name="fullName" class="form-control"
+                                       th:value="${user.fullName}" autocomplete="name" required>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label small fw-semibold text-muted">Số điện thoại</label>
-                                <input type="text" name="phone" class="form-control" th:value="${user.phone}" required>
+                                <label for="profilePhone" class="form-label">Số điện thoại</label>
+                                <input id="profilePhone" type="tel" name="phone" class="form-control"
+                                       th:value="${user.phone}" autocomplete="tel" required>
                             </div>
                             <div class="col-12">
-                                <label class="form-label small fw-semibold text-muted">Địa chỉ</label>
-                                <input type="text" name="address" class="form-control" th:value="${user.address}">
+                                <label for="profileAddress" class="form-label">Địa chỉ</label>
+                                <input id="profileAddress" type="text" name="address" class="form-control"
+                                       th:value="${user.address}" autocomplete="street-address">
                             </div>
                         </div>
-                        <button type="submit" class="btn btn-med-primary mt-3">
-                            <i class="bi bi-save me-1"></i> Cập Nhật Thông Tin
+                        <button type="submit" class="btn btn-med-primary mt-4">
+                            <i class="bi bi-save me-2"></i>Lưu thay đổi
                         </button>
-                    </form>
+                    </div>
+                </form>
+            </div>
 
-                    <hr>
-
-                    <form th:action="@{/profile/change-password}" method="post" class="mt-4">
-                        <h5 class="fw-bold mb-3 text-secondary"><i class="bi bi-shield-lock me-2"></i> Đổi Mật Khẩu</h5>
+            <div class="mc-profile-card">
+                <form th:action="@{/profile/change-password}" method="post">
+                    <div class="mc-form-section">
+                        <h2 class="mc-form-section-title">Bảo mật</h2>
+                        <p class="mc-form-section-copy">Đổi mật khẩu nếu bạn nghi ngờ tài khoản đã bị lộ hoặc muốn tăng cường bảo mật.</p>
                         <div class="row g-3">
                             <div class="col-md-4">
-                                <label class="form-label small fw-semibold text-muted">Mật khẩu hiện tại</label>
-                                <input type="password" name="oldPassword" class="form-control" placeholder="Mật khẩu cũ..." required>
+                                <label for="oldPassword" class="form-label">Mật khẩu hiện tại</label>
+                                <input id="oldPassword" type="password" name="oldPassword" class="form-control"
+                                       placeholder="Nhập mật khẩu hiện tại" autocomplete="current-password" required>
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label small fw-semibold text-muted">Mật khẩu mới</label>
-                                <input type="password" name="newPassword" class="form-control" placeholder="Tối thiểu 6 ký tự..." required>
+                                <label for="profileNewPassword" class="form-label">Mật khẩu mới</label>
+                                <input id="profileNewPassword" type="password" name="newPassword" class="form-control"
+                                       placeholder="Tối thiểu 6 ký tự" autocomplete="new-password" required>
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label small fw-semibold text-muted">Xác nhận mật khẩu mới</label>
-                                <input type="password" name="confirmPassword" class="form-control" placeholder="Nhập lại mật khẩu mới..." required>
+                                <label for="profileConfirmPassword" class="form-label">Xác nhận mật khẩu mới</label>
+                                <input id="profileConfirmPassword" type="password" name="confirmPassword" class="form-control"
+                                       placeholder="Nhập lại mật khẩu mới" autocomplete="new-password" required>
                             </div>
                         </div>
-                        <button type="submit" class="btn btn-outline-danger mt-3">
-                            <i class="bi bi-key-fill me-1"></i> Đổi Mật Khẩu
+                        <button type="submit" class="btn btn-outline-danger mt-4">
+                            <i class="bi bi-key-fill me-2"></i>Đổi mật khẩu
                         </button>
-                    </form>
-                </div>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
 </div>
 </body>
 </html>
-

@@ -7,69 +7,75 @@
 </head>
 <body>
 <div layout:fragment="content">
-    <div class="container py-5">
-        <div class="row justify-content-center">
-            <div class="col-md-6 col-lg-5">
-                <div class="card card-custom p-4 p-md-5 border-0 shadow">
-                    <div class="text-center mb-4">
-                        <div class="rounded-circle bg-primary bg-opacity-10 text-primary p-3 d-inline-flex align-items-center justify-content-center mb-2" style="width: 70px; height: 70px;">
-                            <i class="bi bi-person-fill-lock fs-1"></i>
-                        </div>
-                        <h1 class="h3 fw-bold text-dark mb-1">Đăng Nhập MedClinic</h1>
-                        <p class="text-muted small">Truy cập cổng thông tin và dịch vụ khám chữa bệnh</p>
-                    </div>
+    <div class="container">
+        <section class="mc-auth-section" aria-labelledby="loginTitle">
+            <div class="mc-auth-shell">
+                <aside class="mc-auth-aside">
+                    <div class="mc-auth-icon"><i class="bi bi-heart-pulse-fill"></i></div>
+                    <div class="mc-auth-eyebrow">MedClinic</div>
+                    <h2 class="h3 fw-bold mb-2">Chủ động hơn trong mỗi lần đi khám</h2>
+                    <p class="text-muted mb-0">Một tài khoản để đặt lịch, nhận mã check-in và theo dõi lịch sử khám tập trung.</p>
+                    <ul class="mc-auth-feature-list">
+                        <li class="mc-auth-feature"><i class="bi bi-calendar2-check"></i><span>Đặt lịch theo bác sĩ và khung giờ còn trống.</span></li>
+                        <li class="mc-auth-feature"><i class="bi bi-qr-code-scan"></i><span>Check-in nhanh bằng mã QR khi đến phòng khám.</span></li>
+                        <li class="mc-auth-feature"><i class="bi bi-file-earmark-medical"></i><span>Tra cứu lịch hẹn và hồ sơ y tế thuận tiện.</span></li>
+                    </ul>
+                </aside>
+                <div class="mc-auth-panel">
+                    <div class="mc-auth-eyebrow">Chào mừng trở lại</div>
+                    <h1 class="mc-auth-title" id="loginTitle">Đăng nhập</h1>
+                    <p class="mc-auth-subtitle">Truy cập lịch hẹn, hồ sơ và các dịch vụ dành cho tài khoản của bạn.</p>
 
-                    <form th:action="@{/login}" method="post">
+                    <form th:action="@{/login}" method="post" class="mc-auth-form">
                         <div class="mb-3">
-                            <label for="usernameInput" class="form-label small fw-semibold text-muted">Tên đăng nhập hoặc Email</label>
+                            <label for="usernameInput" class="form-label">Tên đăng nhập hoặc email</label>
                             <div class="input-group">
-                                <span class="input-group-text bg-light"><i class="bi bi-person"></i></span>
-                                <input type="text" id="usernameInput" name="username" class="form-control form-control-lg" placeholder="Nhập username/email..." required autofocus>
+                                <span class="input-group-text"><i class="bi bi-person"></i></span>
+                                <input type="text" id="usernameInput" name="username" class="form-control"
+                                       placeholder="Nhập tên đăng nhập hoặc email"
+                                       autocomplete="username" required autofocus>
                             </div>
                         </div>
 
                         <div class="mb-3">
-                            <label for="passwordInput" class="form-label small fw-semibold text-muted">Mật khẩu</label>
+                            <label for="passwordInput" class="form-label">Mật khẩu</label>
                             <div class="input-group">
-                                <span class="input-group-text bg-light"><i class="bi bi-lock"></i></span>
-                                <input type="password" id="passwordInput" name="password" class="form-control form-control-lg" placeholder="Nhập mật khẩu..." required>
+                                <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                                <input type="password" id="passwordInput" name="password" class="form-control"
+                                       placeholder="Nhập mật khẩu"
+                                       autocomplete="current-password" required>
                             </div>
                         </div>
 
-                        <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
                             <div class="form-check">
                                 <input class="form-check-input" type="checkbox" name="remember-me" id="rememberMe">
-                                <label class="form-check-label small text-muted" for="rememberMe">
-                                    Ghi nhớ đăng nhập
-                                </label>
+                                <label class="form-check-label small text-muted" for="rememberMe">Ghi nhớ đăng nhập</label>
                             </div>
+                            <a th:href="@{/forgot-password}" class="small text-decoration-none fw-semibold">Quên mật khẩu?</a>
                         </div>
 
-                        <button type="submit" class="btn btn-med-primary w-100 py-3 fw-bold mb-3">
-                            <i class="bi bi-box-arrow-in-right me-2"></i> Đăng Nhập
+                        <button type="submit" class="btn btn-med-primary mc-auth-submit">
+                            <i class="bi bi-box-arrow-in-right me-2"></i>Đăng nhập
                         </button>
 
-                        <div class="text-center small text-muted mb-4">
-                            Chưa có tài khoản? <a th:href="@{/register}" class="text-primary fw-semibold">Đăng ký khám ngay</a> · <a th:href="@{/forgot-password}" class="text-primary fw-semibold">Quên mật khẩu?</a>
+                        <div class="mc-auth-links">
+                            Chưa có tài khoản? <a th:href="@{/register}">Đăng ký tài khoản bệnh nhân</a>
                         </div>
                     </form>
 
-                    <!-- Quick Demo Credentials Box -->
-                    <div class="p-3 bg-light rounded-3 border">
-                        <div class="small fw-bold text-dark mb-2 text-center">
-                            <i class="bi bi-lightning-charge-fill text-warning me-1"></i> Tài khoản Demo Nhanh (Click để tự điền):
-                        </div>
-                        <div class="d-flex flex-wrap gap-1 justify-content-center">
-                            <button type="button" class="btn btn-sm btn-outline-danger py-1 px-2 demo-login" data-username="admin" data-password="123456">Admin</button>
-                            <button type="button" class="btn btn-sm btn-outline-success py-1 px-2 demo-login" data-username="doctor" data-password="123456">Bác sĩ</button>
-                            <button type="button" class="btn btn-sm btn-outline-warning text-dark py-1 px-2 demo-login" data-username="staff" data-password="123456">Lễ tân</button>
-                            <button type="button" class="btn btn-sm btn-outline-primary py-1 px-2 demo-login" data-username="patient" data-password="123456">Bệnh nhân</button>
+                    <div class="mc-demo-panel">
+                        <div class="mc-demo-panel-title">Tài khoản demo dùng cho môi trường phát triển</div>
+                        <div class="d-flex flex-wrap gap-2 justify-content-center">
+                            <button type="button" class="btn btn-sm btn-outline-secondary demo-login" data-username="admin" data-password="123456">Admin</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary demo-login" data-username="doctor" data-password="123456">Bác sĩ</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary demo-login" data-username="staff" data-password="123456">Lễ tân</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary demo-login" data-username="patient" data-password="123456">Bệnh nhân</button>
                         </div>
                     </div>
-
                 </div>
             </div>
-        </div>
+        </section>
     </div>
 </div>
 
@@ -86,4 +92,3 @@
 </div>
 </body>
 </html>
-
