@@ -212,4 +212,25 @@ erDiagram
 
 ## 4. Triển khai migration
 
-SQL Server l? ??ch tri?n khai c?a phi?n b?n hi?n t?i. Production d?ng `ddl-auto=validate`; Hibernate kh?ng t? thay ??i schema. Database s?ch d?ng baseline `docs/database/SQLSERVER_BASELINE_SCHEMA_2026-09-19.sql`; database ?? t?n t?i d?ng pre-check/incremental migration trong `docs/database/CORE_WORKFLOW_MIGRATION_2026-09-17.md`. Baseline ?? apply th?nh c?ng tr?n SQL Server local 17.0.1000.7 v?i 16 b?ng, filtered unique index cho queue v? ki?m tra Unicode round-trip. Lu?n backup v? DBA-review tr??c production. MySQL ch? thu?c roadmap t??ng lai.
+SQL Server là database chính của phiên bản hiện tại. Profile `sqlserver` dùng **Flyway** để quản lý schema theo version và giữ `spring.jpa.hibernate.ddl-auto=validate`; vì vậy Hibernate chỉ xác minh mapping sau khi migration hoàn tất, không tự sửa production schema.
+
+Các migration hiện tại:
+
+- `src/main/resources/db/migration/sqlserver/V1__baseline_schema.sql`: baseline 16 bảng, foreign key, unique constraint và filtered index của SQL Server.
+- `src/main/resources/db/migration/sqlserver/V2__reference_roles.sql`: seed idempotent bốn role hệ thống bắt buộc.
+
+Hai migration này được kiểm tra tự động để luôn đồng bộ nội dung với `docs/database/SQLSERVER_BASELINE_SCHEMA_2026-09-19.sql` và `docs/database/SQLSERVER_REFERENCE_DATA_2026-09-19.sql`.
+
+### Database mới
+
+Flyway tạo `flyway_schema_history`, áp dụng `V1` rồi `V2`; sau đó Hibernate chạy `validate`. Nếu schema không khớp entity, application startup phải fail.
+
+### Database legacy 16 bảng
+
+Production mặc định giữ `baseline-on-migrate=false`. Sau backup và pre-check xác nhận đúng baseline 16 bảng, operator mới bật `SPRING_FLYWAY_BASELINE_ON_MIGRATE=true` cho lần adoption đầu tiên. Flyway ghi baseline version 1, bỏ qua V1 và chỉ áp dụng các migration sau đó (hiện là `V2`). Sau khi history được tạo, bỏ opt-in này. Không baseline schema dở dang hoặc không rõ nguồn gốc.
+
+`SqlServerFlywayMigrationIntegrationTest` kiểm chứng cả fresh migration và legacy adoption trên database disposable `medclinic_flyway_it`, sau đó drop database test. Docker init chỉ áp dụng guard `0`/`16` khi chưa có `flyway_schema_history`; khi history đã tồn tại, Flyway/Hibernate chịu trách nhiệm kiểm tra các version schema tương lai.
+
+Project deploy mục tiêu SQL Server 2019/2022. Máy QA local hiện dùng SQL Server 17.0 (2025); Flyway 10.10.0 phát cảnh báo đây là server mới hơn mức hỗ trợ đã công bố (16.0), nhưng migration acceptance local vẫn PASS. Không dùng cảnh báo này để suy diễn rằng SQL Server 17 đã được Flyway 10.10 chứng nhận chính thức.
+
+MySQL chỉ thuộc roadmap tương lai.

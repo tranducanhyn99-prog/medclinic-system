@@ -1,43 +1,57 @@
-# SQL Server production-readiness evidence — 19/09/2026
+# SQL Server production-readiness evidence — cập nhật 20/09/2026
 
 ## Scope verified locally
 
-- Target server: local Microsoft SQL Server 17.0.1000.7.
-- Clean schema baseline: `SQLSERVER_BASELINE_SCHEMA_2026-09-19.sql`.
-- Mandatory reference data: `SQLSERVER_REFERENCE_DATA_2026-09-19.sql`.
+- Deployment target: Microsoft SQL Server 2019/2022; máy QA local hiện chạy SQL Server 17.0.1000.7.
+- Schema management: Flyway 10.10.0 (Spring Boot managed) + `flyway-sqlserver`.
+- Migration V1: `src/main/resources/db/migration/sqlserver/V1__baseline_schema.sql`.
+- Migration V2: `src/main/resources/db/migration/sqlserver/V2__reference_roles.sql`.
+- Hibernate production mode: `ddl-auto=validate`, chạy sau Flyway.
 - First-admin template: `SQLSERVER_ADMIN_PROVISIONING_TEMPLATE.sql`.
-- Application artifact: `target/medclinic-system-1.0.0.jar` with profile `sqlserver`.
+- Application artifact: `target/medclinic-system-1.0.0.jar` với profile `sqlserver`.
 
-## Database evidence
+## Flyway migration evidence
 
-A disposable database was recreated from zero. Baseline apply returned success. Reference-data script was applied twice; the final state contained exactly four role rows, one each for `ROLE_ADMIN`, `ROLE_DOCTOR`, `ROLE_PATIENT`, and `ROLE_STAFF`.
+`SqlServerFlywayMigrationIntegrationTest` chạy trên database disposable riêng `medclinic_flyway_it`, chỉ được kích hoạt khi base URL là local `medclinic_e2e`.
 
-The admin provisioning template was executed with QA-only values and a non-production test hash. The inserted account was active and joined to `ROLE_ADMIN`. A second execution with the same username failed with SQL Server error 51001 (`Admin username already exists`), confirming the duplicate guard. The disposable database and QA helper files were removed after verification.
+Hai đường migration đã PASS:
 
-## Application release smoke
+1. **Fresh database:** Flyway tạo `flyway_schema_history`, chạy V1 rồi V2; history kết thúc ở version 2 và Hibernate `validate` startup thành công.
+2. **Legacy adoption:** test dựng đúng baseline 16 bảng nhưng không có history; production-safe default giữ baseline OFF, còn test bật opt-in riêng cho bước adoption để Flyway ghi `BASELINE` version 1, chạy V2 và Hibernate `validate` startup thành công.
 
-The packaged JAR was started against a clean/reference-data SQL Server database using Windows Integrated Authentication, `SPRING_PROFILES_ACTIVE=sqlserver`, `ddl-auto=validate`, and a QA-only remember-me key. Port 18084 was already occupied, so the smoke run used the verified-free port 18085 instead.
+Test drop `medclinic_flyway_it` sau khi hoàn tất. `SqlServerFlywayArtifactsTest` còn xác minh V1/V2 luôn đồng bộ nội dung với các SQL review/audit trong `docs/database/`.
 
-Observed results:
+Máy QA SQL Server 17.0 làm Flyway 10.10.0 phát cảnh báo server mới hơn mức hỗ trợ đã công bố (16.0). Acceptance local vẫn PASS; điều này **không** được hiểu là chứng nhận chính thức SQL Server 17 cho Flyway 10.10. Deployment target của project vẫn là SQL Server 2019/2022.
 
-- Spring profile: `sqlserver`.
-- JPA `EntityManagerFactory` initialized successfully.
-- `MedClinicApplication` started successfully.
-- `GET /` → HTTP 200.
-- `GET /login` → HTTP 200.
-- `GET /register` → HTTP 200.
-- `GET /admin/dashboard` unauthenticated → HTTP 302 to `/login`.
-- Database after startup: 4 roles, no unexpected dev-seed users.
-- Application log contained no dev `DataInitializer` seed execution.
+## Database and admin provisioning evidence
+
+Baseline schema trước khi chuyển sang Flyway đã được recreate từ zero và kiểm chứng 16 bảng/constraint/index. Reference-data script chạy lặp vẫn giữ đúng bốn role: `ROLE_ADMIN`, `ROLE_DOCTOR`, `ROLE_PATIENT`, `ROLE_STAFF`.
+
+Admin provisioning template đã được kiểm thử với QA-only values và non-production hash. Tài khoản được join đúng `ROLE_ADMIN`; chạy lại cùng username bị chặn bằng SQL Server error 51001 (`Admin username already exists`).
+
+Các SQL này hiện được giữ làm bản review/audit, còn runtime migration dùng Flyway V1/V2. Contract test ngăn hai bản drift khỏi nhau.
+
+## Application release smoke đã xác nhận trước đó
+
+Packaged JAR profile `sqlserver` đã startup thành công với Windows Integrated Authentication và `ddl-auto=validate` trên local SQL Server. Các endpoint public `/`, `/login`, `/register` trả HTTP 200; `/admin/dashboard` unauthenticated redirect tới `/login`; không có dev seed trong profile `sqlserver`.
+
+Sau khi đưa Flyway vào, migration integration test startup cùng `MedClinicApplication` sau migration và vượt Hibernate `validate` cho cả fresh/legacy schema.
+
+## Docker / deployment behavior
+
+`docker/sqlserver/init-db.sh` chỉ tạo `medclinic_db` nếu chưa tồn tại. Khi chưa có `flyway_schema_history`, script chỉ chấp nhận schema rỗng hoặc legacy 16 bảng; khi history đã tồn tại, script không hard-code số bảng để Flyway có thể quản lý các version tương lai. Script không tự apply baseline/reference SQL; app/Flyway chịu trách nhiệm versioning schema.
+
+Docker runtime vẫn chưa được đánh dấu verified trong đợt này vì cấu hình Docker Desktop/WSL trên máy local đang tạm dừng theo kế hoạch. Chỉ static/config verification được phép ghi nhận cho đến khi chạy `docker compose up` thành công.
 
 ## Still external to local acceptance
 
-The following are intentionally **not** marked as production-complete by this local QA:
+Các mục sau **chưa** được đánh dấu production-complete:
 
-- Real production/staging SMTP credentials and an actual outbound email delivery check.
-- Secret-manager wiring/rotation policy in the chosen hosting environment.
-- Manual screen-reader smoke on the release environment.
-- Final production DBA backup/change approval and deployment-window smoke.
-- Actual production admin identity and bootstrap-password rotation/handoff.
+- SMTP production/staging thật và outbound delivery smoke.
+- Secret-manager wiring/rotation policy của hosting environment.
+- Manual screen-reader release smoke.
+- Final DBA backup/change approval và deployment-window smoke.
+- Production admin identity thật và bootstrap-password rotation/handoff.
+- Docker Compose runtime acceptance trên máy/container host đã cấu hình hoàn chỉnh.
 
-These require real deployment credentials, infrastructure, or human accessibility testing and must not be simulated as completed evidence.
+Các mục này cần credential, hạ tầng hoặc human verification thật và không được giả lập thành bằng chứng đã hoàn thành.

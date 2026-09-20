@@ -2,7 +2,7 @@
 **Dự án:** MedClinic - Phòng Khám Tư Nhân  
 **Mục đích:** Đảm bảo 100% yêu cầu chức năng (FR) trong SRS được ánh xạ tới Sơ đồ Use Case, Bảng CSDL, Lớp Service/Controller và Kế hoạch kiểm thử.  
 
-**Lưu ý kiểm chứng (20/09/2026):** Cột `Test Case ID` là định danh kế hoạch, không tự khẳng định test tự động đã tồn tại. Full `mvn verify` hiện tại có **117 test case trên 50 test class: 109 executed PASS, 0 failure, 0 error và 8 environment-gated case được skip**. JaCoCo đạt **76,08% line / 61,84% branch**, vượt quality gate 70% line / 50% branch. Coverage bao gồm service/controller/security, WebSocket/STOMP hàng chờ `AFTER_COMMIT`, rollback suppression, SockJS endpoint security, public/authenticated render, concurrent booking/stock, email after-commit, PDF Unicode, SQL Server integration, acceptance E2E (`SqlServerReleaseAcceptanceEndToEndIntegrationTest`) và accessibility contracts.
+**Lưu ý kiểm chứng (20/09/2026):** Cột `Test Case ID` là định danh kế hoạch, không tự khẳng định test tự động đã tồn tại. Full `mvn verify` hiện tại có **120 test case trên 51 test class: 112 executed PASS, 0 failure, 0 error và 8 environment-gated case được skip**. JaCoCo đạt **76,08% line / 61,84% branch**, vượt quality gate 70% line / 50% branch. Coverage bao gồm service/controller/security, WebSocket/STOMP hàng chờ `AFTER_COMMIT`, rollback suppression, SockJS endpoint security, public/authenticated render, concurrent booking/stock, email after-commit, PDF Unicode, SQL Server integration, acceptance E2E (`SqlServerReleaseAcceptanceEndToEndIntegrationTest`) và accessibility contracts.
 
 ---
 

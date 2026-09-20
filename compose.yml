@@ -33,7 +33,6 @@ services:
       MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD:?Hãy cấu hình MSSQL_SA_PASSWORD trong file .env}
     volumes:
       - ./docker/sqlserver/init-db.sh:/docker/init-db.sh:ro
-      - ./docs/database:/docker/sql:ro
     entrypoint: ["/bin/bash", "/docker/init-db.sh"]
     restart: "no"
 
@@ -48,6 +47,7 @@ services:
         condition: service_completed_successfully
     environment:
       SPRING_PROFILES_ACTIVE: sqlserver,demo
+      SPRING_FLYWAY_BASELINE_ON_MIGRATE: "true"
       DB_URL: jdbc:sqlserver://sqlserver:1433;databaseName=medclinic_db;encrypt=true;trustServerCertificate=true;sendStringParametersAsUnicode=true
       DB_USERNAME: sa
       DB_PASSWORD: ${MSSQL_SA_PASSWORD:?Hãy cấu hình MSSQL_SA_PASSWORD trong file .env}

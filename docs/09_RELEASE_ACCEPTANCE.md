@@ -60,6 +60,6 @@ Không trỏ test này vào production database vì profile acceptance dùng `sp
 - SQL Server: 17.0.1000.7 Developer Edition.
 - Kết nối acceptance local: Windows Integrated Authentication, database `medclinic_e2e`.
 - `SqlServerReleaseAcceptanceEndToEndIntegrationTest`: **1/1 PASS**.
-- Full `mvn verify`: **117 test case / 50 test class; 109 executed PASS, 8 environment-gated skipped, 0 failure, 0 error**.
+- Full `mvn verify`: **120 test case / 51 test class; 112 executed PASS, 8 environment-gated skipped, 0 failure, 0 error**.
 - JaCoCo: **76,08% line / 61,84% branch**, vượt gate 70% line / 50% branch.
 - `git diff --check`: PASS.

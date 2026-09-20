@@ -10,7 +10,7 @@
 [![CI](https://github.com/tranducanhyn99-prog/medclinic-system/actions/workflows/ci.yml/badge.svg)](https://github.com/tranducanhyn99-prog/medclinic-system/actions/workflows/ci.yml)
 [![Line Coverage](https://img.shields.io/badge/Line%20Coverage-76.08%25-brightgreen.svg?style=for-the-badge)](https://github.com/tranducanhyn99-prog/medclinic-system/actions/workflows/ci.yml)
 [![Branch Coverage](https://img.shields.io/badge/Branch%20Coverage-61.84%25-brightgreen.svg?style=for-the-badge)](https://github.com/tranducanhyn99-prog/medclinic-system/actions/workflows/ci.yml)
-[![Tests](https://img.shields.io/badge/Tests-117%20total%20%7C%20109%20executed-success.svg?style=for-the-badge&logo=junit5)](https://junit.org/junit5/)
+[![Tests](https://img.shields.io/badge/Tests-120%20total%20%7C%20112%20executed-success.svg?style=for-the-badge&logo=junit5)](https://junit.org/junit5/)
 [![Docker](https://img.shields.io/badge/Docker-Compose%20Ready-2496ED.svg?style=for-the-badge&logo=docker)](compose.yml)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](LICENSE)
 
@@ -56,7 +56,7 @@ Tại các phòng khám tư nhân quy mô vừa và nhỏ ở Việt Nam, việc
 
 ### Điểm nổi bật & Thách thức kỹ thuật
 - **Kiểm soát đồng thời chống Double Booking:** Luồng đặt lịch khóa bản ghi TimeSlot khi ghi (`findByIdForUpdate`) và vẫn duy trì `@Version` để phát hiện cập nhật cạnh tranh. Kết hợp transaction `READ_COMMITTED`, trạng thái slot và ràng buộc CSDL giúp booking thất bại an toàn khi có tranh chấp.
-- **Cơ sở dữ liệu Microsoft SQL Server đạt chuẩn 3NF:** Toàn bộ 16 bảng quan hệ được thiết kế chuẩn mực, tối ưu hóa kiểu dữ liệu (`NVARCHAR`, `DECIMAL(12,2)`, `DATETIME2`, `BIT`), hỗ trợ Unicode toàn vẹn tiếng Việt có dấu.
+- **Cơ sở dữ liệu Microsoft SQL Server đạt chuẩn 3NF:** 16 bảng quan hệ, Unicode `NVARCHAR` và schema versioning bằng Flyway; Hibernate production chỉ `validate`, không tự mutate schema.
 - **Phân quyền người dùng dựa trên vai trò (RBAC):** Bảo vệ chặt chẽ các tài nguyên theo 4 vai trò: `ROLE_PATIENT`, `ROLE_DOCTOR`, `ROLE_STAFF`, `ROLE_ADMIN` thông qua Spring Security 6.
 - **Tích hợp đa dịch vụ:** Tự động tạo mã QR Base64 bằng Google ZXing, xuất hóa đơn & toa thuốc chuẩn PDF bằng OpenPDF, và gửi email xác nhận bất đồng bộ `@Async`.
 
@@ -68,9 +68,9 @@ Tại các phòng khám tư nhân quy mô vừa và nhỏ ở Việt Nam, việc
 | :--- | :--- |
 | **Concurrency & Transaction** | Row lock + `@Version`, chống double-booking, cấp STT đồng thời, khóa tồn kho và rollback nghiệp vụ |
 | **Realtime Messaging** | Spring WebSocket/STOMP user destination; queue event chỉ broadcast `AFTER_COMMIT`, không phát khi transaction rollback |
-| **SQL Server production-readiness** | Baseline 16 bảng, `ddl-auto=validate`, Unicode `NVARCHAR`, migration/runbook và integration test có guard |
+| **SQL Server production-readiness** | Flyway V1/V2, legacy baseline opt-in có guard, `ddl-auto=validate`, Unicode `NVARCHAR` và SQL Server integration test |
 | **Security** | Spring Security RBAC 4 vai trò, CSRF, BCrypt, remember-me secret ngoài repo, password-reset token SHA-256 dùng một lần |
-| **Quality Engineering** | 117 test case, 109 executed PASS, JaCoCo **76.08% line / 61.84% branch**, quality gate trên `mvn verify` |
+| **Quality Engineering** | 120 test case, 112 executed PASS, JaCoCo **76.08% line / 61.84% branch**, quality gate trên `mvn verify` |
 | **CI/CD & Delivery** | GitHub Actions cho push/PR, artifact JAR + JaCoCo report, Dockerfile multi-stage và SQL Server Compose |
 | **UX & Accessibility** | Responsive dashboard, keyboard/focus contract, ARIA/live-region audit và UI smoke đa kích thước |
 
@@ -163,6 +163,7 @@ graph TD
 | **Bảo mật** | Spring Security | 6.x | Xác thực, phân quyền 4 vai trò (RBAC), CSRF, BCrypt |
 | **Cơ sở dữ liệu chính** | **Microsoft SQL Server** | **2019 / 2022** | Hệ quản trị CSDL quan hệ chính thức cho dự án |
 | **Driver CSDL** | Microsoft JDBC Driver for SQL Server (`mssql-jdbc`) | 12.6+ | Kết nối hiệu năng cao, bảo mật TLS/SSL |
+| **Schema migration** | Flyway + `flyway-sqlserver` | 10.10.0 | V1/V2 versioning, legacy baseline adoption, chạy trước Hibernate validate |
 | **Cơ sở dữ liệu Test** | H2 Database In-Memory | 2.x | Chạy kiểm thử tự động và chạy thử nghiệm zero-config |
 | **ORM / JPA** | Hibernate / Spring Data JPA | 6.5.3 | Quản lý thực thể, Optimistic Lock (`@Version`) |
 | **Giao diện** | Thymeleaf + Layout Dialect | 3.x | Template Engine kết xuất server-side |
@@ -227,7 +228,7 @@ cp .env.example .env
 docker compose up --build
 ```
 
-Compose sẽ khởi động SQL Server 2022, đợi database healthy, tạo `medclinic_db`, áp dụng baseline 16 bảng + reference roles nếu database còn sạch, rồi mới khởi động ứng dụng tại **http://localhost:8080**.
+Compose sẽ khởi động SQL Server 2022, đợi database healthy, tạo `medclinic_db` và kiểm tra schema safety (`0` hoặc `16` bảng ứng dụng). Sau đó app khởi động tại **http://localhost:8080**; Flyway tự chạy migration V1/V2 trước khi Hibernate `validate`.
 
 > Cấu hình Compose dùng tài khoản `sa` cho **local/demo để giảm bước setup**. Production vẫn phải dùng application login tối thiểu quyền theo `docs/database/SQLSERVER_RUNBOOK.md`.
 
@@ -257,13 +258,14 @@ GO
 4. Nhấp đúp vào **TCP/IP**, chuyển sang thẻ **IP Addresses**, cuộn xuống mục **IPAll** và điền **TCP Port: `1433`** (xóa mục TCP Dynamic Ports nếu có).
 5. Khởi động lại dịch vụ **SQL Server** trong thẻ *SQL Server Services*.
 
-#### 2.3. Áp dụng schema/reference data và cấu hình secret qua môi trường
-Production dùng `ddl-auto=validate`, vì vậy Hibernate **không tự tạo hoặc sửa schema**. Sau khi tạo database sạch, DBA áp dụng baseline và 4 role hệ thống:
+#### 2.3. Flyway migration và cấu hình secret qua môi trường
+Production dùng Flyway làm schema owner và `ddl-auto=validate`, vì vậy Hibernate **không tự tạo hoặc sửa schema**.
 
-```powershell
-sqlcmd -S localhost -E -C -d medclinic_db -b -i docs\database\SQLSERVER_BASELINE_SCHEMA_2026-09-19.sql
-sqlcmd -S localhost -E -C -d medclinic_db -b -i docs\database\SQLSERVER_REFERENCE_DATA_2026-09-19.sql
-```
+Với database mới, DBA chỉ tạo database rỗng và cấu hình quyền/secret. Khi application khởi động bằng profile `sqlserver`, Flyway tự tạo `flyway_schema_history`, áp dụng `V1__baseline_schema.sql` rồi `V2__reference_roles.sql`; Hibernate `validate` chạy sau migration.
+
+Với database legacy đã có đúng baseline 16 bảng nhưng chưa có Flyway history, phải backup + pre-check trước. Production mặc định giữ `baseline-on-migrate=false`; chỉ trong lần adoption có chủ đích mới đặt `SPRING_FLYWAY_BASELINE_ON_MIGRATE=true` để Flyway ghi baseline version 1 rồi chạy các migration sau V1 (hiện là V2). Sau khi `flyway_schema_history` được tạo, bỏ opt-in này. Không baseline schema dở dang hoặc không rõ nguồn gốc.
+
+Các file `docs/database/SQLSERVER_BASELINE_SCHEMA_2026-09-19.sql` và `SQLSERVER_REFERENCE_DATA_2026-09-19.sql` vẫn được giữ làm bản review/audit; test tự động bảo đảm chúng đồng bộ với Flyway V1/V2.
 
 Không ghi username/password production vào repository. Cung cấp cấu hình qua biến môi trường hoặc secret manager:
 
@@ -276,7 +278,7 @@ $env:MAIL_USERNAME="<smtp-user>"
 $env:MAIL_PASSWORD="<smtp-secret>"
 ```
 
-Chi tiết triển khai xem `docs/database/SQLSERVER_RUNBOOK.md` và `docs/database/PRODUCTION_ADMIN_PROVISIONING.md`.
+Chi tiết fresh/legacy migration và production handoff xem `docs/database/SQLSERVER_RUNBOOK.md` và `docs/database/PRODUCTION_ADMIN_PROVISIONING.md`.
 
 > 💡 **Mẹo chạy nhanh không cần cài SQL Server (Dev In-Memory):** Nếu chưa cài đặt SQL Server trên máy, bạn vẫn có thể khởi chạy ngay lập tức bằng CSDL nhúng **H2 Database** tích hợp sẵn (Profile `dev`), toàn bộ dữ liệu mẫu vẫn tự động nạp bình thường.
 
@@ -350,7 +352,7 @@ Dự án được tích hợp bộ kiểm thử tự động với JUnit 5, Mock
 mvn verify
 ```
 
-Baseline kiểm chứng ngày 20/09/2026: **117 test case / 50 test class; 109 executed PASS, 8 environment-gated skipped, 0 failure, 0 error**. JaCoCo đạt **76.08% line / 61.84% branch**; build sẽ fail nếu xuống dưới **70% line / 50% branch**. Các SQL Server integration test chỉ chạy khi chủ động bật environment guard.
+Baseline kiểm chứng ngày 20/09/2026: **120 test case / 51 test class; 112 executed PASS, 8 environment-gated skipped, 0 failure, 0 error**. JaCoCo đạt **76.08% line / 61.84% branch**; build sẽ fail nếu xuống dưới **70% line / 50% branch**. Các SQL Server integration test chỉ chạy khi chủ động bật environment guard.
 
 ### CI và quality gate
 - GitHub Actions chạy `mvn verify` trên **JDK 21 / Windows hosted runner** cho mọi push/PR vào `main`.
@@ -371,7 +373,7 @@ Baseline kiểm chứng ngày 20/09/2026: **117 test case / 50 test class; 109 e
 ```
 medclinic-system/
 ├── .github/workflows/ci.yml              # CI: JDK 21 + mvn verify + JaCoCo + artifacts
-├── docker/sqlserver/init-db.sh            # Khởi tạo SQL Server demo có kiểm tra schema
+├── docker/sqlserver/init-db.sh            # Tạo DB + safety guard; Flyway quản lý schema
 ├── docs/                                 # Tài liệu chuẩn kỹ thuật + ảnh portfolio
 ├── Dockerfile                            # Multi-stage build, runtime non-root
 ├── compose.yml                           # App + SQL Server 2022 + init job
@@ -392,9 +394,10 @@ medclinic-system/
 │   │   └── resources/
 │   │       ├── templates/                # Thymeleaf HTML Templates
 │   │       ├── static/                   # File tĩnh (CSS, JS, Images)
+│   │       ├── db/migration/sqlserver/   # Flyway V1 baseline + V2 reference roles
 │   │       └── application.yml           # Profiles dev H2 / sqlserver / mysql-roadmap; nhận secret qua env
 │   └── test/java/com/medclinic/          # Bộ bài kiểm thử tự động JUnit 5 & Mockito
-├── pom.xml                               # Quản lý thư viện Maven & mssql-jdbc Driver
+├── pom.xml                               # Maven, mssql-jdbc, Flyway SQL Server, JaCoCo...
 └── README.md                             # Tài liệu giới thiệu & hướng dẫn dự án (Chuẩn freeCodeCamp)
 ```
 

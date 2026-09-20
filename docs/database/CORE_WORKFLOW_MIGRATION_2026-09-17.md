@@ -1,6 +1,6 @@
 # Core workflow schema migration
 
-SQL Server là database production hiện tại. Production dùng Hibernate `ddl-auto=validate`; H2 dùng `create-drop` cho Dev/Test. Database SQL Server sạch áp dụng `SQLSERVER_BASELINE_SCHEMA_2026-09-19.sql`, sau đó `SQLSERVER_REFERENCE_DATA_2026-09-19.sql` để tạo 4 role bắt buộc. Phần SQL bên dưới là incremental migration cho schema cũ và chỉ được chạy sau backup + pre-check. MySQL được giữ cho roadmap tương lai.
+SQL Server là database production hiện tại. Từ 20/09/2026, schema production được quản lý bằng Flyway: database sạch chạy `V1__baseline_schema.sql` rồi `V2__reference_roles.sql`; database legacy 16 bảng chỉ được baseline ở version 1 khi operator bật opt-in sau backup/pre-check rồi chạy V2. Hibernate chỉ dùng `ddl-auto=validate` sau migration. File này được giữ làm **tài liệu lịch sử/pre-check cho schema cũ**, không phải đường deploy mặc định hiện tại. MySQL vẫn là roadmap tương lai.
 
 ## Pre-checks
 
@@ -54,7 +54,7 @@ SELECT invoice_code FROM invoices;
 
 If `SHOW INDEX FROM appointments` reports a different generated name for the one-to-one index, replace `time_slot_id` in the first statement with that index name.
 
-## SQL Server 2019+ (current target)
+## SQL Server 2019+ — incremental SQL lịch sử (không chạy trên schema Flyway hiện tại)
 
 Filtered indexes require the standard SQL Server session options below.
 
@@ -115,4 +115,4 @@ WHERE NOT EXISTS (SELECT 1 FROM invoice_code_reservations r WHERE r.invoice_code
 
 ## Post-check
 
-Run `mvn test` and smoke-test booking, cancellation/rebooking, check-in, prescription price history, concurrent queue allocation and stock locking. On 19/09/2026 the clean SQL Server baseline was executed successfully on local SQL Server with 16 tables, 17 foreign keys and the required filtered unique indexes. Reference-role data was applied idempotently; admin-provisioning guards were runtime-QA; the packaged JAR also completed a local `sqlserver` profile release smoke with Hibernate validation and expected public/security HTTP responses. Actual production deployment approval/SMTP/secrets remain environment-specific acceptance.
+Đường deploy hiện tại phải theo `SQLSERVER_RUNBOOK.md`: Flyway migrate trước, Hibernate `validate` sau. `SqlServerFlywayMigrationIntegrationTest` đã kiểm cả fresh schema và legacy adoption trên database disposable riêng; các concurrency/E2E test SQL Server tiếp tục chạy qua environment guard. Phần SQL lịch sử phía trên chỉ dùng để đối chiếu/pre-check các schema rất cũ, không chạy chồng lên database đã ở Flyway version 2. Production deployment approval/SMTP/secrets vẫn là acceptance theo môi trường thật.
