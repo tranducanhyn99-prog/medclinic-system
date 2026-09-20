@@ -8,9 +8,9 @@
 [![Thymeleaf](https://img.shields.io/badge/Thymeleaf-3.x-005F0E.svg?style=for-the-badge&logo=thymeleaf)](https://www.thymeleaf.org/)
 [![Database](https://img.shields.io/badge/Database-SQL%20Server%20%7C%20H2-004880.svg?style=for-the-badge&logo=microsoftsqlserver)](https://www.microsoft.com/sql-server/)
 [![CI](https://github.com/tranducanhyn99-prog/medclinic-system/actions/workflows/ci.yml/badge.svg)](https://github.com/tranducanhyn99-prog/medclinic-system/actions/workflows/ci.yml)
-[![Line Coverage](https://img.shields.io/badge/Line%20Coverage-75.92%25-brightgreen.svg?style=for-the-badge)](https://github.com/tranducanhyn99-prog/medclinic-system/actions/workflows/ci.yml)
+[![Line Coverage](https://img.shields.io/badge/Line%20Coverage-76.08%25-brightgreen.svg?style=for-the-badge)](https://github.com/tranducanhyn99-prog/medclinic-system/actions/workflows/ci.yml)
 [![Branch Coverage](https://img.shields.io/badge/Branch%20Coverage-61.84%25-brightgreen.svg?style=for-the-badge)](https://github.com/tranducanhyn99-prog/medclinic-system/actions/workflows/ci.yml)
-[![Tests](https://img.shields.io/badge/Tests-115%20total%20%7C%20108%20executed-success.svg?style=for-the-badge&logo=junit5)](https://junit.org/junit5/)
+[![Tests](https://img.shields.io/badge/Tests-117%20total%20%7C%20109%20executed-success.svg?style=for-the-badge&logo=junit5)](https://junit.org/junit5/)
 [![Docker](https://img.shields.io/badge/Docker-Compose%20Ready-2496ED.svg?style=for-the-badge&logo=docker)](compose.yml)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](LICENSE)
 
@@ -70,7 +70,7 @@ Tại các phòng khám tư nhân quy mô vừa và nhỏ ở Việt Nam, việc
 | **Realtime Messaging** | Spring WebSocket/STOMP user destination; queue event chỉ broadcast `AFTER_COMMIT`, không phát khi transaction rollback |
 | **SQL Server production-readiness** | Baseline 16 bảng, `ddl-auto=validate`, Unicode `NVARCHAR`, migration/runbook và integration test có guard |
 | **Security** | Spring Security RBAC 4 vai trò, CSRF, BCrypt, remember-me secret ngoài repo, password-reset token SHA-256 dùng một lần |
-| **Quality Engineering** | 115 test case, 108 executed PASS, JaCoCo **75.92% line / 61.84% branch**, quality gate trên `mvn verify` |
+| **Quality Engineering** | 117 test case, 109 executed PASS, JaCoCo **76.08% line / 61.84% branch**, quality gate trên `mvn verify` |
 | **CI/CD & Delivery** | GitHub Actions cho push/PR, artifact JAR + JaCoCo report, Dockerfile multi-stage và SQL Server Compose |
 | **UX & Accessibility** | Responsive dashboard, keyboard/focus contract, ARIA/live-region audit và UI smoke đa kích thước |
 
@@ -187,6 +187,7 @@ Toàn bộ tài liệu chuẩn kỹ thuật phần mềm được lưu trữ đ�
 4. 🧭 [**04_RTM_MATRIX.md**](docs/04_RTM_MATRIX.md): Ma trận truy vết yêu cầu 2 chiều (Requirements Traceability Matrix).
 5. 🏛️ [**05_SYSTEM_ARCHITECTURE.md**](docs/05_SYSTEM_ARCHITECTURE.md): Tài liệu Kiến trúc Hệ thống chi tiết (Layered Architecture, Design Patterns).
 6. 🎨 [**06_UI_UX_DESIGN.md**](docs/06_UI_UX_DESIGN.md): Đặc tả giao diện, responsive và accessibility.
+7. ✅ [**09_RELEASE_ACCEPTANCE.md**](docs/09_RELEASE_ACCEPTANCE.md): Kịch bản nghiệm thu E2E trên SQL Server cho toàn bộ luồng đặt lịch → check-in → khám → kê thuốc → hóa đơn → thanh toán/PDF.
 
 ---
 
@@ -349,7 +350,7 @@ Dự án được tích hợp bộ kiểm thử tự động với JUnit 5, Mock
 mvn verify
 ```
 
-Baseline kiểm chứng ngày 19/09/2026: **115 test case / 48 test class; 108 executed PASS, 7 environment-gated skipped, 0 failure, 0 error**. JaCoCo đạt **75.92% line / 61.84% branch**; build sẽ fail nếu xuống dưới **70% line / 50% branch**. Các SQL Server integration test chỉ chạy khi chủ động bật environment guard.
+Baseline kiểm chứng ngày 20/09/2026: **117 test case / 50 test class; 109 executed PASS, 8 environment-gated skipped, 0 failure, 0 error**. JaCoCo đạt **76.08% line / 61.84% branch**; build sẽ fail nếu xuống dưới **70% line / 50% branch**. Các SQL Server integration test chỉ chạy khi chủ động bật environment guard.
 
 ### CI và quality gate
 - GitHub Actions chạy `mvn verify` trên **JDK 21 / Windows hosted runner** cho mọi push/PR vào `main`.

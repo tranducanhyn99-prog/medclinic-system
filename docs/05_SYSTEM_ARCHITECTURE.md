@@ -88,7 +88,7 @@ graph TD
   - Mã hóa đơn được reserve bằng insert vào `invoice_code_reservations`; tồn kho được đọc bằng pessimistic lock và giá kê đơn được snapshot tại `PrescriptionItem.unitPriceAtTime`.
   - `DailyQueueCounterAllocator` retry tối đa 8 lần khi nhiều node cùng tạo counter đầu ngày và gặp unique-collision; writer chạy transaction riêng để mỗi lần retry có trạng thái sạch.
 - **Xử lý Bất đồng bộ & Realtime:**
-  - Tích hợp `@EnableAsync` với cấu hình `ThreadPoolTaskExecutor` (Core Pool: 4, Max Pool: 10, Queue: 100).
+  - Tích hợp `@EnableAsync` với `AsyncConfig.taskExecutor` riêng (Core Pool: 4, Max Pool: 10, Queue: 100, prefix `medclinic-async-`) để không xung đột với các executor nội bộ của WebSocket/STOMP.
   - Booking/hủy lịch phát `AppointmentEmailEvent`; `AppointmentEmailListener` dùng `@TransactionalEventListener(AFTER_COMMIT)` + `@Async`, nên email chỉ gửi sau commit và lỗi SMTP không rollback dữ liệu nghiệp vụ.
   - Check-in, bắt đầu khám và hoàn tất khám phát `DoctorQueueChangedEvent`. `DoctorQueueWebSocketListener` chỉ xử lý ở pha `AFTER_COMMIT`, sau đó gửi payload tối thiểu qua `SimpMessagingTemplate.convertAndSendToUser(..., "/queue/doctor", ...)`; rollback không tạo thông báo realtime.
 - **Động cơ Xuất PDF & QR Code:**
