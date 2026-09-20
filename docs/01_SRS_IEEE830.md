@@ -35,7 +35,7 @@ MedClinic là giải pháp chuyển đổi số toàn diện cho phòng khám đ
 
 ### 2.1. Phối cảnh sản phẩm (Product Perspective)
 Hệ thống được phát triển theo mô hình kiến trúc phân tầng chuẩn (Layered Architecture):
-- **Tầng Trình diễn (Presentation Layer):** Thymeleaf Server-Side Rendering + Bootstrap 5.3 + AJAX REST cho các tương tác động hiện có.
+- **Tầng Trình diễn (Presentation Layer):** Thymeleaf Server-Side Rendering + Bootstrap 5.3 + AJAX REST cho tải dữ liệu động và Spring WebSocket/STOMP cho cập nhật hàng chờ bác sĩ theo thời gian thực.
 - **Tầng Bảo mật & Nghiệp vụ (Security & Business Service Layer):** Spring Security 6 RBAC, Spring Data JPA Services, Concurrency Manager, Async Email Engine, OpenPDF & ZXing Utilities.
 - **Tầng Dữ liệu (Data Layer):** Relational Database (H2 Database cho Development/Test / Microsoft SQL Server cho hệ thống hiện tại và Production) đạt chuẩn 3NF. MySQL được giữ ở roadmap tương lai, không thuộc tiêu chí nghiệm thu phiên bản hiện tại.
 
@@ -75,7 +75,7 @@ Hệ thống được phát triển theo mô hình kiến trúc phân tầng chu
 
 ### 3.4. Phân hệ Quầy Tiếp nhận & Check-in (Reception & Check-in Desk)
 - **FR-REC-01 (Tra cứu tiếp nhận):** Nhân viên lễ tân có thể tra cứu lịch hẹn theo Mã đặt lịch, Số điện thoại hoặc Họ tên bệnh nhân.
-- **FR-REC-02 (Check-in & Cấp số thứ tự):** Lễ tân bấm Check-in tiếp nhận, hệ thống tự động sinh Số thứ tự khám trong ngày (format: `STT-01`, `STT-02`...) và chuyển trạng thái lịch hẹn sang `CHECKED_IN`.
+- **FR-REC-02 (Check-in & Cấp số thứ tự):** Lễ tân bấm Check-in tiếp nhận, hệ thống tự động sinh Số thứ tự khám trong ngày (format: `STT-01`, `STT-02`...) và chuyển trạng thái lịch hẹn sang `CHECKED_IN`. Sau khi transaction commit, hệ thống phát sự kiện cập nhật hàng chờ tới đúng tài khoản bác sĩ phụ trách.
 - **FR-REC-03 (Tiếp nhận Bệnh nhân Vãng lai):** Lễ tân có thể tạo hồ sơ và đặt lịch trực tiếp tại quầy cho bệnh nhân chưa đăng ký online.
 
 ### 3.5. Phân hệ Khám bệnh & Kê đơn thuốc (Doctor Examination Desk)
@@ -83,6 +83,7 @@ Hệ thống được phát triển theo mô hình kiến trúc phân tầng chu
 - **FR-EXAM-02 (Bệnh án điện tử):** Bác sĩ xem tiền sử các lần khám trước của bệnh nhân, nhập triệu chứng lâm sàng quan sát được, chẩn đoán y khoa, lời dặn và hẹn ngày tái khám (`MedicalRecord`).
 - **FR-EXAM-03 (Kê đơn thuốc động & Quản lý tồn kho):** Bác sĩ kê đơn thuốc: chọn thuốc từ kho dược, nhập số lượng, liều dùng, cách dùng. Hệ thống tự động kiểm tra và trừ số lượng tồn kho dược phẩm.
 - **FR-EXAM-04 (Xuất Đơn thuốc PDF):** Hệ thống tạo file PDF đơn thuốc và phiếu khám bệnh chuẩn y tế có thể in hoặc tải về trực tuyến.
+- **FR-EXAM-05 (Hàng chờ realtime):** Doctor Desk kết nối Spring WebSocket/STOMP qua endpoint `/ws`, subscribe user destination `/user/queue/doctor` và tự làm mới khi trạng thái hàng chờ thay đổi `CHECKED_IN`, `IN_PROGRESS` hoặc `COMPLETED`. Sự kiện chỉ được broadcast ở pha `AFTER_COMMIT`; payload không chứa tên bệnh nhân, chẩn đoán hay dữ liệu bệnh án.
 
 ### 3.6. Phân hệ Hóa đơn & Thu viện phí (Billing & Invoice)
 - **FR-BILL-01 (Tự động sinh Hóa đơn):** Khi bác sĩ hoàn tất khám, hệ thống tự động tính tổng tiền (Tiền công khám + Tiền thuốc trong đơn) và tạo Hóa đơn viện phí (`Invoice`).
@@ -101,6 +102,7 @@ Hệ thống được phát triển theo mô hình kiến trúc phân tầng chu
 ### 4.1. Hiệu năng & Khả năng đáp ứng (Performance)
 - **NFR-PERF-01:** Với các trang công khai và portal đã nêu trong `docs/performance/TEST_PLAN.md`, p95 thời gian tải tài liệu HTML sau warm-up dưới 1,5 giây trong môi trường nghiệm thu được ghi nhận. Kết quả baseline phải kèm cấu hình môi trường; khi chưa có kết quả, yêu cầu ở trạng thái chưa xác minh.
 - **NFR-PERF-02:** Email chạy bất đồng bộ sau commit; QR và PDF được sinh trong bộ nhớ/stream với kích thước hữu hạn, không tạo file tạm ngoài ý muốn.
+- **NFR-RT-01:** Kênh realtime hàng chờ dùng STOMP user destination theo session đã xác thực, chỉ broadcast sau commit thành công và client tự thử kết nối lại sau khi socket bị gián đoạn.
 
 ### 4.2. Bảo mật & An toàn thông tin (Security)
 - **NFR-SEC-01:** Toàn bộ mật khẩu lưu trữ trong CSDL phải được băm bằng thuật toán **BCrypt** với salt ngẫu nhiên.
@@ -119,7 +121,6 @@ Hệ thống được phát triển theo mô hình kiến trúc phân tầng chu
 
 
 ## 5. PHẠM VI TƯƠNG LAI (FUTURE SCOPE)
-- WebSocket/SSE cho hàng chờ và cập nhật trạng thái live.
 - VNPay redirect/IPN/callback với kiểm tra chữ ký và idempotency.
 - Đánh giá bác sĩ sau ca khám.
 - UI Admin quản trị lịch trực/TimeSlot.

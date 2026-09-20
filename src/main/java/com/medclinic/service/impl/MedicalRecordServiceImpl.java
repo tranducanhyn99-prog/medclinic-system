@@ -4,6 +4,7 @@ import com.medclinic.dto.PrescriptionItemDto;
 import com.medclinic.entity.*;
 import com.medclinic.enums.AppointmentStatus;
 import com.medclinic.exception.BusinessLogicException;
+import com.medclinic.event.DoctorQueueChangedEvent;
 import com.medclinic.exception.ResourceNotFoundException;
 import com.medclinic.repository.AppointmentRepository;
 import com.medclinic.repository.MedicalRecordRepository;
@@ -12,10 +13,12 @@ import com.medclinic.service.MedicalRecordService;
 import com.medclinic.service.InvoiceService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.Instant;
 import java.math.BigDecimal;
 import java.util.*;
 
@@ -27,6 +30,7 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
     private final AppointmentRepository appointmentRepository;
     private final MedicineRepository medicineRepository;
     private final InvoiceService invoiceService;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     @Override
     @PreAuthorize("hasAnyRole('DOCTOR','ADMIN')")
@@ -47,7 +51,9 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
         verifyDoctor(appointment, doctorUserId);
         if (appointment.getStatus() == AppointmentStatus.CHECKED_IN) {
             appointment.setStatus(AppointmentStatus.IN_PROGRESS);
-            return appointmentRepository.save(appointment);
+            Appointment saved = appointmentRepository.save(appointment);
+            publishQueueChange(saved, DoctorQueueChangedEvent.ChangeType.EXAMINATION_STARTED);
+            return saved;
         }
         if (appointment.getStatus() != AppointmentStatus.IN_PROGRESS) {
             throw new BusinessLogicException("Chỉ có thể bắt đầu khám bệnh nhân đã check-in");
@@ -125,6 +131,7 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
         appointmentRepository.save(appointment);
         MedicalRecord saved = medicalRecordRepository.save(medicalRecord);
         invoiceService.createInvoiceForAppointment(appointmentId, prescription.calculateTotalMedicinePrice());
+        publishQueueChange(appointment, DoctorQueueChangedEvent.ChangeType.EXAMINATION_COMPLETED);
         return saved;
     }
 
@@ -140,6 +147,18 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
     public MedicalRecord findByAppointmentId(Long appointmentId) {
         return medicalRecordRepository.findByAppointmentId(appointmentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy hồ sơ bệnh án cho cuộc hẹn này"));
+    }
+
+    private void publishQueueChange(Appointment appointment, DoctorQueueChangedEvent.ChangeType changeType) {
+        if (appointment.getDoctor() == null || appointment.getDoctor().getUser() == null
+                || appointment.getDoctor().getUser().getUsername() == null
+                || appointment.getDoctor().getUser().getUsername().isBlank()) {
+            return;
+        }
+        applicationEventPublisher.publishEvent(new DoctorQueueChangedEvent(
+                appointment.getDoctor().getId(),
+                appointment.getDoctor().getUser().getUsername(),
+                appointment.getId(), appointment.getStatus(), changeType, Instant.now()));
     }
 
     private void verifyDoctor(Appointment appointment, Long doctorUserId) {

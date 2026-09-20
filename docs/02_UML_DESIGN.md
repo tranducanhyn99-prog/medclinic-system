@@ -95,7 +95,7 @@ graph TD
   4. Lễ tân đối chiếu và bấm nút "Check-in (Cấp STT)".
   5. Hệ thống gọi `DailyQueueCounterAllocator.allocateNext(appointmentDate)` để lấy `queue_sequence` duy nhất theo ngày, sau đó định dạng `STT-XX`.
   6. Trạng thái lịch hẹn chuyển sang `CHECKED_IN`.
-  7. Bệnh nhân xuất hiện trên hàng chờ khám của Bác sĩ phụ trách.
+  7. Hệ thống phát `DoctorQueueChangedEvent`; sau khi transaction commit, `DoctorQueueWebSocketListener` gửi STOMP user destination tới đúng tài khoản Bác sĩ phụ trách. Doctor Desk tự tải lại hàng chờ.
 - **Post-conditions:** Lịch hẹn có số thứ tự, sẵn sàng cho Bác sĩ gọi vào khám.
 
 ---
@@ -105,7 +105,7 @@ graph TD
 - **Pre-conditions:** Bác sĩ đăng nhập vào hệ thống, bệnh nhân đã có trạng thái `CHECKED_IN`.
 - **Main Flow:**
   1. Bác sĩ mở giao diện "Bàn Khám Bác Sĩ", chọn bệnh nhân từ hàng chờ trong ngày.
-  2. Trạng thái lịch hẹn chuyển sang `IN_PROGRESS`.
+  2. Trạng thái lịch hẹn chuyển sang `IN_PROGRESS`; sau commit hệ thống phát cập nhật realtime để các Doctor Desk đang mở đồng bộ hàng chờ.
   3. Hệ thống hiển thị thông tin bệnh nhân và tiền sử các lần khám bệnh trước đây.
   4. Bác sĩ nhập triệu chứng lâm sàng quan sát được, nhập kết luận chẩn đoán y khoa, lời dặn và ngày hẹn tái khám.
   5. Bác sĩ chọn thuốc từ danh mục kho dược, nhập số lượng, liều dùng, cách dùng.
@@ -114,7 +114,7 @@ graph TD
      - Trừ tồn kho trong bảng `medicines`.
      - Lưu `MedicalRecord`, `Prescription`, và `PrescriptionItem`.
      - Tự động sinh `Invoice` (tính tiền công khám + tổng tiền thuốc).
-     - Cập nhật trạng thái lịch hẹn sang `COMPLETED`.
+     - Cập nhật trạng thái lịch hẹn sang `COMPLETED`; sau commit phát sự kiện realtime loại `EXAMINATION_COMPLETED`.
   8. Hệ thống sẵn sàng cho phép Bác sĩ hoặc Bệnh nhân in Đơn thuốc định dạng PDF.
 - **Alternate Flows:**
   - *7a. Thuốc trong kho không đủ số lượng:* Hệ thống cảnh báo thông báo thuốc không đủ tồn kho để Bác sĩ điều chỉnh số lượng hoặc đổi thuốc khác.
@@ -253,6 +253,31 @@ sequenceDiagram
 ```
 
 ---
+
+### 4.3. Sơ đồ Trình tự: Hàng chờ bác sĩ Realtime qua WebSocket/STOMP
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Staff as Lễ tân
+    participant AppSvc as AppointmentService
+    participant Tx as Spring Transaction
+    participant Event as DoctorQueueChangedEvent
+    participant Listener as DoctorQueueWebSocketListener
+    participant Broker as STOMP User Destination
+    participant Desk as Doctor Desk Browser
+
+    Staff->>AppSvc: checkInAppointment(appointmentId)
+    AppSvc->>Tx: Cập nhật CHECKED_IN + STT
+    AppSvc->>Event: publishEvent(CHECKED_IN)
+    note over Event,Listener: Listener chưa gửi khi transaction còn mở
+    Tx-->>Listener: AFTER_COMMIT
+    Listener->>Broker: convertAndSendToUser(username, /queue/doctor, payload tối thiểu)
+    Broker-->>Desk: /user/queue/doctor
+    Desk->>Desk: Debounce và reload hàng chờ
+```
+
+> Cùng cơ chế được dùng khi ca khám chuyển sang `IN_PROGRESS` và `COMPLETED`. Nếu transaction rollback, listener `AFTER_COMMIT` không broadcast. Client không gửi lệnh nghiệp vụ qua WebSocket; các thao tác vẫn đi qua HTTP controller/service có Spring Security và transaction.
 
 ## 5. SƠ ĐỒ LỚP CHI TIẾT (CLASS DIAGRAM)
 

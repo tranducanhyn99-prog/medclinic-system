@@ -77,9 +77,9 @@ public class SecurityConfig {
                 .requestMatchers(
                     "/", "/home", "/about", "/specialties/**", "/doctors/**",
                     "/login", "/register", "/forgot-password", "/reset-password", "/css/**", "/js/**", "/images/**",
-                    "/webjars/**", "/h2-console/**", "/error/**", "/api/public/**",
-                    "/ws/**"
+                    "/webjars/**", "/h2-console/**", "/error/**", "/api/public/**"
                 ).permitAll()
+                .requestMatchers("/ws/**").authenticated()
                 .requestMatchers("/patient/**").hasAnyRole("PATIENT", "ADMIN")
                 .requestMatchers("/doctor/**").hasAnyRole("DOCTOR", "ADMIN")
                 .requestMatchers("/staff/**").hasAnyRole("STAFF", "ADMIN")

@@ -8,9 +8,9 @@
 [![Thymeleaf](https://img.shields.io/badge/Thymeleaf-3.x-005F0E.svg?style=for-the-badge&logo=thymeleaf)](https://www.thymeleaf.org/)
 [![Database](https://img.shields.io/badge/Database-SQL%20Server%20%7C%20H2-004880.svg?style=for-the-badge&logo=microsoftsqlserver)](https://www.microsoft.com/sql-server/)
 [![CI](https://github.com/tranducanhyn99-prog/medclinic-system/actions/workflows/ci.yml/badge.svg)](https://github.com/tranducanhyn99-prog/medclinic-system/actions/workflows/ci.yml)
-[![Line Coverage](https://img.shields.io/badge/Line%20Coverage-75.12%25-brightgreen.svg?style=for-the-badge)](https://github.com/tranducanhyn99-prog/medclinic-system/actions/workflows/ci.yml)
-[![Branch Coverage](https://img.shields.io/badge/Branch%20Coverage-61.94%25-brightgreen.svg?style=for-the-badge)](https://github.com/tranducanhyn99-prog/medclinic-system/actions/workflows/ci.yml)
-[![Tests](https://img.shields.io/badge/Tests-106%20total%20%7C%2099%20executed-success.svg?style=for-the-badge&logo=junit5)](https://junit.org/junit5/)
+[![Line Coverage](https://img.shields.io/badge/Line%20Coverage-75.92%25-brightgreen.svg?style=for-the-badge)](https://github.com/tranducanhyn99-prog/medclinic-system/actions/workflows/ci.yml)
+[![Branch Coverage](https://img.shields.io/badge/Branch%20Coverage-61.84%25-brightgreen.svg?style=for-the-badge)](https://github.com/tranducanhyn99-prog/medclinic-system/actions/workflows/ci.yml)
+[![Tests](https://img.shields.io/badge/Tests-115%20total%20%7C%20108%20executed-success.svg?style=for-the-badge&logo=junit5)](https://junit.org/junit5/)
 [![Docker](https://img.shields.io/badge/Docker-Compose%20Ready-2496ED.svg?style=for-the-badge&logo=docker)](compose.yml)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](LICENSE)
 
@@ -67,9 +67,10 @@ Tại các phòng khám tư nhân quy mô vừa và nhỏ ở Việt Nam, việc
 | Năng lực | Minh chứng trong project |
 | :--- | :--- |
 | **Concurrency & Transaction** | Row lock + `@Version`, chống double-booking, cấp STT đồng thời, khóa tồn kho và rollback nghiệp vụ |
+| **Realtime Messaging** | Spring WebSocket/STOMP user destination; queue event chỉ broadcast `AFTER_COMMIT`, không phát khi transaction rollback |
 | **SQL Server production-readiness** | Baseline 16 bảng, `ddl-auto=validate`, Unicode `NVARCHAR`, migration/runbook và integration test có guard |
 | **Security** | Spring Security RBAC 4 vai trò, CSRF, BCrypt, remember-me secret ngoài repo, password-reset token SHA-256 dùng một lần |
-| **Quality Engineering** | 106 test case, 99 executed PASS, JaCoCo **75.12% line / 61.94% branch**, quality gate trên `mvn verify` |
+| **Quality Engineering** | 115 test case, 108 executed PASS, JaCoCo **75.92% line / 61.84% branch**, quality gate trên `mvn verify` |
 | **CI/CD & Delivery** | GitHub Actions cho push/PR, artifact JAR + JaCoCo report, Dockerfile multi-stage và SQL Server Compose |
 | **UX & Accessibility** | Responsive dashboard, keyboard/focus contract, ARIA/live-region audit và UI smoke đa kích thước |
 
@@ -93,7 +94,7 @@ Tại các phòng khám tư nhân quy mô vừa và nhỏ ở Việt Nam, việc
 - [x] **Sổ tay Bệnh Án Điện Tử:** Tra cứu lịch sử chẩn đoán, lời dặn bác sĩ và đơn thuốc các lần khám trước.
 
 ### 👨‍⚕️ Phân Hệ Bác Sĩ (Doctor Desk)
-- [x] **Hàng Chờ Khám Trực Quan:** Hiển thị danh sách bệnh nhân đã check-in trong ngày theo thứ tự ưu tiên số thứ tự (STT).
+- [x] **Hàng Chờ Khám Realtime:** Hiển thị hàng chờ theo STT và tự cập nhật qua Spring WebSocket/STOMP khi lễ tân check-in, bác sĩ bắt đầu khám hoặc hoàn tất khám. Broadcast chỉ xảy ra sau transaction commit và gửi tới đúng user destination của bác sĩ.
 - [x] **Bàn Khám Lâm Sàng:** Xem nhanh triệu chứng, tiền sử bệnh án của bệnh nhân.
 - [x] **Kê Đơn Thuốc Động:** Chọn thuốc theo tên, định lượng liều dùng, tần suất và cách dùng; hệ thống tự động kiểm tra và trừ số lượng tồn kho dược phẩm.
 - [x] **Lịch Công Tác:** Xem lịch trực ca sáng/chiều trong vòng 14 ngày tới.
@@ -122,6 +123,7 @@ graph TD
     subgraph Presentation_Layer ["Tầng Trình Diễn (Presentation Layer)"]
         Thymeleaf["Thymeleaf Templates + Bootstrap 5.3"]
         Controllers["Spring MVC Controllers & REST APIs"]
+        Realtime["Spring WebSocket / STOMP User Destination"]
     end
     
     subgraph Security_Layer ["Tầng Bảo Mật (Security Layer)"]
@@ -141,7 +143,9 @@ graph TD
     end
 
     Client --> Controllers
+    Client --> Realtime
     Controllers --> Security
+    Realtime --> Security
     Security --> Services
     Services --> AsyncUtils
     Services --> Repositories
@@ -162,6 +166,7 @@ graph TD
 | **Cơ sở dữ liệu Test** | H2 Database In-Memory | 2.x | Chạy kiểm thử tự động và chạy thử nghiệm zero-config |
 | **ORM / JPA** | Hibernate / Spring Data JPA | 6.5.3 | Quản lý thực thể, Optimistic Lock (`@Version`) |
 | **Giao diện** | Thymeleaf + Layout Dialect | 3.x | Template Engine kết xuất server-side |
+| **Realtime** | Spring WebSocket + STOMP + SockJS | Spring Boot 3.3.5 | User destination cho hàng chờ bác sĩ; phát sự kiện `AFTER_COMMIT` |
 | **CSS Framework** | Bootstrap | 5.3 | Giao diện Responsive thích ứng mọi kích cỡ màn hình |
 | **Biểu đồ** | Chart.js | 4.x | Biểu đồ trực quan hóa số liệu KPI tại trang Admin |
 | **Sinh mã QR** | Google ZXing (Zebra Crossing) | 3.5.3 | Sinh chuỗi Base64 mã QR cuộc hẹn |
@@ -176,7 +181,7 @@ graph TD
 
 Toàn bộ tài liệu chuẩn kỹ thuật phần mềm được lưu trữ đầy đủ trong thư mục [`docs/`](docs/):
 
-1. 📄 [**01_SRS_IEEE830.md**](docs/01_SRS_IEEE830.md): Đặc tả yêu cầu phần mềm theo chuẩn quốc tế **IEEE Std 830-1998** (28 Yêu cầu chức năng + 11 Yêu cầu phi chức năng).
+1. 📄 [**01_SRS_IEEE830.md**](docs/01_SRS_IEEE830.md): Đặc tả yêu cầu phần mềm theo chuẩn quốc tế **IEEE Std 830-1998** (29 Yêu cầu chức năng + 12 Yêu cầu phi chức năng).
 2. 📐 [**02_UML_DESIGN.md**](docs/02_UML_DESIGN.md): Thiết kế Sơ đồ UML 2.5 (Use Case Diagram, Activity Diagrams, Sequence Diagrams luồng Concurrency, Class Diagram).
 3. 🗄️ [**03_DATABASE_DESIGN_3NF.md**](docs/03_DATABASE_DESIGN_3NF.md): Thiết kế CSDL 16 bảng & Chứng minh chuẩn hóa 3NF kèm Từ điển dữ liệu chi tiết cho SQL Server.
 4. 🧭 [**04_RTM_MATRIX.md**](docs/04_RTM_MATRIX.md): Ma trận truy vết yêu cầu 2 chiều (Requirements Traceability Matrix).
@@ -344,7 +349,7 @@ Dự án được tích hợp bộ kiểm thử tự động với JUnit 5, Mock
 mvn verify
 ```
 
-Baseline kiểm chứng ngày 19/09/2026: **106 test case / 44 test class; 99 executed PASS, 7 environment-gated skipped, 0 failure, 0 error**. JaCoCo đạt **75.12% line / 61.94% branch**; build sẽ fail nếu xuống dưới **70% line / 50% branch**. Các SQL Server integration test chỉ chạy khi chủ động bật environment guard.
+Baseline kiểm chứng ngày 19/09/2026: **115 test case / 48 test class; 108 executed PASS, 7 environment-gated skipped, 0 failure, 0 error**. JaCoCo đạt **75.92% line / 61.84% branch**; build sẽ fail nếu xuống dưới **70% line / 50% branch**. Các SQL Server integration test chỉ chạy khi chủ động bật environment guard.
 
 ### CI và quality gate
 - GitHub Actions chạy `mvn verify` trên **JDK 21 / Windows hosted runner** cho mọi push/PR vào `main`.

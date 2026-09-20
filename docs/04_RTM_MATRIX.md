@@ -2,7 +2,7 @@
 **Dự án:** MedClinic - Phòng Khám Tư Nhân  
 **Mục đích:** Đảm bảo 100% yêu cầu chức năng (FR) trong SRS được ánh xạ tới Sơ đồ Use Case, Bảng CSDL, Lớp Service/Controller và Kế hoạch kiểm thử.  
 
-**Lưu ý kiểm chứng (19/09/2026):** Cột `Test Case ID` là định danh kế hoạch, không tự khẳng định test tự động đã tồn tại. Full `mvn verify` hiện tại có 63 test case trên 34 test class: 56 executed pass, 0 failure, 0 error và 7 environment-gated case được skip theo environment guard. Coverage thực tế gồm service/controller/security, public và authenticated render, concurrent booking/stock, start examination, email after-commit, PDF Unicode, bootstrap profile, invoice-code reservation, responsive/accessibility contracts và SQL Server deployment-artifact contracts. Chi tiết coverage và tiêu chí nghiệm thu được duy trì trực tiếp trong RTM, `docs/performance/TEST_PLAN.md` và báo cáo JaCoCo của Maven.
+**Lưu ý kiểm chứng (19/09/2026):** Cột `Test Case ID` là định danh kế hoạch, không tự khẳng định test tự động đã tồn tại. Full `mvn verify` hiện tại có **115 test case trên 48 test class: 108 executed PASS, 0 failure, 0 error và 7 environment-gated case được skip**. JaCoCo đạt **75,92% line / 61,84% branch**, vượt quality gate 70% line / 50% branch. Coverage bao gồm service/controller/security, WebSocket/STOMP hàng chờ `AFTER_COMMIT`, rollback suppression, SockJS endpoint security, public/authenticated render, concurrent booking/stock, email after-commit, PDF Unicode, SQL Server integration và accessibility contracts.
 
 ---
 
@@ -30,6 +30,7 @@
 | **FR-EXAM-02** | Chẩn đoán & Ghi bệnh án điện tử | UC11 | `medical_records` | `MedicalRecordService.saveMedicalRecordAndPrescription()`| `TC-EXAM-02` |
 | **FR-EXAM-03** | Kê đơn thuốc & Trừ tồn kho | UC12 | `prescriptions`, `medicines` | `MedicalRecordService`, `MedicineRepository` | `TC-EXAM-03` |
 | **FR-EXAM-04** | Xuất Đơn thuốc ra file PDF | UC5 | `medical_records`, `prescriptions` | `PdfExportService.exportPrescriptionPdf()` | `TC-PDF-01` |
+| **FR-EXAM-05** | Hàng chờ bác sĩ realtime sau commit | UC10 | `appointments` | `DoctorQueueChangedEvent`, `DoctorQueueWebSocketListener`, `WebSocketConfig`, Doctor Desk STOMP client | `DoctorQueueWebSocketListenerTest`, `DoctorQueueWebSocketAfterCommitIntegrationTest`, `MedicalRecordQueueEventTest` |
 | **FR-BILL-01** | Tự động sinh Hóa đơn viện phí | UC9 | `invoices` | `InvoiceService.createInvoiceForAppointment()` | `TC-BILL-01` |
 | **FR-BILL-02** | Thu viện phí tiền mặt; VNPAY enum dành cho roadmap và hiện bị từ chối | UC9 | `invoices` | `InvoiceService.processPayment()` | `TC-BILL-02` |
 | **FR-BILL-03** | Xuất Hóa đơn ra file PDF | UC9 | `invoices` | `PdfExportService.exportInvoicePdf()` | `TC-PDF-02` |

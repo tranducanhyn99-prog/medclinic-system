@@ -5,6 +5,7 @@ import com.medclinic.enums.AppointmentStatus;
 import com.medclinic.enums.RoleType;
 import com.medclinic.enums.SlotStatus;
 import com.medclinic.exception.BusinessLogicException;
+import com.medclinic.event.DoctorQueueChangedEvent;
 import com.medclinic.repository.*;
 import com.medclinic.service.impl.AppointmentServiceImpl;
 import com.medclinic.service.impl.DailyQueueCounterAllocator;
@@ -70,9 +71,11 @@ class AppointmentServiceTest {
                 .isActive(true)
                 .build();
 
+        User doctorUser = User.builder().id(2L).username("doctor1").fullName("Bác sĩ A").build();
         doctor = DoctorProfile.builder()
                 .id(1L)
                 .title("BS.CKI")
+                .user(doctorUser)
                 .build();
         DoctorSchedule schedule = DoctorSchedule.builder()
                 .doctor(doctor)
@@ -191,6 +194,7 @@ class AppointmentServiceTest {
         Appointment apt = Appointment.builder()
                 .id(500L)
                 .patient(patient)
+                .doctor(doctor)
                 .appointmentDate(LocalDate.now())
                 .status(AppointmentStatus.CONFIRMED)
                 .build();
@@ -204,13 +208,14 @@ class AppointmentServiceTest {
         assertEquals(AppointmentStatus.CHECKED_IN, checkedIn.getStatus());
         assertEquals("STT-03", checkedIn.getQueueNumber());
         verify(appointmentRepository, times(1)).save(apt);
+        verify(applicationEventPublisher).publishEvent((Object) any(DoctorQueueChangedEvent.class));
     }
 
     @Test
-    @DisplayName("Hàng chờ bác sĩ chỉ lấy ca đã check-in hoặc đang khám")
+    @DisplayName("Hàng chờ bác sĩ lấy ca check-in, đang khám và đã hoàn tất trong ngày")
     void testFindTodayQueueByDoctor() {
         java.util.List<AppointmentStatus> queueStatuses = java.util.List.of(
-                AppointmentStatus.CHECKED_IN, AppointmentStatus.IN_PROGRESS);
+                AppointmentStatus.CHECKED_IN, AppointmentStatus.IN_PROGRESS, AppointmentStatus.COMPLETED);
         when(appointmentRepository.findByDoctorIdAndAppointmentDateAndStatusInOrderByQueueSequenceAsc(
                 1L, LocalDate.now(), queueStatuses)).thenReturn(java.util.List.of());
 

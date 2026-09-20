@@ -24,6 +24,7 @@ graph TD
     subgraph Web ["Tầng Trình Diễn (Presentation Layer)"]
         Ctrl[Spring MVC Controllers]
         RestCtrl[REST API Controllers]
+        Realtime[Spring WebSocket / STOMP]
         Views[Thymeleaf Templates + Bootstrap 5.3]
     end
 
@@ -50,6 +51,8 @@ graph TD
     CSRF --> RBAC
     RBAC --> Ctrl
     RBAC --> RestCtrl
+    RBAC --> Realtime
+    Realtime --> Browser
     Ctrl --> Views
     Ctrl --> Service
     RestCtrl --> Service
@@ -69,7 +72,7 @@ graph TD
 
 ### 2.2. Security Layer (Tầng Bảo mật & Phân quyền)
 - **Công nghệ:** Spring Security 6 với cấu hình `SecurityFilterChain`.
-- **Cơ chế xác thực:** Session-based authentication kết hợp Remember-me token 14 ngày.
+- **Cơ chế xác thực:** Session-based authentication kết hợp Remember-me token 14 ngày. Endpoint SockJS/STOMP `/ws/**` yêu cầu session đã xác thực; Doctor Desk nhận cập nhật qua user destination riêng của tài khoản đăng nhập.
 - **Phân quyền RBAC:**
   - `ROLE_PATIENT`: Truy cập `/patient/**`
   - `ROLE_DOCTOR`: Truy cập `/doctor/**`
@@ -84,9 +87,10 @@ graph TD
   - Appointment giữ tham chiếu many-to-one tới slot để lịch sử hủy không chặn lần đặt sau. Dữ liệu production cần migration có kiểm soát cho thay đổi unique constraint.
   - Mã hóa đơn được reserve bằng insert vào `invoice_code_reservations`; tồn kho được đọc bằng pessimistic lock và giá kê đơn được snapshot tại `PrescriptionItem.unitPriceAtTime`.
   - `DailyQueueCounterAllocator` retry tối đa 8 lần khi nhiều node cùng tạo counter đầu ngày và gặp unique-collision; writer chạy transaction riêng để mỗi lần retry có trạng thái sạch.
-- **Xử lý Bất đồng bộ (Async Processing):**
+- **Xử lý Bất đồng bộ & Realtime:**
   - Tích hợp `@EnableAsync` với cấu hình `ThreadPoolTaskExecutor` (Core Pool: 4, Max Pool: 10, Queue: 100).
   - Booking/hủy lịch phát `AppointmentEmailEvent`; `AppointmentEmailListener` dùng `@TransactionalEventListener(AFTER_COMMIT)` + `@Async`, nên email chỉ gửi sau commit và lỗi SMTP không rollback dữ liệu nghiệp vụ.
+  - Check-in, bắt đầu khám và hoàn tất khám phát `DoctorQueueChangedEvent`. `DoctorQueueWebSocketListener` chỉ xử lý ở pha `AFTER_COMMIT`, sau đó gửi payload tối thiểu qua `SimpMessagingTemplate.convertAndSendToUser(..., "/queue/doctor", ...)`; rollback không tạo thông báo realtime.
 - **Động cơ Xuất PDF & QR Code:**
   - `OpenPDF`: Sinh tài liệu PDF đơn thuốc và hóa đơn bằng luồng `ByteArrayOutputStream`, truyền trực tiếp qua `InputStreamResource` không ghi rác ra ổ đĩa máy chủ.
   - `ZXing`: Sinh mã QR định danh Base64 nhúng thẳng vào HTML hoặc gửi qua email.

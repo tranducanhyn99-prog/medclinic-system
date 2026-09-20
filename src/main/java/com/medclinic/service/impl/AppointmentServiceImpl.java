@@ -6,6 +6,7 @@ import com.medclinic.enums.RoleType;
 import com.medclinic.enums.SlotStatus;
 import com.medclinic.enums.Gender;
 import com.medclinic.event.AppointmentEmailEvent;
+import com.medclinic.event.DoctorQueueChangedEvent;
 import com.medclinic.exception.BusinessLogicException;
 import com.medclinic.exception.ResourceNotFoundException;
 import com.medclinic.repository.*;
@@ -21,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.UUID;
@@ -161,7 +163,9 @@ public class AppointmentServiceImpl implements AppointmentService {
         appointment.setQueueSequence(nextSequence);
         appointment.setStatus(AppointmentStatus.CHECKED_IN);
         
-        return appointmentRepository.save(appointment);
+        Appointment saved = appointmentRepository.save(appointment);
+        publishQueueChange(saved, DoctorQueueChangedEvent.ChangeType.CHECKED_IN);
+        return saved;
     }
 
     @Override
@@ -188,7 +192,7 @@ public class AppointmentServiceImpl implements AppointmentService {
     @Transactional(readOnly = true)
     public List<Appointment> findTodayQueueByDoctor(Long doctorId) {
         return appointmentRepository.findByDoctorIdAndAppointmentDateAndStatusInOrderByQueueSequenceAsc(
-                doctorId, LocalDate.now(), List.of(AppointmentStatus.CHECKED_IN, AppointmentStatus.IN_PROGRESS));
+                doctorId, LocalDate.now(), List.of(AppointmentStatus.CHECKED_IN, AppointmentStatus.IN_PROGRESS, AppointmentStatus.COMPLETED));
     }
 
     @Override
@@ -212,6 +216,18 @@ public class AppointmentServiceImpl implements AppointmentService {
             }
         }
         throw new BusinessLogicException("Không thể tạo mã đặt lịch duy nhất, vui lòng thử lại");
+    }
+
+    private void publishQueueChange(Appointment appointment, DoctorQueueChangedEvent.ChangeType changeType) {
+        if (appointment.getDoctor() == null || appointment.getDoctor().getUser() == null
+                || appointment.getDoctor().getUser().getUsername() == null
+                || appointment.getDoctor().getUser().getUsername().isBlank()) {
+            return;
+        }
+        applicationEventPublisher.publishEvent(new DoctorQueueChangedEvent(
+                appointment.getDoctor().getId(),
+                appointment.getDoctor().getUser().getUsername(),
+                appointment.getId(), appointment.getStatus(), changeType, Instant.now()));
     }
 
     private void publishEmail(Appointment appointment, AppointmentEmailEvent.Type type) {

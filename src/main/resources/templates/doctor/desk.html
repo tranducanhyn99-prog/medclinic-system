@@ -95,9 +95,14 @@
             <h2 class="h6 fw-bold text-dark mb-0">
                 <i class="bi bi-list-ol text-primary me-2"></i>Hàng Chờ Khám Lâm Sàng Hôm Nay
             </h2>
-            <button class="btn btn-sm btn-light border" id="refreshDoctorQueueBtn" type="button" aria-label="L?m m?i h?ng ch? kh?m">
-                <i class="bi bi-arrow-clockwise me-1"></i> Làm mới danh sách
-            </button>
+            <div class="d-flex align-items-center gap-2">
+                <span id="doctorQueueRealtimeStatus" class="badge text-bg-light border" role="status" aria-live="polite">
+                    <i class="bi bi-broadcast-pin me-1"></i> Đang kết nối realtime
+                </span>
+                <button class="btn btn-sm btn-light border" id="refreshDoctorQueueBtn" type="button" aria-label="L?m m?i h?ng ch? kh?m">
+                    <i class="bi bi-arrow-clockwise me-1"></i> Làm mới danh sách
+                </button>
+            </div>
         </div>
 
         <div class="card-body p-0">
@@ -196,10 +201,53 @@
 </div>
 
 <div layout:fragment="scripts">
+<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.6.1/dist/sockjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.2.1/bundles/stomp.umd.min.js"></script>
 <script>
-document.getElementById('refreshDoctorQueueBtn')?.addEventListener('click', function() {
+const refreshDoctorQueueButton = document.getElementById('refreshDoctorQueueBtn');
+const doctorQueueRealtimeStatus = document.getElementById('doctorQueueRealtimeStatus');
+let doctorQueueReloadTimer = null;
+
+refreshDoctorQueueButton?.addEventListener('click', function() {
     window.location.reload();
 });
+
+function setDoctorQueueRealtimeStatus(text, active) {
+    if (!doctorQueueRealtimeStatus) return;
+    doctorQueueRealtimeStatus.innerHTML = `<i class="bi ${active ? 'bi-broadcast-pin' : 'bi-wifi-off'} me-1"></i>${text}`;
+    doctorQueueRealtimeStatus.classList.toggle('text-bg-success', active);
+    doctorQueueRealtimeStatus.classList.toggle('text-bg-light', !active);
+}
+
+if (window.SockJS && window.StompJs) {
+    const queueClient = new StompJs.Client({
+        webSocketFactory: () => new SockJS('/ws'),
+        reconnectDelay: 5000,
+        heartbeatIncoming: 10000,
+        heartbeatOutgoing: 10000
+    });
+
+    queueClient.onConnect = function() {
+        setDoctorQueueRealtimeStatus('Realtime đang hoạt động', true);
+        queueClient.subscribe('/user/queue/doctor', function() {
+            setDoctorQueueRealtimeStatus('Hàng chờ vừa thay đổi, đang cập nhật...', true);
+            if (doctorQueueReloadTimer === null) {
+                doctorQueueReloadTimer = window.setTimeout(() => window.location.reload(), 450);
+            }
+        });
+    };
+
+    queueClient.onWebSocketClose = function() {
+        setDoctorQueueRealtimeStatus('Đang kết nối lại realtime', false);
+    };
+    queueClient.onStompError = function() {
+        setDoctorQueueRealtimeStatus('Realtime tạm gián đoạn', false);
+    };
+    queueClient.activate();
+    window.addEventListener('beforeunload', () => void queueClient.deactivate());
+} else {
+    setDoctorQueueRealtimeStatus('Không tải được realtime client', false);
+}
 </script>
 </div>
 </body>

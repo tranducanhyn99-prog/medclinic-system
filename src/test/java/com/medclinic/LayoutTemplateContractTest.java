@@ -124,6 +124,16 @@ class LayoutTemplateContractTest {
         assertTrue(main.contains("<h2 class=\"h6 text-white"));
     }
 
+    @Test
+    void doctorDeskSubscribesToAuthenticatedRealtimeQueue() throws IOException {
+        String desk = read("doctor/desk.html");
+        assertTrue(desk.contains("sockjs-client@1.6.1"));
+        assertTrue(desk.contains("@stomp/stompjs@7.2.1"));
+        assertTrue(desk.contains("/user/queue/doctor"));
+        assertTrue(desk.contains("doctorQueueRealtimeStatus"));
+        assertBalancedScriptTags(desk);
+    }
+
     private String read(String relativePath) throws IOException {
         return Files.readString(TEMPLATE_ROOT.resolve(relativePath));
     }
