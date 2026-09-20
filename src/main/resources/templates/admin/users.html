@@ -9,7 +9,7 @@
 <div layout:fragment="content">
 
     <!-- Top Header -->
-    <div class="d-flex flex-wrap align-items-center justify-content-between mb-4 pb-2 border-bottom">
+    <div class="mc-page-header align-items-end border-bottom pb-3">
         <div>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-1 small">
@@ -17,17 +17,13 @@
                     <li class="breadcrumb-item active" aria-current="page">Người dùng</li>
                 </ol>
             </nav>
-            <h3 class="fw-bold text-dark mb-0">
-                <i class="bi bi-people-fill text-primary me-2"></i>Quản Lý Tài Khoản & Phân Quyền
-            </h3>
-        </div>
-        <div class="text-secondary small">
-            <i class="bi bi-shield-lock text-success me-1"></i> Kiểm soát truy cập phân quyền RBAC
+            <h1 class="mc-page-title">Tài khoản & phân quyền</h1>
+            <p class="mc-page-subtitle">Quản lý trạng thái tài khoản và vai trò truy cập RBAC trong hệ thống.</p>
         </div>
     </div>
 
     <!-- Search Toolbar -->
-    <div class="card card-portal p-3 mb-4 shadow-sm">
+    <div class="mc-search-toolbar">
         <form th:action="@{/admin/users}" method="get" class="row g-2 align-items-center">
             <div class="col-md-9">
                 <div class="input-group">
@@ -52,17 +48,20 @@
     </div>
 
     <!-- Users Table Card -->
-    <div class="card card-portal shadow-sm">
-        <div class="card-header bg-white py-3 border-bottom d-flex align-items-center justify-content-between">
-            <h6 class="fw-bold text-dark mb-0">
+    <div class="mc-data-card">
+        <div class="mc-data-toolbar">
+            <h6 class="mc-data-title">
                 <i class="bi bi-person-lines-fill text-primary me-2"></i>Danh Sách Tài Khoản Người Dùng
             </h6>
             <span class="badge bg-light text-dark border" th:text="${#lists.size(users) + ' tài khoản'}">0 tài khoản</span>
         </div>
 
         <div class="card-body p-0">
+            <div class="mc-mobile-scroll-hint d-md-none">
+                <i class="bi bi-arrow-left-right me-1"></i> Vuốt ngang để xem đầy đủ bảng
+            </div>
             <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0 small">
+                <table class="table mc-data-table align-middle mb-0">
                     <thead class="table-light text-uppercase">
                         <tr>
                             <th style="width: 70px;" class="text-center">ID</th>
@@ -79,15 +78,15 @@
                         <tr th:each="u : ${users}">
                             <td class="text-center text-muted fw-semibold" th:text="${'#' + u.id}">#1</td>
                             <td>
-                                <div class="fw-bold text-dark fs-6" th:text="${u.fullName}">Nguyễn Văn A</div>
-                                <span class="text-secondary" style="font-size: 0.75rem;" th:text="${u.gender != null ? u.gender.displayName : 'Chưa rõ'}">Nam</span>
+                                <div class="mc-cell-title" th:text="${u.fullName}">Nguyễn Văn A</div>
+                                <span class="mc-cell-meta" th:text="${u.gender != null ? u.gender.displayName : 'Chưa rõ'}">Nam</span>
                             </td>
                             <td>
-                                <code class="fw-bold" th:text="${u.username}">admin</code>
+                                <code class="mc-username" th:text="${u.username}">admin</code>
                             </td>
                             <td>
                                 <div th:text="${u.email}">admin@medclinic.com</div>
-                                <div class="text-secondary" style="font-size: 0.75rem;" th:text="${u.phone != null ? u.phone : 'Chưa có SĐT'}">0901234567</div>
+                                <div class="mc-cell-meta" th:text="${u.phone != null ? u.phone : 'Chưa có SĐT'}">0901234567</div>
                             </td>
                             <td class="text-center">
                                 <span class="badge px-2.5 py-1"
@@ -104,7 +103,7 @@
                             </td>
                             <td class="text-center text-muted" th:text="${#temporals.format(u.createdAt, 'dd/MM/yyyy')}">16/09/2026</td>
                             <td class="text-center">
-                                <span class="badge-portal"
+                                <span class="mc-status-badge"
                                       th:classappend="${u.isActive ? 'bg-success-subtle text-success border border-success' : 'bg-danger-subtle text-danger border border-danger'}">
                                     <span th:text="${u.isActive ? 'Hoạt động' : 'Đã khóa'}">Hoạt động</span>
                                 </span>
@@ -112,7 +111,7 @@
                             <td class="text-end pe-3">
                                 <!-- Do not allow locking own admin account if it's current user -->
                                 <form th:action="@{/admin/users/{id}/toggle(id=${u.id})}" method="post" class="d-inline m-0">
-                                    <button type="submit" class="btn btn-sm"
+                                    <button type="submit" class="btn btn-sm mc-action-btn"
                                             th:classappend="${u.isActive ? 'btn-outline-danger' : 'btn-outline-success'}"
                                             th:title="${u.isActive ? 'Khóa tài khoản này' : 'Mở khóa tài khoản'}">
                                         <i th:class="${u.isActive ? 'bi bi-lock me-1' : 'bi bi-unlock me-1'}"></i>

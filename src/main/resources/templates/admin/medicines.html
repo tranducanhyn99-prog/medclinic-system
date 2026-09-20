@@ -9,7 +9,7 @@
 <div layout:fragment="content">
 
     <!-- Top Header -->
-    <div class="d-flex flex-wrap align-items-center justify-content-between mb-4 pb-2 border-bottom">
+    <div class="mc-page-header align-items-end border-bottom pb-3">
         <div>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-1 small">
@@ -17,9 +17,8 @@
                     <li class="breadcrumb-item active" aria-current="page">Kho thuốc</li>
                 </ol>
             </nav>
-            <h3 class="fw-bold text-dark mb-0">
-                <i class="bi bi-capsule text-warning me-2"></i>Quản Lý Kho Thuốc & Dược Phẩm
-            </h3>
+            <h1 class="mc-page-title">Kho thuốc & dược phẩm</h1>
+            <p class="mc-page-subtitle">Theo dõi tồn kho, đơn giá, hướng dẫn sử dụng và trạng thái kinh doanh.</p>
         </div>
         <div>
             <button type="button" class="btn btn-med-primary" data-bs-toggle="modal" data-bs-target="#addMedicineModal">
@@ -29,10 +28,13 @@
     </div>
 
     <!-- Medicines Table Card -->
-    <div class="card card-portal shadow-sm">
+    <div class="mc-data-card">
         <div class="card-body p-0">
+            <div class="mc-mobile-scroll-hint d-md-none">
+                <i class="bi bi-arrow-left-right me-1"></i> Vuốt ngang để xem đầy đủ bảng
+            </div>
             <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0 small">
+                <table class="table mc-data-table align-middle mb-0">
                     <thead class="table-light text-uppercase">
                         <tr>
                             <th style="width: 50px;" class="text-center">STT</th>
@@ -49,7 +51,7 @@
                         <tr th:each="med, stat : ${medicines}">
                             <td class="text-center text-muted fw-semibold" th:text="${stat.count}">1</td>
                             <td>
-                                <strong class="text-dark fs-6" th:text="${med.name}">Paracetamol 500mg</strong>
+                                <strong class="mc-cell-title" th:text="${med.name}">Paracetamol 500mg</strong>
                             </td>
                             <td class="text-center">
                                 <span class="badge bg-light text-dark border" th:text="${med.unit}">Viên</span>
@@ -64,20 +66,20 @@
                                       th:text="${med.stockQuantity + ' ' + med.unit}">1000 Viên</span>
                             </td>
                             <td>
-                                <span class="text-secondary text-truncate d-inline-block" style="max-width: 250px;"
+                                <span class="mc-table-truncate text-secondary"
                                       th:text="${med.usageGuide != null ? med.usageGuide : '--'}">Uống sau khi ăn...</span>
                             </td>
                             <td class="text-center">
-                                <span class="badge-portal"
+                                <span class="mc-status-badge"
                                       th:classappend="${med.isActive ? 'bg-success-subtle text-success border border-success' : 'bg-danger-subtle text-danger border border-danger'}">
                                     <span th:text="${med.isActive ? 'Đang bán' : 'Ngừng bán'}">Đang bán</span>
                                 </span>
                             </td>
                             <td class="text-end pe-3">
-                                <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal"
+                                <button type="button" class="btn btn-sm btn-outline-primary mc-action-btn" data-bs-toggle="modal"
                                         th:data-bs-target="${'#editMedicineModal-' + med.id}">Sửa</button>
                                 <form th:action="@{/admin/medicines/{id}/toggle(id=${med.id})}" method="post" class="d-inline m-0">
-                                    <button type="submit" class="btn btn-sm"
+                                    <button type="submit" class="btn btn-sm mc-action-btn"
                                             th:classappend="${med.isActive ? 'btn-outline-danger' : 'btn-outline-success'}">
                                         <span th:text="${med.isActive ? 'Khóa' : 'Mở'}">Khóa</span>
                                     </button>
