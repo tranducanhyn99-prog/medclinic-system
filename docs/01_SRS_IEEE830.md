@@ -110,12 +110,17 @@ Hệ thống được phát triển theo mô hình kiến trúc phân tầng chu
 - **NFR-SEC-03:** Kiểm soát truy cập nghiêm ngặt ở cả tầng Filter URL và tầng Service method (`@PreAuthorize`).
 - **NFR-SEC-04:** Chống **SQL Injection** thông qua cơ chế Parameterized Query của Spring Data JPA.
 - **NFR-SEC-05:** Token khôi phục mật khẩu chỉ lưu dưới dạng SHA-256 hash, có hạn 24 giờ, có `used_at`, và response yêu cầu reset không làm lộ email có tồn tại hay không.
+- **NFR-SEC-06:** Session phải chống session fixation, giới hạn thời gian sống hợp lý; cookie phiên dùng `HttpOnly` + `SameSite=Lax`, profile SQL Server production mặc định `Secure=true`; response không lộ stacktrace/binding error và bổ sung các security header cần thiết.
+- **NFR-SEC-07:** Các endpoint xác thực/khôi phục mật khẩu nhạy cảm phải có rate limit theo remote IP + endpoint; sự kiện đăng nhập thành công/thất bại, logout và rate-limit rejection phải được audit log/đếm metric mà không ghi password, token hoặc secret.
 
-### 4.3. Tính toàn vẹn dữ liệu & Xử lý đồng thời (Data Integrity & Concurrency)
+### 4.3. Khả năng quan sát & Vận hành (Operational Observability)
+- **NFR-OPS-01:** Hệ thống phải cung cấp health endpoint tối thiểu cho giám sát liveness/readiness ở mức ứng dụng và metrics cho vận hành; health public chỉ lộ trạng thái tổng quát, còn metrics chỉ cho `ROLE_ADMIN`.
+
+### 4.4. Tính toàn vẹn dữ liệu & Xử lý đồng thời (Data Integrity & Concurrency)
 - **NFR-ACID-01:** Các workflow đặt lịch, check-in, hoàn tất bệnh án, trừ kho và lập hóa đơn được bao trong transaction Spring. Booking khai báo `READ_COMMITTED`; các transaction còn lại dùng isolation mặc định của datasource/SQL Server.
 - **NFR-ACID-02:** Kết hợp row lock, `@Version`, unique/filter index cho queue và kiểm tra trạng thái nghiệp vụ để giảm race condition, lost update và double booking; các trường hợp cạnh tranh chính phải có integration test.
 
-### 4.4. Tính khả dụng & Trải nghiệm người dùng (Usability & UX)
+### 4.5. Tính khả dụng & Trải nghiệm người dùng (Usability & UX)
 - **NFR-USAB-01:** Giao diện Responsive chuẩn Bootstrap 5.3, hiển thị tối ưu trên máy tính để bàn, máy tính bảng và điện thoại di động.
 - **NFR-USAB-02:** Phản hồi tương tác thân thiện qua hộp thoại SweetAlert2 và thông báo Toast rõ ràng.
 

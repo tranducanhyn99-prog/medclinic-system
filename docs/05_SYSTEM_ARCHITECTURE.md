@@ -80,6 +80,9 @@ graph TD
   - `ROLE_ADMIN`: Truy cập `/admin/**`
 - **Mã hóa:** Giải thuật băm mật khẩu `BCryptPasswordEncoder` với salt ngẫu nhiên.
 - **Password reset:** Token thô chỉ gửi qua email; CSDL lưu SHA-256 hash trong `password_reset_tokens`, hạn 24 giờ và đánh dấu `used_at` sau khi dùng.
+- **Session/cookie hardening:** Session timeout 30 phút; chống session fixation bằng `migrateSession`; `JSESSIONID` dùng `HttpOnly` + `SameSite=Lax`. Profile SQL Server mặc định `Secure=true`; local HTTP phải opt-out rõ ràng.
+- **Abuse protection:** `POST /login`, `/forgot-password`, `/reset-password` dùng rate limit theo remote IP + endpoint, mặc định 20 login và 5 reset request trong cửa sổ 300 giây; trả HTTP 429 + `Retry-After` khi vượt ngưỡng.
+- **Response hardening:** Không expose error message/binding error/stacktrace; thêm `Referrer-Policy: strict-origin-when-cross-origin` và `Permissions-Policy` tắt camera/microphone/geolocation.
 
 ### 2.3. Business Service Layer & Concurrency Engine (Tầng Nghiệp vụ)
 - **Concurrency Locking (Xử lý đồng thời chống Double Booking):**
@@ -104,3 +107,9 @@ graph TD
 - **Schema versioning:** Profile `sqlserver` dùng Flyway V1/V2 chạy trước Hibernate; `ddl-auto=validate` chỉ xác minh mapping sau migration. Database legacy 16 bảng chỉ được nhận quản lý bằng baseline version 1 khi operator bật opt-in sau pre-check/backup; mặc định production không tự baseline.
 - **Migration safety:** Docker init chỉ áp dụng guard `0`/`16` khi chưa có Flyway history; khi history đã tồn tại, versioning thuộc Flyway/Hibernate. Migration test destructive chạy trên database disposable `medclinic_flyway_it`, không dùng production database.
 - **Chuẩn hóa CSDL:** Toàn bộ quan hệ được thiết kế chuẩn mực **3NF**.
+
+### 2.5. Operational Observability
+- **Actuator exposure:** Chỉ expose `health` và `metrics`; `/actuator/health` cho anonymous nhưng chỉ trả `status`, còn `/actuator/metrics/**` yêu cầu `ROLE_ADMIN`.
+- **Micrometer:** Theo dõi JVM/HTTP metrics mặc định và hai metric custom: `medclinic.security.authentication{outcome=...}` và `medclinic.security.rate_limit.rejected{endpoint=...}`.
+- **Security audit log:** Login success/failure, logout và rate-limit rejection ghi log dạng key=value; không log password, reset token hoặc secret.
+- **Giới hạn hiện tại:** Rate limiter là in-memory per JVM. Khi scale nhiều instance cần chuyển enforcement lên trusted gateway hoặc shared store như Redis; không tin trực tiếp `X-Forwarded-For` nếu proxy chưa được trust-configure.

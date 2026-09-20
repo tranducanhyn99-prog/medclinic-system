@@ -8,9 +8,9 @@
 [![Thymeleaf](https://img.shields.io/badge/Thymeleaf-3.x-005F0E.svg?style=for-the-badge&logo=thymeleaf)](https://www.thymeleaf.org/)
 [![Database](https://img.shields.io/badge/Database-SQL%20Server%20%7C%20H2-004880.svg?style=for-the-badge&logo=microsoftsqlserver)](https://www.microsoft.com/sql-server/)
 [![CI](https://github.com/tranducanhyn99-prog/medclinic-system/actions/workflows/ci.yml/badge.svg)](https://github.com/tranducanhyn99-prog/medclinic-system/actions/workflows/ci.yml)
-[![Line Coverage](https://img.shields.io/badge/Line%20Coverage-76.08%25-brightgreen.svg?style=for-the-badge)](https://github.com/tranducanhyn99-prog/medclinic-system/actions/workflows/ci.yml)
-[![Branch Coverage](https://img.shields.io/badge/Branch%20Coverage-61.84%25-brightgreen.svg?style=for-the-badge)](https://github.com/tranducanhyn99-prog/medclinic-system/actions/workflows/ci.yml)
-[![Tests](https://img.shields.io/badge/Tests-120%20total%20%7C%20112%20executed-success.svg?style=for-the-badge&logo=junit5)](https://junit.org/junit5/)
+[![Line Coverage](https://img.shields.io/badge/Line%20Coverage-78.52%25-brightgreen.svg?style=for-the-badge)](https://github.com/tranducanhyn99-prog/medclinic-system/actions/workflows/ci.yml)
+[![Branch Coverage](https://img.shields.io/badge/Branch%20Coverage-64.22%25-brightgreen.svg?style=for-the-badge)](https://github.com/tranducanhyn99-prog/medclinic-system/actions/workflows/ci.yml)
+[![Tests](https://img.shields.io/badge/Tests-128%20total%20%7C%20120%20executed-success.svg?style=for-the-badge&logo=junit5)](https://junit.org/junit5/)
 [![Docker](https://img.shields.io/badge/Docker-Compose%20Ready-2496ED.svg?style=for-the-badge&logo=docker)](compose.yml)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](LICENSE)
 
@@ -69,8 +69,9 @@ Tại các phòng khám tư nhân quy mô vừa và nhỏ ở Việt Nam, việc
 | **Concurrency & Transaction** | Row lock + `@Version`, chống double-booking, cấp STT đồng thời, khóa tồn kho và rollback nghiệp vụ |
 | **Realtime Messaging** | Spring WebSocket/STOMP user destination; queue event chỉ broadcast `AFTER_COMMIT`, không phát khi transaction rollback |
 | **SQL Server production-readiness** | Flyway V1/V2, legacy baseline opt-in có guard, `ddl-auto=validate`, Unicode `NVARCHAR` và SQL Server integration test |
-| **Security** | Spring Security RBAC 4 vai trò, CSRF, BCrypt, remember-me secret ngoài repo, password-reset token SHA-256 dùng một lần |
-| **Quality Engineering** | 120 test case, 112 executed PASS, JaCoCo **76.08% line / 61.84% branch**, quality gate trên `mvn verify` |
+| **Security** | RBAC, CSRF, BCrypt, session-fixation protection, Secure/HttpOnly/SameSite cookies, per-IP rate limit cho login/reset và audit log |
+| **Observability** | Spring Boot Actuator + Micrometer; public health chỉ trả status, metrics yêu cầu ADMIN, custom security counters |
+| **Quality Engineering** | 128 test case, 120 executed PASS, JaCoCo **78.52% line / 64.22% branch**, quality gate trên `mvn verify` |
 | **CI/CD & Delivery** | GitHub Actions cho push/PR, artifact JAR + JaCoCo report, Dockerfile multi-stage và SQL Server Compose |
 | **UX & Accessibility** | Responsive dashboard, keyboard/focus contract, ARIA/live-region audit và UI smoke đa kích thước |
 
@@ -173,6 +174,7 @@ graph TD
 | **Sinh mã QR** | Google ZXing (Zebra Crossing) | 3.5.3 | Sinh chuỗi Base64 mã QR cuộc hẹn |
 | **Xuất PDF** | LibrePDF OpenPDF | 2.0.3 | Xuất đơn thuốc & hóa đơn PDF |
 | **Kiểm thử** | JUnit 5, Mockito, JaCoCo | 5.x / 0.8.12 | Unit/integration/concurrency test + quality gate |
+| **Observability** | Spring Boot Actuator + Micrometer | Spring Boot 3.3.5 | Health/metrics có kiểm soát truy cập + custom security counters |
 | **CI/CD** | GitHub Actions | Windows hosted runner | `mvn verify`, artifact JAR và JaCoCo report cho push/PR |
 | **Container** | Docker + Compose | SQL Server 2022 | Build image đa tầng và dựng app + database cho local/demo |
 
@@ -189,6 +191,7 @@ Toàn bộ tài liệu chuẩn kỹ thuật phần mềm được lưu trữ đ�
 5. 🏛️ [**05_SYSTEM_ARCHITECTURE.md**](docs/05_SYSTEM_ARCHITECTURE.md): Tài liệu Kiến trúc Hệ thống chi tiết (Layered Architecture, Design Patterns).
 6. 🎨 [**06_UI_UX_DESIGN.md**](docs/06_UI_UX_DESIGN.md): Đặc tả giao diện, responsive và accessibility.
 7. ✅ [**09_RELEASE_ACCEPTANCE.md**](docs/09_RELEASE_ACCEPTANCE.md): Kịch bản nghiệm thu E2E trên SQL Server cho toàn bộ luồng đặt lịch → check-in → khám → kê thuốc → hóa đơn → thanh toán/PDF.
+8. 🛡️ [**10_SECURITY_OBSERVABILITY.md**](docs/10_SECURITY_OBSERVABILITY.md): Baseline hardening, rate limiting, audit log, Actuator health/metrics và hướng vận hành.
 
 ---
 
@@ -276,6 +279,10 @@ $env:DB_PASSWORD="<secret>"
 $env:REMEMBER_ME_KEY="<random-secret>"
 $env:MAIL_USERNAME="<smtp-user>"
 $env:MAIL_PASSWORD="<smtp-secret>"
+$env:SESSION_COOKIE_SECURE="true"  # production HTTPS
+$env:LOGIN_RATE_LIMIT_MAX="20"
+$env:PASSWORD_RESET_RATE_LIMIT_MAX="5"
+$env:AUTH_RATE_LIMIT_WINDOW_SECONDS="300"
 ```
 
 Chi tiết fresh/legacy migration và production handoff xem `docs/database/SQLSERVER_RUNBOOK.md` và `docs/database/PRODUCTION_ADMIN_PROVISIONING.md`.
@@ -352,7 +359,7 @@ Dự án được tích hợp bộ kiểm thử tự động với JUnit 5, Mock
 mvn verify
 ```
 
-Baseline kiểm chứng ngày 20/09/2026: **120 test case / 51 test class; 112 executed PASS, 8 environment-gated skipped, 0 failure, 0 error**. JaCoCo đạt **76.08% line / 61.84% branch**; build sẽ fail nếu xuống dưới **70% line / 50% branch**. Các SQL Server integration test chỉ chạy khi chủ động bật environment guard.
+Baseline kiểm chứng ngày 20/09/2026: **128 test case / 55 test class; 120 executed PASS, 8 environment-gated skipped, 0 failure, 0 error**. JaCoCo đạt **78.52% line / 64.22% branch**; build sẽ fail nếu xuống dưới **70% line / 50% branch**. Các SQL Server integration test chỉ chạy khi chủ động bật environment guard.
 
 ### CI và quality gate
 - GitHub Actions chạy `mvn verify` trên **JDK 21 / Windows hosted runner** cho mọi push/PR vào `main`.

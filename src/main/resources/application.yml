@@ -41,8 +41,28 @@ spring:
 server:
   port: 8080
   error:
-    include-message: always
-    include-binding-errors: always
+    include-message: never
+    include-binding-errors: never
+    include-stacktrace: never
+  servlet:
+    session:
+      timeout: 30m
+      cookie:
+        http-only: true
+        same-site: lax
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics
+  endpoint:
+    health:
+      show-details: never
+      show-components: never
+  health:
+    mail:
+      enabled: false
 
 app:
   name: MedClinic - Phòng Khám Đa Khoa Tư Nhân
@@ -53,6 +73,10 @@ app:
   security:
     # Production profiles must supply this via REMEMBER_ME_KEY or an external config source.
     remember-me-key: ${REMEMBER_ME_KEY}
+    rate-limit:
+      login-max-requests: ${LOGIN_RATE_LIMIT_MAX:20}
+      password-reset-max-requests: ${PASSWORD_RESET_RATE_LIMIT_MAX:5}
+      window-seconds: ${AUTH_RATE_LIMIT_WINDOW_SECONDS:300}
 
 ---
 # Development Profile (H2 In-Memory for Instant Zero-Config Run)
@@ -132,3 +156,9 @@ spring:
     properties:
       hibernate:
         use_nationalized_character_data: true
+
+server:
+  servlet:
+    session:
+      cookie:
+        secure: ${SESSION_COOKIE_SECURE:true}
