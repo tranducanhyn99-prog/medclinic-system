@@ -817,9 +817,20 @@ main.container-fluid {
     .mc-search-toolbar .row > * { min-width: 0; }
     .mc-search-toolbar .input-group,
     .mc-search-toolbar .form-control { min-width: 0; }
-    .mc-page-header { gap: .75rem; }
-    .mc-page-header > * { width: 100%; }
+    .mc-page-header {
+        flex-direction: column;
+        align-items: stretch !important;
+        gap: .75rem;
+    }
+    .mc-page-header > * { width: 100%; min-width: 0; }
     .mc-page-header .btn-med-primary { width: 100%; justify-content: center; }
+    .mc-data-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: .65rem;
+    }
+    .mc-data-toolbar > .d-flex { flex-wrap: wrap; }
+    .mc-data-toolbar > .badge { align-self: flex-start; }
     .mc-data-table { min-width: 760px; }
 }
 
@@ -1211,4 +1222,117 @@ main.container-fluid {
     overflow: hidden;
     border: 1px solid var(--mc-border);
     border-radius: var(--mc-radius-md);
+}
+
+/* Patient records & public provider profile */
+.mc-empty-state {
+    padding: 3.5rem 1.5rem;
+    text-align: center;
+    border: 1px solid var(--mc-border);
+    border-radius: var(--mc-radius-lg);
+    background: var(--mc-surface);
+    box-shadow: var(--mc-shadow-sm);
+}
+.mc-empty-icon {
+    width: 4.25rem;
+    height: 4.25rem;
+    display: grid;
+    place-items: center;
+    margin: 0 auto 1rem;
+    border-radius: 1rem;
+    background: var(--mc-surface-subtle);
+    color: var(--mc-text-muted);
+    font-size: 1.65rem;
+}
+.mc-empty-copy {
+    max-width: 31rem;
+    margin: 0 auto 1.25rem;
+    color: var(--mc-text-muted);
+    font-size: .9rem;
+}
+.mc-appointment-card,
+.mc-record-card {
+    height: 100%;
+    padding: 1.25rem;
+    border: 1px solid var(--mc-border);
+    border-radius: var(--mc-radius-lg);
+    background: var(--mc-surface);
+    box-shadow: var(--mc-shadow-sm);
+}
+.mc-appointment-card:hover {
+    box-shadow: var(--mc-shadow-md);
+}
+.mc-info-tile {
+    height: 100%;
+    padding: 1rem;
+    border: 1px solid var(--mc-border);
+    border-radius: var(--mc-radius-md);
+    background: var(--mc-surface-subtle);
+}
+.mc-record-icon {
+    width: 2.75rem;
+    height: 2.75rem;
+    display: grid;
+    place-items: center;
+    flex: 0 0 2.75rem;
+    border-radius: .75rem;
+    background: var(--mc-primary-soft);
+    color: var(--mc-primary);
+}
+.mc-doctor-profile-card {
+    padding: 2rem;
+    border: 1px solid var(--mc-border);
+    border-radius: 1rem;
+    background: var(--mc-surface);
+    box-shadow: var(--mc-shadow-sm);
+}
+.mc-doctor-avatar {
+    width: 5rem;
+    height: 5rem;
+    display: grid;
+    place-items: center;
+    flex: 0 0 5rem;
+    border-radius: 1rem;
+    background: var(--mc-primary-soft);
+    color: var(--mc-primary);
+    font-size: 1.6rem;
+    font-weight: 760;
+}
+.mc-consult-card {
+    position: sticky;
+    top: 5.5rem;
+    padding: 1.5rem;
+    border: 1px solid var(--mc-border);
+    border-radius: 1rem;
+    background: var(--mc-surface);
+    box-shadow: var(--mc-shadow-sm);
+}
+.ticket-cut {
+    position: relative;
+    margin: 1.25rem 0;
+    border-top: 2px dashed var(--mc-border-strong);
+}
+.qr-frame {
+    display: inline-block;
+    padding: .75rem;
+    border: 1px solid var(--mc-border);
+    border-radius: var(--mc-radius-md);
+    background: #fff;
+    box-shadow: var(--mc-shadow-sm);
+}
+.mc-qr-image {
+    width: 10.625rem;
+    height: 10.625rem;
+    display: block;
+    margin: 0 auto;
+    image-rendering: pixelated;
+}
+.mc-guide-list {
+    margin-bottom: 0;
+    padding-left: 1.15rem;
+    font-size: .8rem;
+}
+.mc-preline { white-space: pre-line; }
+@media (max-width: 991.98px) {
+    .mc-consult-card { position: static; }
 }

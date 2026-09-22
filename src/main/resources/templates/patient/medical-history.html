@@ -10,7 +10,7 @@
     <div class="container py-4">
 
         <!-- Page Header -->
-        <div class="d-flex flex-wrap align-items-center justify-content-between mb-4 pb-2 border-bottom">
+        <div class="mc-page-header align-items-end border-bottom pb-3">
             <div>
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb mb-1 small">
@@ -18,22 +18,19 @@
                         <li class="breadcrumb-item active" aria-current="page">Bệnh án điện tử</li>
                     </ol>
                 </nav>
-                <h3 class="fw-bold text-dark mb-0">
-                    <i class="bi bi-file-earmark-medical text-primary me-2"></i>Sổ Bệnh Án Điện Tử Của Tôi
-                </h3>
+                <h1 class="mc-page-title">Bệnh án điện tử</h1>
+                <p class="mc-page-subtitle">Xem lại chẩn đoán, lời dặn và đơn thuốc từ các lần khám đã hoàn tất.</p>
             </div>
-            <div class="text-muted small">
-                <i class="bi bi-lock-fill text-success me-1"></i> Hồ sơ y khoa bảo mật trọn đời
-            </div>
+            <div class="text-muted small"><i class="bi bi-shield-check text-success me-1"></i>Dữ liệu hồ sơ được bảo vệ theo quyền tài khoản</div>
         </div>
 
         <!-- Empty State -->
-        <div th:if="${#lists.isEmpty(records)}" class="card card-custom p-5 text-center my-4 border-0">
-            <div class="rounded-circle bg-light text-secondary p-4 d-inline-flex align-items-center justify-content-center mx-auto mb-3" style="width: 80px; height: 80px;">
+        <div th:if="${#lists.isEmpty(records)}" class="mc-empty-state my-4">
+            <div class="mc-empty-icon">
                 <i class="bi bi-folder-x fs-1"></i>
             </div>
             <h5 class="fw-bold text-dark mb-2">Chưa Có Hồ Sơ Bệnh Án</h5>
-            <p class="text-muted small mb-4" style="max-width: 450px; margin: 0 auto;">
+            <p class="mc-empty-copy">
                 Sau khi hoàn tất thăm khám tại MedClinic, kết quả chẩn đoán và đơn thuốc của bạn sẽ được bác sĩ cập nhật tự động tại đây.
             </p>
             <div>
@@ -46,12 +43,12 @@
         <!-- Records List -->
         <div th:unless="${#lists.isEmpty(records)}" class="row g-4">
             <div th:each="rec, stat : ${records}" class="col-12">
-                <div class="card card-custom p-4 shadow-sm border-start border-4 border-primary">
+                <div class="mc-record-card">
 
                     <!-- Record Header -->
                     <div class="d-flex flex-wrap align-items-center justify-content-between pb-3 mb-3 border-bottom">
                         <div class="d-flex align-items-center gap-3">
-                            <div class="rounded-circle bg-primary bg-opacity-10 text-primary p-2.5 d-flex align-items-center justify-content-center" style="width: 45px; height: 45px;">
+                            <div class="mc-record-icon">
                                 <i class="bi bi-clipboard2-pulse-fill fs-5"></i>
                             </div>
                             <div>
@@ -69,7 +66,7 @@
                     <!-- Record Body Grid -->
                     <div class="row g-3 mb-3">
                         <div class="col-md-6">
-                            <div class="p-3 bg-light rounded-3 h-100">
+                            <div class="mc-info-tile">
                                 <div class="small text-muted mb-1"><i class="bi bi-person-badge text-primary me-1"></i> Bác sĩ phụ trách:</div>
                                 <div class="fw-bold text-dark" th:text="${rec.doctor.title + ' ' + rec.doctor.user.fullName}">BS. Nguyễn Văn A</div>
                                 <div class="text-secondary small" th:text="${'Chuyên khoa: ' + rec.doctor.specialty.name}">Nội tổng quát</div>
@@ -77,7 +74,7 @@
                         </div>
 
                         <div class="col-md-6">
-                            <div class="p-3 bg-light rounded-3 h-100">
+                            <div class="mc-info-tile">
                                 <div class="small text-muted mb-1"><i class="bi bi-activity text-danger me-1"></i> Chẩn đoán lâm sàng:</div>
                                 <div class="fw-bold text-dark fs-6" th:text="${rec.diagnosis}">Viêm họng cấp tính</div>
                                 <div class="text-secondary small" th:text="${'Triệu chứng: ' + rec.symptoms}">Ho, sốt nhẹ...</div>
@@ -109,7 +106,7 @@
                         </div>
 
                         <div class="table-responsive">
-                            <table class="table table-sm table-bordered align-middle mb-0 small">
+                            <table class="table table-sm table-bordered mc-data-table align-middle mb-0">
                                 <thead class="table-light">
                                     <tr>
                                         <th style="width: 40px;" class="text-center">STT</th>
