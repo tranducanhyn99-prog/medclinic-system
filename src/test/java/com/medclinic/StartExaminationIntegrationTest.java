@@ -23,7 +23,10 @@ import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequ
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static org.hamcrest.Matchers.containsString;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.flash;
@@ -72,6 +75,13 @@ public class StartExaminationIntegrationTest {
                 .andExpect(redirectedUrl("/doctor/examine/" + appointment.getId()));
         org.junit.jupiter.api.Assertions.assertEquals(AppointmentStatus.IN_PROGRESS,
                 appointmentRepository.findById(appointment.getId()).orElseThrow().getStatus());
+
+        mockMvc.perform(get("/doctor/examine/{id}", appointment.getId()))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("id=\"examinationForm\"")))
+                .andExpect(content().string(containsString("id=\"medicineTable\"")))
+                .andExpect(content().string(containsString("id=\"btnAddMedicine\"")))
+                .andExpect(content().string(containsString("id=\"btnSubmitExamine\"")));
     }
 
     @Test
