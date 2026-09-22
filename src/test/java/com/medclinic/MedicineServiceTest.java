@@ -1,9 +1,13 @@
 package com.medclinic;
 
+import com.medclinic.entity.InventoryTransaction;
 import com.medclinic.entity.Medicine;
+import com.medclinic.entity.User;
 import com.medclinic.exception.BusinessLogicException;
 import com.medclinic.exception.ResourceNotFoundException;
+import com.medclinic.repository.InventoryTransactionRepository;
 import com.medclinic.repository.MedicineRepository;
+import com.medclinic.repository.UserRepository;
 import com.medclinic.service.impl.MedicineServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,6 +26,8 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class MedicineServiceTest {
     @Mock MedicineRepository medicineRepository;
+    @Mock InventoryTransactionRepository inventoryTransactionRepository;
+    @Mock UserRepository userRepository;
     @InjectMocks MedicineServiceImpl service;
 
     private Medicine medicine(long id, String name, Boolean active) {
@@ -101,4 +107,28 @@ class MedicineServiceTest {
         assertTrue(inactive.getIsActive());
         verify(medicineRepository, times(2)).save(any(Medicine.class));
     }
+    @Test
+    void restockIncreasesStockAndCreatesAuditTransaction() {
+        Medicine current = medicine(1L, "Paracetamol", true);
+        current.setStockQuantity(10);
+        User admin = new User();
+        admin.setId(99L);
+        when(medicineRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(current));
+        when(userRepository.findById(99L)).thenReturn(Optional.of(admin));
+        when(medicineRepository.save(any(Medicine.class))).thenAnswer(i -> i.getArgument(0));
+        when(inventoryTransactionRepository.save(any(InventoryTransaction.class))).thenAnswer(i -> i.getArgument(0));
+
+        Medicine updated = service.restock(1L, 25, new BigDecimal("800"), "Phiếu nhập PN-01", 99L);
+
+        assertEquals(35, updated.getStockQuantity());
+        verify(inventoryTransactionRepository).save(argThat(tx ->
+                tx.getQuantityChange() == 25 && tx.getStockBefore() == 10 && tx.getStockAfter() == 35));
+    }
+
+    @Test
+    void restockRejectsNonPositiveQuantity() {
+        assertThrows(BusinessLogicException.class, () -> service.restock(1L, 0, null, null, 99L));
+        verifyNoInteractions(inventoryTransactionRepository, userRepository);
+    }
+
 }

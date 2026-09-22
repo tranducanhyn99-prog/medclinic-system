@@ -57,8 +57,8 @@ class AdminControllerFormRetentionTest {
         String view = controller.saveMedicine(form, errors, new ExtendedModelMap(), new RedirectAttributesModelMap());
 
         assertEquals("redirect:/admin/medicines", view);
-        verify(medicines).update(42L, "Paracetamol", "viên", new BigDecimal("1500"), "Sau ăn", 10);
-        verify(medicines, never()).save(anyString(), anyString(), any(), any(), anyInt());
+        verify(medicines).updateCatalog(42L, "Paracetamol", "viên", new BigDecimal("1500"), "Sau ăn", 50);
+        verify(medicines, never()).save(anyString(), anyString(), any(), any(), anyInt(), anyInt());
     }
 
     @Test
@@ -75,6 +75,6 @@ class AdminControllerFormRetentionTest {
         assertEquals("admin/medicines", view);
         assertSame(form, model.getAttribute("medicineForm"));
         verify(medicines).findAll();
-        verify(medicines, never()).save(anyString(), anyString(), any(), any(), anyInt());
+        verify(medicines, never()).save(anyString(), anyString(), any(), any(), anyInt(), anyInt());
     }
 }

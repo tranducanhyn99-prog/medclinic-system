@@ -27,6 +27,11 @@
         </div>
     </div>
 
+    <div th:if="${lowStockCount > 0}" class="alert alert-warning d-flex align-items-center justify-content-between gap-3 mb-4" role="alert">
+        <div><i class="bi bi-exclamation-triangle-fill me-2"></i><strong th:text="${lowStockCount}">0</strong> thuốc đang ở hoặc dưới ngưỡng cần nhập thêm.</div>
+        <span class="small">Ưu tiên bổ sung trước khi kê đơn tiếp theo.</span>
+    </div>
+
     <!-- Medicines Table Card -->
     <div class="mc-data-card">
         <div class="card-body p-0">
@@ -62,8 +67,12 @@
                             </td>
                             <td class="text-center">
                                 <span class="badge"
-                                      th:classappend="${med.stockQuantity > 50 ? 'bg-success-subtle text-success border border-success' : 'bg-danger-subtle text-danger border border-danger'}"
+                                      th:classappend="${med.stockQuantity == 0 ? 'bg-danger-subtle text-danger border border-danger' : (med.stockQuantity <= med.reorderLevel ? 'bg-warning-subtle text-warning border border-warning' : 'bg-success-subtle text-success border border-success')}"
                                       th:text="${med.stockQuantity + ' ' + med.unit}">1000 Viên</span>
+                                <div class="small fw-semibold mt-1"
+                                     th:classappend="${med.stockQuantity == 0 ? 'text-danger' : (med.stockQuantity <= med.reorderLevel ? 'text-warning' : 'text-success')}"
+                                     th:text="${med.stockQuantity == 0 ? 'Hết hàng' : (med.stockQuantity <= med.reorderLevel ? 'Sắp hết' : 'Bình thường')}">Bình thường</div>
+                                <div class="mc-cell-meta" th:text="${'Ngưỡng: ' + med.reorderLevel}">Ngưỡng: 50</div>
                             </td>
                             <td>
                                 <span class="mc-table-truncate text-secondary"
@@ -76,6 +85,8 @@
                                 </span>
                             </td>
                             <td class="text-end pe-3">
+                                <button type="button" class="btn btn-sm btn-success mc-action-btn" data-bs-toggle="modal"
+                                        th:data-bs-target="${'#restockMedicineModal-' + med.id}">Nhập thêm</button>
                                 <button type="button" class="btn btn-sm btn-outline-primary mc-action-btn" data-bs-toggle="modal"
                                         th:data-bs-target="${'#editMedicineModal-' + med.id}">Sửa</button>
                                 <form th:action="@{/admin/medicines/{id}/toggle(id=${med.id})}" method="post" class="d-inline m-0">
@@ -130,6 +141,11 @@
                             <label for="medStock" class="form-label fw-semibold small">Số lượng nhập kho ban đầu <span class="text-danger">*</span></label>
                             <input type="number" class="form-control" id="medStock" th:field="*{stockQuantity}" min="0" required><div class="text-danger small" th:errors="*{stockQuantity}"></div>
                         </div>
+                        <div class="mb-3">
+                            <label for="medReorderLevel" class="form-label fw-semibold small">Ngưỡng cảnh báo cần nhập thêm <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" id="medReorderLevel" th:field="*{reorderLevel}" min="0" required>
+                            <div class="form-text">Khi tồn kho nhỏ hơn hoặc bằng ngưỡng này, hệ thống cảnh báo Admin.</div>
+                        </div>
                         <div class="mb-2">
                             <label for="medGuide" class="form-label fw-semibold small">Hướng dẫn sử dụng gợi ý</label>
                             <input type="text" class="form-control" id="medGuide" th:field="*{usageGuide}" placeholder="Ví dụ: Uống sau ăn, tránh dùng khi đói...">
@@ -144,6 +160,21 @@
         </div>
     </div>
 
+    <div th:each="med : ${medicines}" class="modal fade" th:id="${'restockMedicineModal-' + med.id}" tabindex="-1" th:attr="aria-labelledby=${'restockMedicineModalTitle-' + med.id}">
+        <div class="modal-dialog modal-dialog-centered"><div class="modal-content">
+            <form th:action="@{/admin/medicines/{id}/restock(id=${med.id})}" method="post">
+                <div class="modal-header"><h6 class="modal-title" th:id="${'restockMedicineModalTitle-' + med.id}">Nhập thêm <span th:text="${med.name}">thuốc</span></h6><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>
+                <div class="modal-body">
+                    <div class="alert alert-light border small">Tồn hiện tại: <strong th:text="${med.stockQuantity + ' ' + med.unit}">0</strong> · Ngưỡng cảnh báo: <strong th:text="${med.reorderLevel}">50</strong></div>
+                    <label class="form-label">Số lượng nhập thêm</label><input class="form-control mb-3" type="number" name="quantity" min="1" required>
+                    <label class="form-label">Giá nhập / đơn vị (VNĐ)</label><input class="form-control mb-3" type="number" name="unitCost" min="0" step="100">
+                    <label class="form-label">Ghi chú</label><textarea class="form-control" name="note" maxlength="255" rows="2" placeholder="Nhà cung cấp, số phiếu nhập..."></textarea>
+                </div>
+                <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button><button type="submit" class="btn btn-success">Xác nhận nhập kho</button></div>
+            </form>
+        </div></div>
+    </div>
+
     <div th:each="med : ${medicines}" class="modal fade" th:id="${'editMedicineModal-' + med.id}" tabindex="-1" th:attr="aria-labelledby=${'editMedicineModalTitle-' + med.id}">
         <div class="modal-dialog modal-dialog-centered"><div class="modal-content">
             <form th:action="@{/admin/medicines}" method="post">
@@ -153,12 +184,34 @@
                     <label class="form-label" th:for="${'editMedicineName-' + med.id}">Tên thuốc</label><input th:id="${'editMedicineName-' + med.id}" class="form-control mb-2" name="name" required th:value="${med.name}">
                     <label class="form-label" th:for="${'editMedicineUnit-' + med.id}">Đơn vị</label><input th:id="${'editMedicineUnit-' + med.id}" class="form-control mb-2" name="unit" required th:value="${med.unit}">
                     <label class="form-label" th:for="${'editMedicinePrice-' + med.id}">Đơn giá</label><input th:id="${'editMedicinePrice-' + med.id}" class="form-control mb-2" type="number" name="unitPrice" min="0" required th:value="${med.unitPrice}">
-                    <label class="form-label" th:for="${'editMedicineStock-' + med.id}">Tồn kho</label><input th:id="${'editMedicineStock-' + med.id}" class="form-control mb-2" type="number" name="stockQuantity" min="0" required th:value="${med.stockQuantity}">
+                    <label class="form-label">Tồn kho hiện tại</label><div class="form-control mb-2 bg-light" th:text="${med.stockQuantity + ' ' + med.unit}">0</div><input type="hidden" name="stockQuantity" th:value="${med.stockQuantity}">
+                    <label class="form-label" th:for="${'editMedicineReorder-' + med.id}">Ngưỡng cảnh báo nhập thêm</label><input th:id="${'editMedicineReorder-' + med.id}" class="form-control mb-2" type="number" name="reorderLevel" min="0" required th:value="${med.reorderLevel}">
                     <label class="form-label" th:for="${'editMedicineGuide-' + med.id}">Hướng dẫn sử dụng</label><textarea th:id="${'editMedicineGuide-' + med.id}" class="form-control" name="usageGuide" rows="3" th:text="${med.usageGuide}"></textarea>
                 </div>
                 <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button><button class="btn btn-med-primary" type="submit">Lưu thay đổi</button></div>
             </form>
         </div></div>
+    </div>
+
+    <div class="mc-data-card mt-4">
+        <div class="mc-data-toolbar"><h2 class="mc-data-title h6 mb-0"><i class="bi bi-clock-history me-2"></i>Lịch sử giao dịch kho gần nhất</h2></div>
+        <div class="table-responsive">
+            <table class="table mc-data-table align-middle mb-0">
+                <thead class="table-light"><tr><th>Thời gian</th><th>Thuốc</th><th>Loại</th><th class="text-end">Biến động</th><th class="text-end">Tồn sau</th><th>Người thực hiện</th><th>Ghi chú</th></tr></thead>
+                <tbody>
+                    <tr th:if="${#lists.isEmpty(inventoryTransactions)}"><td colspan="7" class="text-center text-muted py-4">Chưa có giao dịch kho.</td></tr>
+                    <tr th:each="tx : ${inventoryTransactions}">
+                        <td class="mc-cell-meta" th:text="${#temporals.format(tx.createdAt, 'dd/MM/yyyy HH:mm')}">22/09/2026 08:00</td>
+                        <td class="fw-semibold" th:text="${tx.medicine.name}">Paracetamol</td>
+                        <td><span class="badge bg-light text-dark border" th:text="${tx.type.name() == 'RESTOCK' ? 'Nhập kho' : (tx.type.name() == 'DISPENSE' ? 'Xuất kê đơn' : 'Điều chỉnh')}">Nhập kho</span></td>
+                        <td class="text-end fw-semibold" th:classappend="${tx.quantityChange > 0 ? 'text-success' : 'text-danger'}" th:text="${(tx.quantityChange > 0 ? '+' : '') + tx.quantityChange}">+100</td>
+                        <td class="text-end" th:text="${tx.stockAfter}">100</td>
+                        <td th:text="${tx.performedBy.fullName}">Admin</td>
+                        <td class="text-secondary" th:text="${tx.note != null ? tx.note : '--'}">--</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 
 </div>

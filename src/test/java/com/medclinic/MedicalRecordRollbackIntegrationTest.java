@@ -33,6 +33,7 @@ class MedicalRecordRollbackIntegrationTest {
     @Autowired private AppointmentRepository appointments;
     @Autowired private MedicalRecordRepository records;
     @Autowired private MedicineRepository medicines;
+    @Autowired private InventoryTransactionRepository inventoryTransactions;
     @Autowired private UserRepository users;
     @MockBean private InvoiceService invoiceService;
 
@@ -61,5 +62,8 @@ class MedicalRecordRollbackIntegrationTest {
         assertTrue(records.findByAppointmentId(appointment.getId()).isEmpty());
         assertEquals(AppointmentStatus.IN_PROGRESS, appointments.findById(appointment.getId()).orElseThrow().getStatus());
         assertEquals(initialStock, medicines.findById(medicine.getId()).orElseThrow().getStockQuantity());
+        assertTrue(inventoryTransactions.findAll().stream().noneMatch(tx ->
+                tx.getType() == InventoryTransactionType.DISPENSE
+                        && appointment.getId().equals(tx.getReferenceId())));
     }
 }

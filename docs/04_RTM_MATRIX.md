@@ -2,7 +2,7 @@
 **Dự án:** MedClinic - Phòng Khám Tư Nhân  
 **Mục đích:** Đảm bảo 100% yêu cầu chức năng (FR) trong SRS được ánh xạ tới Sơ đồ Use Case, Bảng CSDL, Lớp Service/Controller và Kế hoạch kiểm thử.  
 
-**Lưu ý kiểm chứng (20/09/2026):** Cột `Test Case ID` là định danh kế hoạch, không tự khẳng định test tự động đã tồn tại. Full `mvn verify` hiện tại có **128 test case trên 55 test class: 120 executed PASS, 0 failure, 0 error và 8 environment-gated case được skip**. JaCoCo đạt **78,52% line / 64,22% branch**, vượt quality gate 70% line / 50% branch. Coverage bao gồm service/controller/security, WebSocket/STOMP hàng chờ `AFTER_COMMIT`, rollback suppression, SockJS endpoint security, public/authenticated render, concurrent booking/stock, email after-commit, PDF Unicode, SQL Server integration, acceptance E2E (`SqlServerReleaseAcceptanceEndToEndIntegrationTest`), rate limiting/audit/Actuator (`SecurityHardeningIntegrationTest`) và accessibility contracts.
+**Lưu ý kiểm chứng (22/09/2026):** Cột `Test Case ID` là định danh kế hoạch, không tự khẳng định test tự động đã tồn tại. Full `mvn test` sau bổ sung nghiệp vụ kho có **131 test case trên 56 test class: 123 executed PASS, 0 failure, 0 error và 8 environment-gated case được skip**. JaCoCo đạt **83,16% line / 66,04% branch**, vượt quality gate 70% line / 50% branch. Coverage bao gồm service/controller/security, WebSocket/STOMP hàng chờ `AFTER_COMMIT`, rollback suppression, SockJS endpoint security, public/authenticated render, concurrent booking/stock, email after-commit, PDF Unicode, SQL Server integration, acceptance E2E (`SqlServerReleaseAcceptanceEndToEndIntegrationTest`), rate limiting/audit/Actuator (`SecurityHardeningIntegrationTest`) và accessibility contracts.
 
 ---
 
@@ -36,7 +36,9 @@
 | **FR-BILL-03** | Xuất Hóa đơn ra file PDF | UC9 | `invoices` | `PdfExportService.exportInvoicePdf()` | `TC-PDF-02` |
 | **FR-ADMIN-01**| Dashboard thống kê KPI & Doanh thu| UC17 | `invoices`, `appointments` | `DashboardService.getDashboardStatistics()` | `TC-STAT-01` |
 | **FR-ADMIN-02**| Biểu đồ phân bổ ca khám & tỷ lệ trạng thái | UC17 | `appointments`, `invoices` | `DashboardService`, `AdminController` | `TC-STAT-02` |
-| **FR-ADMIN-03**| Quản lý Kho thuốc & Dược phẩm | UC15 | `medicines` | `MedicineService`, `AdminController` | `TC-MED-01` |
+| **FR-ADMIN-03**| Quản lý danh mục thuốc, giá bán và ngưỡng nhập lại | UC15 | `medicines` | `MedicineService.updateCatalog()`, `AdminController` | `MedicineServiceTest`, `AuthenticatedPortalRenderIntegrationTest` |
+| **FR-ADMIN-04**| Cảnh báo thuốc sắp hết/hết hàng theo `reorder_level` | UC15 | `medicines.reorder_level`, `medicines.stock_quantity` | `MedicineRepository.countLowStock()`, `AdminController` | `MedicineServiceTest`, portal render contract |
+| **FR-ADMIN-05**| Nhập bổ sung và audit mọi biến động kho | UC15, UC12 | `inventory_transactions`, `medicines` | `MedicineService.restock()`, `MedicalRecordServiceImpl` | `MedicineServiceTest`, `MedicineStockConcurrencyIntegrationTest` |
 
 
 ## Truy vết NFR Security & Observability

@@ -26,6 +26,8 @@ erDiagram
     MEDICAL_RECORDS ||--o| PRESCRIPTIONS : "includes"
     PRESCRIPTIONS ||--o{ PRESCRIPTION_ITEMS : "details"
     MEDICINES ||--o{ PRESCRIPTION_ITEMS : "supplies"
+    MEDICINES ||--o{ INVENTORY_TRANSACTIONS : "has_movements"
+    USERS ||--o{ INVENTORY_TRANSACTIONS : "performs"
 
     APPOINTMENTS ||--o| INVOICES : "billed_as"
     DAILY_QUEUE_COUNTERS ||--|| APPOINTMENTS : "allocates_daily_sequence"
@@ -166,14 +168,29 @@ erDiagram
 | `unit_price` | DECIMAL(12,2)| NOT NULL | Đơn giá bán lẻ (VNĐ) |
 | `usage_guide` | NVARCHAR(255) | NULL | Hướng dẫn sử dụng cơ bản |
 | `stock_quantity`| INT | NOT NULL, DEFAULT 1000 | Số lượng tồn trong kho |
+| `reorder_level`| INT | NOT NULL, DEFAULT 50, CHECK >= 0 | Ngưỡng cảnh báo cần nhập bổ sung của từng thuốc |
 | `is_active` | BIT | NOT NULL, DEFAULT TRUE | Trạng thái kinh doanh |
 | `version` | BIGINT | NOT NULL | Optimistic locking khi trừ tồn kho |
 
-### 3.10. Bảng `prescriptions` & `prescription_items` (Đơn thuốc & Chi tiết đơn thuốc)
+### 3.10. Bảng `inventory_transactions` (Nhật ký nhập/xuất kho)
+| Tên Cột | Kiểu Dữ Liệu | Ràng Buộc | Ý Nghĩa / Diễn Giải |
+| :--- | :--- | :--- | :--- |
+| `id` | BIGINT | PK, IDENTITY | Khóa chính |
+| `medicine_id` | BIGINT | NOT NULL, FK -> `medicines(id)` | Thuốc phát sinh biến động |
+| `type` | NVARCHAR(20) | NOT NULL | `RESTOCK`, `DISPENSE`, `ADJUSTMENT` |
+| `quantity_change` | INT | NOT NULL, != 0 | Biến động có dấu: nhập dương, xuất âm |
+| `stock_before` / `stock_after` | INT | NOT NULL, CHECK >= 0 | Snapshot tồn trước/sau để audit |
+| `unit_cost` | DECIMAL(12,2) | NULL, CHECK >= 0 | Giá nhập theo đơn vị nếu có |
+| `note` | NVARCHAR(255) | NULL | Ghi chú phiếu nhập/xuất |
+| `reference_type`, `reference_id` | NVARCHAR(30), BIGINT | NULL | Tham chiếu nghiệp vụ; xuất kê đơn dùng `APPOINTMENT` |
+| `performed_by_user_id` | BIGINT | NOT NULL, FK -> `users(id)` | Người gây ra giao dịch |
+| `created_at` | DATETIME2 | NOT NULL | Thời điểm giao dịch |
+
+### 3.11. Bảng `prescriptions` & `prescription_items` (Đơn thuốc & Chi tiết đơn thuốc)
 - **`prescriptions`:** `id` (PK), `medical_record_id` (FK Unique), `doctor_notes` (TEXT), `created_at` (DATETIME).
 - **`prescription_items`:** `id` (PK), `prescription_id` (FK), `medicine_id` (FK), `quantity` (INT), `unit_price_at_time` (DECIMAL(12,2), NOT NULL), `dosage` (VARCHAR), `frequency` (VARCHAR), `instructions` (VARCHAR). Giá snapshot được dùng cho tổng tiền của đơn cũ.
 
-### 3.11. Bảng `invoices` (Hóa đơn thanh toán viện phí)
+### 3.12. Bảng `invoices` (Hóa đơn thanh toán viện phí)
 | Tên Cột | Kiểu Dữ Liệu | Ràng Buộc | Ý Nghĩa / Diễn Giải |
 | :--- | :--- | :--- | :--- |
 | `id` | BIGINT | PK, IDENTITY | Khóa chính |
@@ -187,7 +204,7 @@ erDiagram
 | `paid_at` | DATETIME2 | NULL | Thời điểm thanh toán |
 | `created_at` | DATETIME2 | NOT NULL | Thời điểm lập hóa đơn |
 
-### 3.12. Bảng `daily_queue_counters` (Bộ cấp số thứ tự theo ngày)
+### 3.13. Bảng `daily_queue_counters` (Bộ cấp số thứ tự theo ngày)
 | Tên Cột | Kiểu Dữ Liệu | Ràng Buộc | Ý Nghĩa / Diễn Giải |
 | :--- | :--- | :--- | :--- |
 | `id` | BIGINT | PK, IDENTITY | Khóa chính |
@@ -195,16 +212,16 @@ erDiagram
 | `next_sequence` | BIGINT | NOT NULL | Sequence kế tiếp để cấp STT |
 | `version` | BIGINT | NOT NULL | Optimistic locking cho counter |
 
-### 3.13. Bảng `invoice_code_reservations` (Giữ chỗ mã hóa đơn)
+### 3.14. Bảng `invoice_code_reservations` (Giữ chỗ mã hóa đơn)
 | Tên Cột | Kiểu Dữ Liệu | Ràng Buộc | Ý Nghĩa / Diễn Giải |
 | :--- | :--- | :--- | :--- |
 | `invoice_code` | NVARCHAR(30) | PK, UNIQUE | Bản ghi reservation được insert trước khi phát hành hóa đơn để xử lý collision mã |
 
-### 3.14. Bảng `notifications` (Thông báo nội bộ)
+### 3.15. Bảng `notifications` (Thông báo nội bộ)
 - `id` BIGINT IDENTITY PK; `user_id` FK -> `users(id)`; `title` NVARCHAR(150) NOT NULL; `content` NVARCHAR(MAX) NOT NULL; `type` NVARCHAR(50) NULL; `is_read` BIT NOT NULL; `created_at` DATETIME2 NOT NULL.
 - Hiện project mới có entity/repository; notification center hoàn chỉnh thuộc roadmap.
 
-### 3.15. Bảng `password_reset_tokens` (Token khôi phục mật khẩu)
+### 3.16. Bảng `password_reset_tokens` (Token khôi phục mật khẩu)
 - `id` BIGINT IDENTITY PK; `user_id` FK -> `users(id)`; `token_hash` NVARCHAR(64) NOT NULL UNIQUE + index; `expires_at` DATETIME2 NOT NULL; `used_at` DATETIME2 NULL; `created_at` DATETIME2 NOT NULL.
 - Chỉ lưu SHA-256 hash token, không lưu token thô; token hết hạn sau 24 giờ và chỉ dùng một lần.
 
@@ -219,6 +236,7 @@ Các migration hiện tại:
 - `src/main/resources/db/migration/sqlserver/V1__baseline_schema.sql`: baseline 16 bảng, foreign key, unique constraint và filtered index của SQL Server.
 - `src/main/resources/db/migration/sqlserver/V2__reference_roles.sql`: seed idempotent bốn role hệ thống bắt buộc.
 - `src/main/resources/db/migration/sqlserver/V3__restore_jdbc_session_state.sql`: trả SQL Server session về `NOCOUNT OFF` để connection pool/JDBC generated keys hoạt động ổn định sau migration.
+- `src/main/resources/db/migration/sqlserver/V4__inventory_restock_and_low_stock.sql`: thêm `medicines.reorder_level`, bảng `inventory_transactions`, FK/check/index phục vụ cảnh báo tồn thấp và audit nhập/xuất kho.
 
 V1/V2 được kiểm tra tự động để luôn đồng bộ nội dung với `docs/database/SQLSERVER_BASELINE_SCHEMA_2026-09-19.sql` và `docs/database/SQLSERVER_REFERENCE_DATA_2026-09-19.sql`.
 

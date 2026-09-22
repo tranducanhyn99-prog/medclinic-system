@@ -122,6 +122,22 @@ graph TD
 
 ---
 
+### 2.4. Đặc tả Use Case UC15: Quản lý Kho thuốc & Nhập bổ sung
+- **Actor:** Quản trị viên (`ROLE_ADMIN`)
+- **Pre-conditions:** Admin đã đăng nhập; thuốc đã tồn tại nếu thực hiện nhập bổ sung.
+- **Main Flow:**
+  1. Admin mở trang Kho thuốc và xem tồn hiện tại, ngưỡng nhập lại và trạng thái từng thuốc.
+  2. Hệ thống đánh dấu `Hết hàng` khi tồn bằng 0, `Sắp hết` khi tồn nhỏ hơn hoặc bằng `reorderLevel`, ngược lại là `Bình thường`.
+  3. Admin chọn `Nhập thêm`, nhập số lượng lớn hơn 0, giá nhập tùy chọn và ghi chú phiếu nhập.
+  4. Hệ thống khóa bản ghi thuốc, tăng tồn kho nguyên tử và lưu `InventoryTransaction` loại `RESTOCK` với tồn trước/sau và người thực hiện.
+  5. Lịch sử giao dịch kho hiển thị các lần nhập và các lần xuất theo đơn thuốc (`DISPENSE`).
+- **Alternate Flows:**
+  - *3a. Số lượng nhập <= 0 hoặc giá nhập âm:* từ chối giao dịch, tồn kho không thay đổi.
+  - *4a. Có cập nhật đồng thời:* thao tác sử dụng pessimistic lock để tránh lost update.
+- **Post-conditions:** Tồn kho và nhật ký giao dịch nhất quán trong cùng transaction; Dashboard phản ánh lại số thuốc dưới ngưỡng.
+
+---
+
 ## 3. SƠ ĐỒ HOẠT ĐỘNG (ACTIVITY DIAGRAMS)
 
 ### 3.1. Sơ đồ Hoạt động: Quy trình Đặt lịch khám trực tuyến

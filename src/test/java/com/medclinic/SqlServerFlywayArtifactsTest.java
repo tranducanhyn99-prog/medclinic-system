@@ -26,6 +26,12 @@ class SqlServerFlywayArtifactsTest {
         String sessionStateMigration = normalized(
                 MIGRATIONS.resolve("V3__restore_jdbc_session_state.sql"));
         assertTrue(sessionStateMigration.contains("SET NOCOUNT OFF;"));
+        String inventoryMigration = normalized(
+                MIGRATIONS.resolve("V4__inventory_restock_and_low_stock.sql"));
+        assertTrue(inventoryMigration.contains("reorder_level"));
+        assertTrue(inventoryMigration.contains("inventory_transactions"));
+        assertTrue(inventoryMigration.contains("RESTOCK"));
+        assertTrue(inventoryMigration.contains("DISPENSE"));
     }
 
     @Test

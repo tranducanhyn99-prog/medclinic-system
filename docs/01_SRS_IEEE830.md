@@ -93,7 +93,9 @@ Hệ thống được phát triển theo mô hình kiến trúc phân tầng chu
 ### 3.7. Phân hệ Quản trị & Báo cáo Doanh thu (Admin Dashboard & Reports)
 - **FR-ADMIN-01 (Dashboard KPI):** Admin theo dõi tổng số bệnh nhân, số bác sĩ, số ca khám hôm nay, tổng doanh thu thực thu.
 - **FR-ADMIN-02 (Biểu đồ Chart.js):** Hiển thị biểu đồ phân bổ ca khám theo chuyên khoa và biểu đồ tỷ lệ trạng thái lịch hẹn (Hoàn tất, Đang khám, Hủy).
-- **FR-ADMIN-03 (Quản lý Kho thuốc):** Admin thêm mới thuốc, cập nhật giá bán, số lượng nhập kho, hướng dẫn sử dụng và trạng thái kinh doanh.
+- **FR-ADMIN-03 (Quản lý Danh mục Kho thuốc):** Admin thêm mới thuốc, cập nhật giá bán, hướng dẫn sử dụng, trạng thái kinh doanh và cấu hình `reorderLevel` riêng cho từng thuốc. Form chỉnh sửa danh mục không dùng để thay đổi trực tiếp số lượng tồn kho.
+- **FR-ADMIN-04 (Cảnh báo Tồn kho thấp):** Mỗi thuốc có ngưỡng nhập lại (`reorderLevel`, mặc định 50). Thuốc đang kinh doanh có `stockQuantity <= reorderLevel` phải được đánh dấu "Sắp hết"; `stockQuantity = 0` được đánh dấu "Hết hàng". Dashboard Admin và trang Kho thuốc phải hiển thị số thuốc cần bổ sung.
+- **FR-ADMIN-05 (Nhập kho & Nhật ký Kho):** Admin nhập bổ sung số lượng dương, có thể ghi giá nhập và ghi chú. Hệ thống tăng tồn kho trong cùng transaction và tạo `InventoryTransaction` lưu tồn trước/sau, người thực hiện và thời điểm. Khi bác sĩ hoàn tất đơn thuốc, lượng thuốc xuất kho cũng phải tạo transaction `DISPENSE`; rollback ca khám phải rollback cả biến động kho và nhật ký tương ứng.
 
 ---
 

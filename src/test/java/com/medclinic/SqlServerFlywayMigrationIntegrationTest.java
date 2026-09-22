@@ -40,6 +40,7 @@ class SqlServerFlywayMigrationIntegrationTest {
                 assertEquals("SQL", historyType(jdbc, "1"));
                 assertEquals("SQL", historyType(jdbc, "2"));
                 assertEquals("SQL", historyType(jdbc, "3"));
+                assertEquals("SQL", historyType(jdbc, "4"));
                 assertEquals(9, jdbc.queryForObject("select count(*) from users", Integer.class));
                 assertEquals(6, jdbc.queryForObject("select count(*) from doctor_profiles", Integer.class));
             }
@@ -57,6 +58,7 @@ class SqlServerFlywayMigrationIntegrationTest {
                 assertEquals("BASELINE", historyType(jdbc, "1"));
                 assertEquals("SQL", historyType(jdbc, "2"));
                 assertEquals("SQL", historyType(jdbc, "3"));
+                assertEquals("SQL", historyType(jdbc, "4"));
             }
         } finally {
             dropMigrationDatabase(masterJdbc);
@@ -113,9 +115,10 @@ class SqlServerFlywayMigrationIntegrationTest {
     }
 
     private void assertSchemaAndRoles(JdbcTemplate jdbc) {
-        assertEquals(16, applicationTableCount(jdbc));
+        assertEquals(17, applicationTableCount(jdbc));
         assertTrue(tableExists(jdbc, "flyway_schema_history"));
-        assertEquals(3, jdbc.queryForObject(
+        assertTrue(tableExists(jdbc, "inventory_transactions"));
+        assertEquals(4, jdbc.queryForObject(
                 "select count(*) from flyway_schema_history where success = 1",
                 Integer.class));
         assertEquals(4, jdbc.queryForObject(

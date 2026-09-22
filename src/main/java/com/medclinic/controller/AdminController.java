@@ -11,8 +11,10 @@ import com.medclinic.dto.AdminDoctorCreateDto;
 import com.medclinic.dto.AdminMedicineDto;
 import com.medclinic.dto.AdminSpecialtyDto;
 import com.medclinic.exception.BusinessLogicException;
+import com.medclinic.security.CustomUserDetails;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -39,6 +41,7 @@ public class AdminController {
         model.addAttribute("totalDoctors", dashboardService.countTotalDoctors());
         model.addAttribute("todayAppointments", dashboardService.countTodayAppointments());
         model.addAttribute("totalRevenue", dashboardService.getTotalRevenue());
+        model.addAttribute("lowStockCount", medicineService.countLowStock());
         
         model.addAttribute("statusChartData", objectMapper.writeValueAsString(dashboardService.getAppointmentsByStatusGroup()));
         model.addAttribute("specialtyChartData", objectMapper.writeValueAsString(dashboardService.getAppointmentsBySpecialtyGroup()));
@@ -119,12 +122,24 @@ public class AdminController {
         if (bindingResult.hasErrors()) { model.addAttribute("medicineForm", form); prepareMedicines(model); return "admin/medicines"; }
         try {
         if (form.getId() != null) {
-            medicineService.update(form.getId(), form.getName(), form.getUnit(), form.getUnitPrice(), form.getUsageGuide(), form.getStockQuantity());
+            medicineService.updateCatalog(form.getId(), form.getName(), form.getUnit(), form.getUnitPrice(), form.getUsageGuide(), form.getReorderLevel());
         } else {
-            medicineService.save(form.getName(), form.getUnit(), form.getUnitPrice(), form.getUsageGuide(), form.getStockQuantity());
+            medicineService.save(form.getName(), form.getUnit(), form.getUnitPrice(), form.getUsageGuide(), form.getStockQuantity(), form.getReorderLevel());
         }
         } catch (BusinessLogicException ex) { bindingResult.rejectValue("name", "duplicate", ex.getMessage()); model.addAttribute("medicineForm", form); prepareMedicines(model); return "admin/medicines"; }
         redirectAttributes.addFlashAttribute("successMessage", "Lưu thuốc thành công");
+        return "redirect:/admin/medicines";
+    }
+
+    @PostMapping("/medicines/{id}/restock")
+    public String restockMedicine(@PathVariable Long id,
+                                  @RequestParam("quantity") int quantity,
+                                  @RequestParam(value = "unitCost", required = false) BigDecimal unitCost,
+                                  @RequestParam(value = "note", required = false) String note,
+                                  @AuthenticationPrincipal CustomUserDetails principal,
+                                  RedirectAttributes redirectAttributes) {
+        medicineService.restock(id, quantity, unitCost, note, principal.getId());
+        redirectAttributes.addFlashAttribute("successMessage", "Nhập kho thành công");
         return "redirect:/admin/medicines";
     }
 
@@ -151,5 +166,10 @@ public class AdminController {
 
     private void prepareSpecialties(Model model) { model.addAttribute("specialties", specialtyService.findAll()); if (!model.containsAttribute("specialtyForm")) model.addAttribute("specialtyForm", new AdminSpecialtyDto()); }
     private void prepareDoctors(Model model) { model.addAttribute("doctors", doctorService.findAll()); model.addAttribute("specialties", specialtyService.findAllActive()); if (!model.containsAttribute("doctorForm")) model.addAttribute("doctorForm", new AdminDoctorCreateDto()); }
-    private void prepareMedicines(Model model) { model.addAttribute("medicines", medicineService.findAll()); if (!model.containsAttribute("medicineForm")) model.addAttribute("medicineForm", new AdminMedicineDto()); }
+    private void prepareMedicines(Model model) {
+        model.addAttribute("medicines", medicineService.findAll());
+        model.addAttribute("lowStockCount", medicineService.countLowStock());
+        model.addAttribute("inventoryTransactions", medicineService.findRecentTransactions());
+        if (!model.containsAttribute("medicineForm")) model.addAttribute("medicineForm", new AdminMedicineDto());
+    }
 }

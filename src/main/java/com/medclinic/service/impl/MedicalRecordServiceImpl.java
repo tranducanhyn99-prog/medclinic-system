@@ -3,10 +3,12 @@ package com.medclinic.service.impl;
 import com.medclinic.dto.PrescriptionItemDto;
 import com.medclinic.entity.*;
 import com.medclinic.enums.AppointmentStatus;
+import com.medclinic.enums.InventoryTransactionType;
 import com.medclinic.exception.BusinessLogicException;
 import com.medclinic.event.DoctorQueueChangedEvent;
 import com.medclinic.exception.ResourceNotFoundException;
 import com.medclinic.repository.AppointmentRepository;
+import com.medclinic.repository.InventoryTransactionRepository;
 import com.medclinic.repository.MedicalRecordRepository;
 import com.medclinic.repository.MedicineRepository;
 import com.medclinic.service.MedicalRecordService;
@@ -29,6 +31,7 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
     private final MedicalRecordRepository medicalRecordRepository;
     private final AppointmentRepository appointmentRepository;
     private final MedicineRepository medicineRepository;
+    private final InventoryTransactionRepository inventoryTransactionRepository;
     private final InvoiceService invoiceService;
     private final ApplicationEventPublisher applicationEventPublisher;
 
@@ -107,8 +110,16 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
                 if (medicine.getStockQuantity() < entry.getValue()) {
                     throw new BusinessLogicException("Thuốc " + medicine.getName() + " không đủ số lượng tồn kho (Còn lại: " + medicine.getStockQuantity() + ")");
                 }
-                medicine.setStockQuantity(medicine.getStockQuantity() - entry.getValue());
+                int stockBefore = medicine.getStockQuantity();
+                int stockAfter = stockBefore - entry.getValue();
+                medicine.setStockQuantity(stockAfter);
                 medicineRepository.save(medicine);
+                inventoryTransactionRepository.save(InventoryTransaction.builder()
+                        .medicine(medicine).type(InventoryTransactionType.DISPENSE)
+                        .quantityChange(-entry.getValue()).stockBefore(stockBefore).stockAfter(stockAfter)
+                        .referenceType("APPOINTMENT").referenceId(appointment.getId())
+                        .note("Xuất kho theo đơn thuốc " + appointment.getBookingCode())
+                        .performedBy(appointment.getDoctor().getUser()).build());
                 lockedMedicines.put(entry.getKey(), medicine);
             }
             for (PrescriptionItemDto dto : prescriptionItems) {
