@@ -6,7 +6,10 @@ import com.medclinic.repository.*;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -15,10 +18,15 @@ import java.time.LocalTime;
 import java.util.List;
 import java.util.UUID;
 
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /** Repository calls finish their transactions before nested properties are read below. */
 @SpringBootTest
+@AutoConfigureMockMvc
 @ActiveProfiles("dev")
 class LazyLoadingEntityGraphIntegrationTest {
     @Autowired private UserRepository users;
@@ -29,9 +37,10 @@ class LazyLoadingEntityGraphIntegrationTest {
     @Autowired private MedicineRepository medicines;
     @Autowired private MedicalRecordRepository records;
     @Autowired private InvoiceRepository invoices;
+    @Autowired private MockMvc mockMvc;
 
     @Test
-    void medicalHistoryAndInvoiceGraphsRemainUsableAfterRepositoryTransactionCloses() {
+    void medicalHistoryAndInvoiceGraphsRemainUsableAfterRepositoryTransactionCloses() throws Exception {
         DoctorProfile doctor = doctors.findAll().getFirst();
         User patient = users.findByUsername("patient").orElseThrow();
         LocalDate date = LocalDate.now().plusDays(90);
@@ -57,12 +66,27 @@ class LazyLoadingEntityGraphIntegrationTest {
                 .paymentStatus(PaymentStatus.UNPAID).createdAt(LocalDateTime.now()).build());
 
         MedicalRecord detachedRecord = records.findByAppointmentId(appointment.getId()).orElseThrow();
-        Invoice detachedInvoice = invoices.findById(invoice.getId()).orElseThrow();
+        Invoice detachedInvoice = invoices.findAllByOrderByCreatedAtDesc().stream()
+                .filter(candidate -> candidate.getId().equals(invoice.getId()))
+                .findFirst().orElseThrow();
 
         assertEquals(patient.getFullName(), detachedRecord.getPatient().getFullName());
         assertEquals(doctor.getUser().getFullName(), detachedRecord.getDoctor().getUser().getFullName());
         assertEquals(medicine.getName(), detachedRecord.getPrescription().getItems().getFirst().getMedicine().getName());
         assertEquals(patient.getFullName(), detachedInvoice.getAppointment().getPatient().getFullName());
         assertEquals(doctor.getUser().getFullName(), detachedInvoice.getAppointment().getDoctor().getUser().getFullName());
+        assertEquals(doctor.getSpecialty().getName(), detachedInvoice.getAppointment().getDoctor().getSpecialty().getName());
+        assertEquals(0, detachedInvoice.getConsultationFee().compareTo(BigDecimal.ZERO));
+        assertEquals(0, detachedInvoice.getMedicineFee().compareTo(medicine.getUnitPrice()));
+        assertEquals(0, detachedInvoice.getTotalAmount().compareTo(medicine.getUnitPrice()));
+        assertEquals(PaymentStatus.UNPAID, detachedInvoice.getPaymentStatus());
+
+        mockMvc.perform(get("/staff/billing")
+                        .with(SecurityMockMvcRequestPostProcessors.user("staff-billing-test").roles("STAFF")))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString(invoice.getInvoiceCode())))
+                .andExpect(content().string(containsString(doctor.getSpecialty().getName())))
+                .andExpect(content().string(containsString("Chưa thanh toán")))
+                .andExpect(content().string(containsString("Thu Tiền")));
     }
 }

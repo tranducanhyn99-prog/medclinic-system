@@ -18,21 +18,21 @@ import jakarta.persistence.LockModeType;
 @Repository
 public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
     @Override
-    @EntityGraph(attributePaths = {"appointment", "appointment.patient", "appointment.doctor", "appointment.doctor.user"})
+    @EntityGraph(attributePaths = {"appointment", "appointment.patient", "appointment.doctor", "appointment.doctor.user", "appointment.doctor.specialty"})
     Optional<Invoice> findById(Long id);
-    @EntityGraph(attributePaths = {"appointment", "appointment.patient", "appointment.doctor", "appointment.doctor.user"})
+    @EntityGraph(attributePaths = {"appointment", "appointment.patient", "appointment.doctor", "appointment.doctor.user", "appointment.doctor.specialty"})
     Optional<Invoice> findByAppointmentId(Long appointmentId);
-    @EntityGraph(attributePaths = {"appointment", "appointment.patient", "appointment.doctor", "appointment.doctor.user"})
+    @EntityGraph(attributePaths = {"appointment", "appointment.patient", "appointment.doctor", "appointment.doctor.user", "appointment.doctor.specialty"})
     Optional<Invoice> findByInvoiceCode(String invoiceCode);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT i FROM Invoice i WHERE i.id = :id")
     Optional<Invoice> findByIdForUpdate(@Param("id") Long id);
-    @EntityGraph(attributePaths = {"appointment", "appointment.patient", "appointment.doctor", "appointment.doctor.user"})
+    @EntityGraph(attributePaths = {"appointment", "appointment.patient", "appointment.doctor", "appointment.doctor.user", "appointment.doctor.specialty"})
     List<Invoice> findByPaymentStatus(PaymentStatus status);
-    @EntityGraph(attributePaths = {"appointment", "appointment.patient", "appointment.doctor", "appointment.doctor.user"})
+    @EntityGraph(attributePaths = {"appointment", "appointment.patient", "appointment.doctor", "appointment.doctor.user", "appointment.doctor.specialty"})
     List<Invoice> findByPaymentStatusOrderByCreatedAtDesc(PaymentStatus status);
-    @EntityGraph(attributePaths = {"appointment", "appointment.patient", "appointment.doctor", "appointment.doctor.user"})
+    @EntityGraph(attributePaths = {"appointment", "appointment.patient", "appointment.doctor", "appointment.doctor.user", "appointment.doctor.specialty"})
     List<Invoice> findAllByOrderByCreatedAtDesc();
 
     @Query("SELECT SUM(i.totalAmount) FROM Invoice i WHERE i.paymentStatus = 'PAID'")
@@ -43,7 +43,7 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
     BigDecimal calculateRevenueSince(@Param("sinceDate") LocalDateTime sinceDate);
 
     @Query("SELECT i FROM Invoice i ORDER BY i.createdAt DESC")
-    @EntityGraph(attributePaths = {"appointment", "appointment.patient", "appointment.doctor", "appointment.doctor.user"})
+    @EntityGraph(attributePaths = {"appointment", "appointment.patient", "appointment.doctor", "appointment.doctor.user", "appointment.doctor.specialty"})
     List<Invoice> findRecentInvoices();
 }
 
