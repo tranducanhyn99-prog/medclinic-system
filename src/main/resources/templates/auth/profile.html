@@ -19,17 +19,27 @@
 
             <div class="mc-profile-card mb-4">
                 <div class="mc-profile-identity">
-                    <div class="mc-profile-avatar"><span th:text="${#strings.substring(user.fullName, 0, 1)}">U</span></div>
+                    <div class="mc-profile-avatar overflow-hidden">
+                        <img th:if="${user.avatarUrl != null}" th:src="${user.avatarUrl}" alt="Ảnh đại diện"
+                             style="width:100%;height:100%;object-fit:cover">
+                        <span th:unless="${user.avatarUrl != null}" th:text="${#strings.substring(user.fullName, 0, 1)}">U</span>
+                    </div>
                     <div>
                         <h2 class="mc-profile-name" th:text="${user.fullName}">Nguyễn Văn An</h2>
                         <span class="badge bg-primary-subtle text-primary border border-primary mt-1"
                               th:text="${user.role.name.displayName}">Bệnh nhân</span>
                     </div>
                 </div>
-                <form th:action="@{/profile}" method="post">
+                <form th:action="@{/profile}" method="post" enctype="multipart/form-data">
                     <div class="mc-form-section">
                         <h2 class="mc-form-section-title">Thông tin cá nhân</h2>
-                        <p class="mc-form-section-copy">Tên đăng nhập và email được khóa để tránh thay đổi nhầm định danh tài khoản.</p>
+                        <p class="mc-form-section-copy">Tên đăng nhập và email là định danh tài khoản. Các thông tin cá nhân bên dưới có thể chỉnh sửa.</p>
+                        <div class="mb-4">
+                            <label for="profileAvatar" class="form-label">Ảnh đại diện</label>
+                            <input id="profileAvatar" type="file" name="avatar" class="form-control"
+                                   accept="image/jpeg,image/png,image/webp">
+                            <div class="form-text">JPG, PNG hoặc WebP, tối đa 5 MB.</div>
+                        </div>
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <label for="profileUsername" class="form-label">Tên đăng nhập</label>
@@ -50,6 +60,19 @@
                                 <label for="profilePhone" class="form-label">Số điện thoại</label>
                                 <input id="profilePhone" type="tel" name="phone" class="form-control"
                                        th:value="${user.phone}" autocomplete="tel" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="profileGender" class="form-label">Giới tính</label>
+                                <select id="profileGender" name="gender" class="form-select">
+                                    <option value="MALE" th:selected="${user.gender?.name() == 'MALE'}">Nam</option>
+                                    <option value="FEMALE" th:selected="${user.gender?.name() == 'FEMALE'}">Nữ</option>
+                                    <option value="OTHER" th:selected="${user.gender?.name() == 'OTHER'}">Khác</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="profileDateOfBirth" class="form-label">Ngày sinh</label>
+                                <input id="profileDateOfBirth" type="date" name="dateOfBirth" class="form-control"
+                                       th:value="${user.dateOfBirth}" autocomplete="bday">
                             </div>
                             <div class="col-12">
                                 <label for="profileAddress" class="form-label">Địa chỉ</label>
@@ -78,7 +101,7 @@
                             <div class="col-md-4">
                                 <label for="profileNewPassword" class="form-label">Mật khẩu mới</label>
                                 <input id="profileNewPassword" type="password" name="newPassword" class="form-control"
-                                       placeholder="Tối thiểu 6 ký tự" autocomplete="new-password" required>
+                                       placeholder="Tối thiểu 8 ký tự" autocomplete="new-password" required>
                             </div>
                             <div class="col-md-4">
                                 <label for="profileConfirmPassword" class="form-label">Xác nhận mật khẩu mới</label>

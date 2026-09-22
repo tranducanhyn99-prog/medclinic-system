@@ -59,7 +59,7 @@ public class SensitiveEndpointRateLimitFilter extends OncePerRequestFilter {
         long now = clock.getAsLong();
         String remoteIp = request.getRemoteAddr();
         String key = remoteIp + '|' + endpoint;
-        int limit = endpoint.equals("/login") ? loginMaxRequests : passwordResetMaxRequests;
+        int limit = endpoint.equals("/auth/login") ? loginMaxRequests : passwordResetMaxRequests;
 
         WindowCounter counter = counters.compute(key, (ignored, current) -> {
             if (current == null || now - current.windowStartMillis() >= windowMillis) {
@@ -92,7 +92,9 @@ public class SensitiveEndpointRateLimitFilter extends OncePerRequestFilter {
             return null;
         }
         String path = request.getRequestURI().substring(request.getContextPath().length());
-        if ("/login".equals(path)
+        if ("/auth/login".equals(path)
+                || "/auth/otp".equals(path)
+                || "/auth/otp/resend".equals(path)
                 || "/forgot-password".equals(path)
                 || "/reset-password".equals(path)) {
             return path;

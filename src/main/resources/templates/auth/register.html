@@ -17,7 +17,7 @@
                 <form th:action="@{/register}" th:object="${registerDto}" method="post" class="mc-auth-form">
                     <section class="mc-form-section" aria-labelledby="accountSectionTitle">
                         <h2 class="mc-form-section-title" id="accountSectionTitle">Thông tin tài khoản</h2>
-                        <p class="mc-form-section-copy">Thông tin dùng để đăng nhập và nhận thông báo từ hệ thống.</p>
+                        <p class="mc-form-section-copy">Email sẽ nhận OTP và liên kết xác nhận có hiệu lực trong 5 phút.</p>
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <label for="username" class="form-label">Tên đăng nhập <span class="text-danger">*</span></label>
@@ -89,7 +89,7 @@
                     </section>
 
                     <button type="submit" class="btn btn-med-primary mc-auth-submit mt-4">
-                        <i class="bi bi-person-check-fill me-2"></i>Hoàn tất đăng ký
+                        <i class="bi bi-person-check-fill me-2"></i>Tạo tài khoản & xác thực email
                     </button>
                     <div class="mc-auth-links">
                         Đã có tài khoản? <a th:href="@{/login}">Đăng nhập</a>

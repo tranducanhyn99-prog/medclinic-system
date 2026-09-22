@@ -26,6 +26,10 @@ class SqlServerFlywayArtifactsTest {
         String sessionStateMigration = normalized(
                 MIGRATIONS.resolve("V3__restore_jdbc_session_state.sql"));
         assertTrue(sessionStateMigration.contains("SET NOCOUNT OFF;"));
+        String otpMigration = normalized(MIGRATIONS.resolve("V5__email_otp_and_profile_security.sql"));
+        assertTrue(otpMigration.contains("auth_verification_challenges"));
+        assertTrue(otpMigration.contains("email_verified"));
+        assertTrue(otpMigration.contains("otp_bypass"));
         String inventoryMigration = normalized(
                 MIGRATIONS.resolve("V4__inventory_restock_and_low_stock.sql"));
         assertTrue(inventoryMigration.contains("reorder_level"));

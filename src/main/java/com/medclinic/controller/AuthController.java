@@ -2,20 +2,35 @@ package com.medclinic.controller;
 
 import com.medclinic.dto.UserRegisterDto;
 import com.medclinic.entity.User;
+import com.medclinic.enums.AuthChallengeType;
+import com.medclinic.enums.Gender;
 import com.medclinic.security.CustomUserDetails;
+import com.medclinic.security.SecurityAuditService;
+import com.medclinic.service.AuthVerificationService;
+import com.medclinic.service.AvatarStorageService;
 import com.medclinic.service.PasswordResetService;
 import com.medclinic.service.UserService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Controller
 @RequiredArgsConstructor
@@ -23,6 +38,10 @@ public class AuthController {
 
     private final UserService userService;
     private final PasswordResetService passwordResetService;
+    private final AuthVerificationService authVerificationService;
+    private final AvatarStorageService avatarStorageService;
+    private final AuthenticationManager authenticationManager;
+    private final SecurityAuditService securityAuditService;
 
     @GetMapping("/login")
     public String loginPage(@RequestParam(required = false) String error,
@@ -35,6 +54,126 @@ public class AuthController {
             model.addAttribute("successMessage", "Bạn đã đăng xuất thành công khỏi hệ thống!");
         }
         return "auth/login";
+    }
+
+    @PostMapping("/auth/login")
+    public String handleLogin(@RequestParam String username,
+                              @RequestParam String password,
+                              HttpServletRequest request,
+                              RedirectAttributes redirectAttributes) {
+        try {
+            var authentication = authenticationManager.authenticate(
+                    UsernamePasswordAuthenticationToken.unauthenticated(username, password));
+            CustomUserDetails details = (CustomUserDetails) authentication.getPrincipal();
+            User user = userService.findById(details.getId());
+
+            if (Boolean.TRUE.equals(user.getOtpBypass())) {
+                establishSession(user, request);
+                securityAuditService.authenticationSuccess(user.getUsername(), request.getRemoteAddr());
+                redirectAttributes.addFlashAttribute("successMessage", "Đăng nhập thành công!");
+                return "redirect:" + redirectFor(user);
+            }
+
+            var issued = authVerificationService.issueChallenge(user.getId(), AuthChallengeType.LOGIN);
+            redirectAttributes.addFlashAttribute("successMessage",
+                    "Mã OTP đã được gửi đến " + issued.maskedEmail() + ".");
+            return "redirect:/auth/otp?challenge=" + issued.challengeId();
+        } catch (AuthenticationException exception) {
+            securityAuditService.authenticationFailure(username, request.getRemoteAddr(),
+                    exception.getClass().getSimpleName());
+            return "redirect:/login?error=true";
+        }
+    }
+
+    @GetMapping("/register")
+    public String registerPage(Model model) {
+        model.addAttribute("registerDto", new UserRegisterDto());
+        return "auth/register";
+    }
+
+    @PostMapping("/register")
+    public String handleRegister(@Valid @ModelAttribute("registerDto") UserRegisterDto registerDto,
+                                 BindingResult bindingResult,
+                                 RedirectAttributes redirectAttributes,
+                                 Model model) {
+        if (bindingResult.hasErrors()) {
+            return "auth/register";
+        }
+        try {
+            User user = userService.registerPatient(registerDto);
+            var issued = authVerificationService.issueChallenge(user.getId(), AuthChallengeType.REGISTRATION);
+            redirectAttributes.addFlashAttribute("successMessage",
+                    "Tài khoản đã được tạo. Hãy xác thực email " + issued.maskedEmail() + " để kích hoạt.");
+            return "redirect:/auth/otp?challenge=" + issued.challengeId();
+        } catch (Exception exception) {
+            model.addAttribute("errorMessage", exception.getMessage());
+            return "auth/register";
+        }
+    }
+
+    @GetMapping("/auth/otp")
+    public String otpPage(@RequestParam Long challenge, Model model,
+                          RedirectAttributes redirectAttributes) {
+        try {
+            var info = authVerificationService.getChallengeInfo(challenge);
+            long secondsRemaining = Math.max(0L,
+                    Duration.between(LocalDateTime.now(), info.expiresAt()).getSeconds());
+            model.addAttribute("challenge", info);
+            model.addAttribute("secondsRemaining", secondsRemaining);
+            return "auth/verify-otp";
+        } catch (Exception exception) {
+            redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
+            return "redirect:/login";
+        }
+    }
+
+    @PostMapping("/auth/otp")
+    public String verifyOtp(@RequestParam Long challengeId,
+                            @RequestParam String code,
+                            HttpServletRequest request,
+                            RedirectAttributes redirectAttributes) {
+        try {
+            var result = authVerificationService.verifyCode(challengeId, code);
+            establishSession(result.user(), request);
+            securityAuditService.authenticationSuccess(result.user().getUsername(), request.getRemoteAddr());
+            redirectAttributes.addFlashAttribute("successMessage",
+                    "Xác thực thành công. Bạn đã đăng nhập vào MedClinic.");
+            return "redirect:" + redirectFor(result.user());
+        } catch (Exception exception) {
+            redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
+            return "redirect:/auth/otp?challenge=" + challengeId;
+        }
+    }
+
+    @PostMapping("/auth/otp/resend")
+    public String resendOtp(@RequestParam Long challengeId,
+                            RedirectAttributes redirectAttributes) {
+        try {
+            var issued = authVerificationService.resendChallenge(challengeId);
+            redirectAttributes.addFlashAttribute("successMessage",
+                    "Mã OTP mới đã được gửi đến " + issued.maskedEmail() + ".");
+            return "redirect:/auth/otp?challenge=" + issued.challengeId();
+        } catch (Exception exception) {
+            redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
+            return "redirect:/auth/otp?challenge=" + challengeId;
+        }
+    }
+
+    @GetMapping("/auth/verify-email")
+    public String verifyEmailLink(@RequestParam String token,
+                                  HttpServletRequest request,
+                                  RedirectAttributes redirectAttributes) {
+        try {
+            var result = authVerificationService.verifyMagicToken(token);
+            establishSession(result.user(), request);
+            securityAuditService.authenticationSuccess(result.user().getUsername(), request.getRemoteAddr());
+            redirectAttributes.addFlashAttribute("successMessage",
+                    "Email đã được xác thực. Bạn đã đăng nhập thành công vào MedClinic.");
+            return "redirect:" + redirectFor(result.user());
+        } catch (Exception exception) {
+            redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
+            return "redirect:/login";
+        }
     }
 
     @GetMapping("/forgot-password")
@@ -71,31 +210,6 @@ public class AuthController {
         }
     }
 
-    @GetMapping("/register")
-    public String registerPage(Model model) {
-        model.addAttribute("registerDto", new UserRegisterDto());
-        return "auth/register";
-    }
-
-    @PostMapping("/register")
-    public String handleRegister(@Valid @ModelAttribute("registerDto") UserRegisterDto registerDto,
-                                 BindingResult bindingResult,
-                                 RedirectAttributes redirectAttributes,
-                                 Model model) {
-        if (bindingResult.hasErrors()) {
-            return "auth/register";
-        }
-
-        try {
-            userService.registerPatient(registerDto);
-            redirectAttributes.addFlashAttribute("successMessage", "Đăng ký tài khoản thành công! Vui lòng đăng nhập.");
-            return "redirect:/login";
-        } catch (Exception exception) {
-            model.addAttribute("errorMessage", exception.getMessage());
-            return "auth/register";
-        }
-    }
-
     @GetMapping("/profile")
     public String profilePage(@AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
         if (userDetails == null) {
@@ -109,12 +223,21 @@ public class AuthController {
     @PostMapping("/profile")
     public String updateProfile(@AuthenticationPrincipal CustomUserDetails userDetails,
                                 @RequestParam String fullName,
-                                @RequestParam String phone,
-                                @RequestParam String address,
+                                @RequestParam(required = false) String phone,
+                                @RequestParam(required = false) Gender gender,
+                                @RequestParam(required = false)
+                                @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateOfBirth,
+                                @RequestParam(required = false) String address,
+                                @RequestParam(required = false) MultipartFile avatar,
                                 RedirectAttributes redirectAttributes) {
         try {
-            userService.updateUserProfile(userDetails.getId(), fullName, phone, address);
-            redirectAttributes.addFlashAttribute("successMessage", "Cập nhật thông tin cá nhân thành công!");
+            User current = userService.findById(userDetails.getId());
+            userService.updateUserProfile(userDetails.getId(), fullName, phone, gender, dateOfBirth, address);
+            if (avatar != null && !avatar.isEmpty()) {
+                String avatarUrl = avatarStorageService.storeAvatar(avatar, current.getAvatarUrl());
+                userService.updateAvatar(userDetails.getId(), avatarUrl);
+            }
+            redirectAttributes.addFlashAttribute("successMessage", "Cập nhật hồ sơ cá nhân thành công!");
         } catch (Exception exception) {
             redirectAttributes.addFlashAttribute("errorMessage", "Lỗi: " + exception.getMessage());
         }
@@ -138,5 +261,28 @@ public class AuthController {
             redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
         }
         return "redirect:/profile";
+    }
+
+    private void establishSession(User user, HttpServletRequest request) {
+        CustomUserDetails details = new CustomUserDetails(user);
+        var authentication = UsernamePasswordAuthenticationToken.authenticated(
+                details, null, details.getAuthorities());
+        var context = SecurityContextHolder.createEmptyContext();
+        context.setAuthentication(authentication);
+        SecurityContextHolder.setContext(context);
+
+        HttpSession session = request.getSession(true);
+        request.changeSessionId();
+        session = request.getSession(false);
+        session.setAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, context);
+    }
+
+    private String redirectFor(User user) {
+        return switch (user.getRole().getName()) {
+            case ROLE_ADMIN -> "/admin/dashboard";
+            case ROLE_DOCTOR -> "/doctor/desk";
+            case ROLE_STAFF -> "/staff/reception";
+            case ROLE_PATIENT -> "/patient/appointments";
+        };
     }
 }

@@ -34,6 +34,7 @@ erDiagram
     INVOICE_CODE_RESERVATIONS ||--|| INVOICES : "reserves_unique_code"
     USERS ||--o{ NOTIFICATIONS : "receives"
     USERS ||--o{ PASSWORD_RESET_TOKENS : "owns_reset_tokens"
+    USERS ||--o{ AUTH_VERIFICATION_CHALLENGES : "verifies_auth"
 ```
 
 ---
@@ -82,7 +83,9 @@ erDiagram
 | `gender` | NVARCHAR(10) | NULL | Giới tính (`MALE`, `FEMALE`, `OTHER`) |
 | `date_of_birth`| DATE | NULL | Ngày tháng năm sinh |
 | `address` | NVARCHAR(255) | NULL | Địa chỉ cư trú |
-| `avatar_url` | NVARCHAR(255) | NULL | Đường dẫn ảnh đại diện |
+| `avatar_url` | NVARCHAR(255) | NULL | Đường dẫn ảnh đại diện đã upload |
+| `email_verified` | BIT | NOT NULL, DEFAULT TRUE cho legacy | Email đã được xác thực; đăng ký mới được application đặt FALSE tới khi OTP thành công |
+| `otp_bypass` | BIT | NOT NULL, DEFAULT FALSE | Chỉ dành cho seed/test account; tài khoản thường luôn FALSE |
 | `role_id` | BIGINT | NOT NULL, FK -> `roles(id)` | Vai trò người dùng |
 | `is_active` | BIT | NOT NULL, DEFAULT TRUE | Trạng thái kích hoạt tài khoản |
 | `created_at` | DATETIME2 | NOT NULL | Thời điểm tạo tài khoản |
@@ -225,6 +228,10 @@ erDiagram
 - `id` BIGINT IDENTITY PK; `user_id` FK -> `users(id)`; `token_hash` NVARCHAR(64) NOT NULL UNIQUE + index; `expires_at` DATETIME2 NOT NULL; `used_at` DATETIME2 NULL; `created_at` DATETIME2 NOT NULL.
 - Chỉ lưu SHA-256 hash token, không lưu token thô; token hết hạn sau 24 giờ và chỉ dùng một lần.
 
+### 3.17. Bảng `auth_verification_challenges` (OTP / Magic Link)
+- `id` BIGINT IDENTITY PK; `user_id` FK -> `users(id)`; `type` (`REGISTRATION`, `LOGIN`); `code_hash` NVARCHAR(100); `magic_token_hash` NVARCHAR(64) UNIQUE; `expires_at`; `consumed_at`; `attempts`; `created_at`.
+- OTP 6 số chỉ lưu BCrypt hash; magic token entropy cao chỉ lưu SHA-256 hash. Challenge hết hạn sau 5 phút, dùng một lần và tối đa 5 lần nhập OTP sai. Gửi lại mã sẽ consume challenge cũ và tạo challenge mới.
+
 > SQL Server dùng `NVARCHAR`/`NVARCHAR(MAX)` thông qua `hibernate.use_nationalized_character_data=true` để bảo toàn Unicode tiếng Việt trên collation `SQL_Latin1_General_CP1_CI_AS`.
 
 ## 4. Triển khai migration
@@ -237,16 +244,17 @@ Các migration hiện tại:
 - `src/main/resources/db/migration/sqlserver/V2__reference_roles.sql`: seed idempotent bốn role hệ thống bắt buộc.
 - `src/main/resources/db/migration/sqlserver/V3__restore_jdbc_session_state.sql`: trả SQL Server session về `NOCOUNT OFF` để connection pool/JDBC generated keys hoạt động ổn định sau migration.
 - `src/main/resources/db/migration/sqlserver/V4__inventory_restock_and_low_stock.sql`: thêm `medicines.reorder_level`, bảng `inventory_transactions`, FK/check/index phục vụ cảnh báo tồn thấp và audit nhập/xuất kho.
+- `src/main/resources/db/migration/sqlserver/V5__email_otp_and_profile_security.sql`: thêm `users.email_verified`, `users.otp_bypass` và bảng `auth_verification_challenges` cho OTP/magic link 5 phút.
 
 V1/V2 được kiểm tra tự động để luôn đồng bộ nội dung với `docs/database/SQLSERVER_BASELINE_SCHEMA_2026-09-19.sql` và `docs/database/SQLSERVER_REFERENCE_DATA_2026-09-19.sql`.
 
 ### Database mới
 
-Flyway tạo `flyway_schema_history`, áp dụng `V1`, `V2` rồi `V3`; sau đó Hibernate chạy `validate`. Nếu schema không khớp entity, application startup phải fail.
+Flyway tạo `flyway_schema_history`, áp dụng tuần tự `V1` đến `V5`; sau đó Hibernate chạy `validate`. Nếu schema không khớp entity, application startup phải fail.
 
 ### Database legacy 16 bảng
 
-Production mặc định giữ `baseline-on-migrate=false`. Sau backup và pre-check xác nhận đúng baseline 16 bảng, operator mới bật `SPRING_FLYWAY_BASELINE_ON_MIGRATE=true` cho lần adoption đầu tiên. Flyway ghi baseline version 1, bỏ qua V1 và chỉ áp dụng các migration sau đó (hiện là `V2` và `V3`). Sau khi history được tạo, bỏ opt-in này. Không baseline schema dở dang hoặc không rõ nguồn gốc.
+Production mặc định giữ `baseline-on-migrate=false`. Sau backup và pre-check xác nhận đúng baseline 16 bảng, operator mới bật `SPRING_FLYWAY_BASELINE_ON_MIGRATE=true` cho lần adoption đầu tiên. Flyway ghi baseline version 1, bỏ qua V1 và áp dụng các migration sau đó (`V2` đến `V5`). Sau khi history được tạo, bỏ opt-in này. Không baseline schema dở dang hoặc không rõ nguồn gốc.
 
 `SqlServerFlywayMigrationIntegrationTest` kiểm chứng cả fresh migration và legacy adoption trên database disposable `medclinic_flyway_it`, sau đó drop database test. Docker init chỉ áp dụng guard `0`/`16` khi chưa có `flyway_schema_history`; khi history đã tồn tại, Flyway/Hibernate chịu trách nhiệm kiểm tra các version schema tương lai.
 

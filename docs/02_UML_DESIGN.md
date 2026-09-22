@@ -12,7 +12,7 @@
 ```mermaid
 graph TD
     subgraph MedClinic System
-        UC1[Đăng ký, Đăng nhập & Khôi phục mật khẩu]
+        UC1[Đăng ký, Đăng nhập, OTP email & Khôi phục mật khẩu]
         UC2[Tra cứu Bác sĩ & Chuyên khoa]
         UC3[Đặt lịch khám theo Khung giờ]
         UC4[Quản lý Lịch hẹn & Hủy lịch]
@@ -62,6 +62,16 @@ graph TD
 ---
 
 ## 2. ĐẶC TẢ USE CASE CHI TIẾT (USE CASE SPECIFICATIONS)
+
+### 2.0. Đặc tả Use Case UC1: Đăng ký, Đăng nhập & Xác thực OTP email
+- **Actor:** Khách/Bệnh nhân và các tài khoản hệ thống.
+- **Main Flow - Đăng ký:** Người dùng nhập thông tin tài khoản; hệ thống tạo user `is_active=false`, `email_verified=false`, phát OTP 6 số và magic link qua email. Khi OTP/link hợp lệ, user được kích hoạt, tạo session và chuyển vào Patient Portal.
+- **Main Flow - Đăng nhập:** Hệ thống kiểm tra username/email + mật khẩu trước. Với tài khoản thường, chưa tạo SecurityContext mà phát challenge `LOGIN`; chỉ sau OTP/magic link hợp lệ mới tạo session. Seed/test account có `otp_bypass=true` được vào trực tiếp.
+- **OTP/Magic Link:** Cùng hạn 5 phút, dùng một lần; OTP lưu BCrypt hash, magic token lưu SHA-256 hash; tối đa 5 lần nhập sai. `Gửi lại OTP` vô hiệu challenge cũ và tạo challenge mới.
+- **Email CTA:** Nút `Xác nhận và đăng nhập` gọi `/auth/verify-email?token=...`; xác thực thành công tự chuyển về portal đúng role và hiện trạng thái đăng nhập thành công.
+- **Security:** Không dùng Remember-me cho luồng đăng nhập mới để tránh bỏ qua OTP. Challenge được ghi database và khóa pessimistic khi consume để hạn chế dùng đồng thời.
+
+---
 
 ### 2.1. Đặc tả Use Case UC3: Đặt lịch khám trực tuyến (Online Appointment Booking)
 - **Actor:** Bệnh nhân (`ROLE_PATIENT`)

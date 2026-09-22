@@ -2,6 +2,7 @@ package com.medclinic;
 
 import com.medclinic.service.impl.EmailServiceImpl;
 import jakarta.mail.Session;
+import jakarta.mail.Multipart;
 import jakarta.mail.internet.MimeMessage;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -13,6 +14,7 @@ import java.time.LocalDate;
 import java.util.Properties;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -68,4 +70,33 @@ class EmailServiceImplTest {
 
         verify(javaMailSender, never()).send(any(MimeMessage.class));
     }
+    @Test
+    void authenticationOtpEmailContainsCodeExpiryAndConfirmationLink() throws Exception {
+        MimeMessage message = message();
+        when(javaMailSender.createMimeMessage()).thenReturn(message);
+
+        service().sendAuthenticationOtpEmail(
+                "patient@example.com", "Nguyễn Văn A", "123456",
+                "https://clinic.example/auth/verify-email?token=abc", 5, "đăng nhập");
+
+        verify(javaMailSender).send(message);
+        String body = extractText(message.getContent());
+        assertTrue(body.contains("123456"));
+        assertTrue(body.contains("5 phút"));
+        assertTrue(body.contains("https://clinic.example/auth/verify-email?token=abc"));
+        assertTrue(body.contains("Xác nhận và đăng nhập"));
+    }
+
+    private String extractText(Object content) throws Exception {
+        if (content instanceof String text) return text;
+        if (content instanceof Multipart multipart) {
+            StringBuilder out = new StringBuilder();
+            for (int i = 0; i < multipart.getCount(); i++) {
+                out.append(extractText(multipart.getBodyPart(i).getContent()));
+            }
+            return out.toString();
+        }
+        return "";
+    }
+
 }

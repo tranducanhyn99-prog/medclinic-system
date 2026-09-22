@@ -53,11 +53,12 @@ Hệ thống được phát triển theo mô hình kiến trúc phân tầng chu
 ## 3. YÊU CẦU CHỨC NĂNG CHI TIẾT (FUNCTIONAL REQUIREMENTS)
 
 ### 3.1. Phân hệ Xác thực & Phân quyền (Authentication & Authorization)
-- **FR-AUTH-01 (Đăng ký tài khoản):** Hệ thống cho phép khách hàng đăng ký tài khoản bệnh nhân với các thông tin: Họ tên, Tên đăng nhập, Mật khẩu, Xác nhận mật khẩu, Email, Số điện thoại, Ngày sinh, Giới tính, Địa chỉ.
-- **FR-AUTH-02 (Đăng nhập & RBAC):** Xác thực người dùng bằng Spring Security 6, mã hóa mật khẩu BCrypt, hỗ trợ chức năng ghi nhớ đăng nhập (Remember-me), chuyển hướng đúng Dashboard theo vai trò người dùng sau khi đăng nhập thành công.
-- **FR-AUTH-03 (Quản lý Hồ sơ cá nhân):** Người dùng có thể cập nhật thông tin cá nhân (Họ tên, SĐT, Địa chỉ) và thực hiện đổi mật khẩu tài khoản.
+- **FR-AUTH-01 (Đăng ký tài khoản):** Khách hàng đăng ký tài khoản bệnh nhân với Họ tên, Tên đăng nhập, Mật khẩu, Email, SĐT, Ngày sinh, Giới tính, Địa chỉ. Tài khoản mới ở trạng thái chưa kích hoạt cho đến khi xác thực email thành công.
+- **FR-AUTH-02 (Đăng nhập & RBAC):** Hệ thống kiểm tra tên đăng nhập/email + mật khẩu bằng Spring Security 6 và BCrypt; tài khoản thường phải hoàn tất OTP email trước khi tạo session đăng nhập. Sau xác thực, hệ thống chuyển hướng đúng portal theo vai trò. Seed/test account được đánh dấu `otp_bypass` và không yêu cầu OTP.
+- **FR-AUTH-03 (Quản lý Hồ sơ cá nhân):** Người dùng có thể cập nhật Họ tên, SĐT, Giới tính, Ngày sinh, Địa chỉ, thay đổi ảnh đại diện JPG/PNG/WebP tối đa 5 MB và đổi mật khẩu. Username/email là định danh tài khoản và không sửa trực tiếp tại form Profile.
 - **FR-AUTH-04 (Quản lý Tài khoản người dùng):** Quản trị viên có thể xem danh sách tài khoản, tìm kiếm theo từ khóa và thực hiện khóa / mở khóa tài khoản người dùng.
 - **FR-AUTH-05 (Khôi phục mật khẩu):** Người dùng yêu cầu đặt lại mật khẩu qua email. Hệ thống chỉ lưu SHA-256 hash của token, token hết hạn sau 24 giờ, chỉ dùng một lần và phản hồi theo cách không tiết lộ email có tồn tại hay không.
+- **FR-AUTH-06 (OTP email & Magic Link):** Với đăng ký và đăng nhập tài khoản thường, hệ thống phát OTP 6 số và magic link qua email, cùng hết hạn sau 5 phút và chỉ dùng một lần. Chỉ lưu BCrypt hash OTP và SHA-256 hash magic token; tối đa 5 lần nhập sai. Người dùng có thể gửi lại OTP, challenge cũ bị vô hiệu hóa. Bấm nút xác nhận trong email sẽ tự xác thực, tạo session và chuyển về portal với thông báo đăng nhập thành công.
 
 ### 3.2. Phân hệ Quản lý Chuyên khoa & Hồ sơ Bác sĩ (Doctor & Specialty Management)
 - **FR-SPEC-01 (Quản lý Chuyên khoa):** Quản trị viên có thể thêm mới, sửa, bật/tắt trạng thái hoạt động của chuyên khoa (Tim mạch, Răng hàm mặt, Da liễu, Nhi khoa, Tai mũi họng, Cơ xương khớp).

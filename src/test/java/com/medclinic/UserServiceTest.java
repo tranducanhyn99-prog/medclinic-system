@@ -84,7 +84,9 @@ class UserServiceTest {
         assertEquals("nguyenvanan", result.getUsername());
         assertEquals("hashedPassword123", result.getPassword());
         assertEquals(RoleType.ROLE_PATIENT, result.getRole().getName());
-        assertTrue(result.getIsActive());
+        assertFalse(result.getIsActive());
+        assertFalse(result.getEmailVerified());
+        assertFalse(result.getOtpBypass());
 
         verify(userRepository, times(1)).save(any(User.class));
     }

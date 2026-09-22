@@ -106,4 +106,33 @@ public class EmailServiceImpl implements EmailService {
             log.error("Failed to send password reset email to: {}", toEmail, exception);
         }
     }
+    @Async
+    @Override
+    public void sendAuthenticationOtpEmail(String toEmail, String userName, String otpCode,
+                                           String confirmationUrl, long validMinutes, String purpose) {
+        try {
+            MimeMessage message = javaMailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            helper.setTo(toEmail);
+            helper.setSubject("Mã xác thực " + purpose + " - MedClinic");
+            String htmlBody = String.format("""
+                    <html><body style="font-family:Arial,sans-serif;color:#1f2937">
+                    <h2>Chào %s,</h2>
+                    <p>Bạn đang xác thực <b>%s</b> trên MedClinic.</p>
+                    <p>Mã OTP của bạn:</p>
+                    <div style="font-size:30px;font-weight:700;letter-spacing:8px;margin:18px 0">%s</div>
+                    <p>Mã và liên kết này có hiệu lực trong <b>%d phút</b> và chỉ dùng được một lần.</p>
+                    <p style="margin:24px 0"><a href="%s" style="background:#0f6f8f;color:white;padding:12px 22px;text-decoration:none;border-radius:8px;font-weight:700">Xác nhận và đăng nhập</a></p>
+                    <p>Nếu bạn không thực hiện yêu cầu này, hãy bỏ qua email.</p>
+                    <p>Trân trọng,<br/>MedClinic</p>
+                    </body></html>
+                    """, userName, purpose, otpCode, validMinutes, confirmationUrl);
+            helper.setText(htmlBody, true);
+            javaMailSender.send(message);
+            log.info("Authentication OTP email sent to: {}", toEmail);
+        } catch (Exception exception) {
+            log.error("Failed to send authentication OTP email to: {}", toEmail, exception);
+        }
+    }
+
 }

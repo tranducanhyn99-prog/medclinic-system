@@ -83,6 +83,8 @@ public class DataInitializer implements CommandLineRunner {
                 spXuongKhop, "TS.BS", 20, new BigDecimal("400000"),
                 "Tiến sĩ Y khoa, tu nghiệp tại CHLB Đức, chuyên gia đầu ngành về thoái hóa khớp và phẫu thuật nội soi khớp.");
 
+        markSeedAccountsOtpBypass();
+
         // 5. Generate 14-day Schedules & Slots for Doctors
         List<DoctorProfile> allDoctors = List.of(doc1, doc2, doc3, doc4, doc5, doc6);
         LocalDate today = LocalDate.now();
@@ -118,9 +120,24 @@ public class DataInitializer implements CommandLineRunner {
                         .dateOfBirth(LocalDate.of(1990, 1, 1))
                         .address("Hồ Chí Minh")
                         .role(role)
+                        .emailVerified(true)
+                        .otpBypass(true)
                         .isActive(true)
                         .build())
         );
+    }
+
+    private void markSeedAccountsOtpBypass() {
+        List<String> usernames = List.of("admin", "staff", "patient", "doctor", "doc_mai", "doc_nam", "doc_ha", "doc_bao", "doc_tuan");
+        for (String username : usernames) {
+            userRepository.findByUsername(username).ifPresent(user -> {
+                if (!Boolean.TRUE.equals(user.getOtpBypass()) || !Boolean.TRUE.equals(user.getEmailVerified())) {
+                    user.setOtpBypass(true);
+                    user.setEmailVerified(true);
+                    userRepository.save(user);
+                }
+            });
+        }
     }
 
     private Specialty initSpecialty(String name, String desc, String icon) {
@@ -148,6 +165,8 @@ public class DataInitializer implements CommandLineRunner {
                         .dateOfBirth(LocalDate.of(1980, 5, 15))
                         .address("TP. Hồ Chí Minh")
                         .role(doctorRole)
+                        .emailVerified(true)
+                        .otpBypass(true)
                         .isActive(true)
                         .build())
         );

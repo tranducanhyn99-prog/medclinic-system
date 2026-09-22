@@ -69,7 +69,11 @@ app:
   address: 123 Đường Nguyễn Trãi, Quận 5, TP. Hồ Chí Minh
   hotline: 1900 6868
   email: support@medclinic.vn
-  website: http://localhost:8080
+  website: ${APP_WEBSITE:http://localhost:8080}
+  auth:
+    otp-validity-seconds: ${AUTH_OTP_VALIDITY_SECONDS:300}
+  storage:
+    avatar-dir: ${AVATAR_STORAGE_DIR:uploads/avatars}
   security:
     # Production profiles must supply this via REMEMBER_ME_KEY or an external config source.
     remember-me-key: ${REMEMBER_ME_KEY}

@@ -20,6 +20,7 @@ import org.springframework.security.web.authentication.AuthenticationFailureHand
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
+import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.header.writers.StaticHeadersWriter;
 
 @Configuration
@@ -107,7 +108,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
                     "/", "/home", "/about", "/specialties/**", "/doctors/**",
-                    "/login", "/register", "/forgot-password", "/reset-password", "/css/**", "/js/**", "/images/**",
+                    "/login", "/register", "/auth/**", "/forgot-password", "/reset-password", "/css/**", "/js/**", "/images/**",
                     "/webjars/**", "/h2-console/**", "/error/**", "/api/public/**"
                 ).permitAll()
                 .requestMatchers("/actuator/health").permitAll()
@@ -119,25 +120,15 @@ public class SecurityConfig {
                 .requestMatchers("/admin/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
             )
-            .formLogin(form -> form
-                .loginPage("/login")
-                .loginProcessingUrl("/login")
-                .successHandler(customAuthenticationSuccessHandler())
-                .failureHandler(customAuthenticationFailureHandler())
-                .permitAll()
+            .exceptionHandling(exceptions -> exceptions
+                .authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/login"))
             )
             .logout(logout -> logout
                 .logoutUrl("/logout")
                 .logoutSuccessHandler(customLogoutSuccessHandler())
                 .invalidateHttpSession(true)
-                .deleteCookies("JSESSIONID")
+                .deleteCookies("JSESSIONID", "remember-me")
                 .permitAll()
-            )
-            .rememberMe(remember -> remember
-                .key(rememberMeKey)
-                .tokenValiditySeconds(86400 * 14) // 14 days
-                .useSecureCookie(secureCookie)
-                .userDetailsService(userDetailsService)
             )
             .csrf(csrf -> csrf
                 // Browser API requests use the same session cookie and must retain CSRF protection.

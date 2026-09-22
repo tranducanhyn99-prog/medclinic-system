@@ -58,13 +58,13 @@ class SecurityHardeningIntegrationTest {
         double failureBefore = authenticationCount("failure");
         double successBefore = authenticationCount("success");
 
-        mockMvc.perform(post("/login").with(csrf())
+        mockMvc.perform(post("/auth/login").with(csrf())
                         .param("username", "patient")
                         .param("password", "wrong-password"))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/login?error=true"));
 
-        mockMvc.perform(post("/login").with(csrf())
+        mockMvc.perform(post("/auth/login").with(csrf())
                         .param("username", "patient")
                         .param("password", "123456"))
                 .andExpect(status().is3xxRedirection())

@@ -20,16 +20,16 @@ class SensitiveEndpointRateLimitFilterTest {
         SensitiveEndpointRateLimitFilter filter =
                 new SensitiveEndpointRateLimitFilter(2, 1, 60, audit, clock::get);
 
-        assertEquals(200, execute(filter, "POST", "/login", "10.0.0.1").getStatus());
-        assertEquals(200, execute(filter, "POST", "/login", "10.0.0.1").getStatus());
+        assertEquals(200, execute(filter, "POST", "/auth/login", "10.0.0.1").getStatus());
+        assertEquals(200, execute(filter, "POST", "/auth/login", "10.0.0.1").getStatus());
 
-        MockHttpServletResponse blocked = execute(filter, "POST", "/login", "10.0.0.1");
+        MockHttpServletResponse blocked = execute(filter, "POST", "/auth/login", "10.0.0.1");
         assertEquals(429, blocked.getStatus());
         assertEquals("60", blocked.getHeader("Retry-After"));
-        verify(audit).rateLimitRejected("/login", "10.0.0.1");
+        verify(audit).rateLimitRejected("/auth/login", "10.0.0.1");
 
         clock.set(61_001L);
-        assertEquals(200, execute(filter, "POST", "/login", "10.0.0.1").getStatus());
+        assertEquals(200, execute(filter, "POST", "/auth/login", "10.0.0.1").getStatus());
     }
 
     @Test
@@ -42,6 +42,8 @@ class SensitiveEndpointRateLimitFilterTest {
         assertEquals(200, execute(filter, "POST", "/forgot-password", "10.0.0.2").getStatus());
         assertEquals(429, execute(filter, "POST", "/forgot-password", "10.0.0.2").getStatus());
         assertEquals(200, execute(filter, "POST", "/reset-password", "10.0.0.2").getStatus());
+        assertEquals(200, execute(filter, "POST", "/auth/otp", "10.0.0.3").getStatus());
+        assertEquals(429, execute(filter, "POST", "/auth/otp", "10.0.0.3").getStatus());
         assertEquals(200, execute(filter, "GET", "/forgot-password", "10.0.0.2").getStatus());
     }
 

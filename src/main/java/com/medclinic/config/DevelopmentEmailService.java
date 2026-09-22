@@ -29,4 +29,10 @@ public class DevelopmentEmailService implements EmailService {
     public void sendPasswordResetEmail(String toEmail, String userName, String resetUrl) {
         log.info("DEV email suppressed: password reset to {}", toEmail);
     }
+    @Override
+    public void sendAuthenticationOtpEmail(String toEmail, String userName, String otpCode,
+                                           String confirmationUrl, long validMinutes, String purpose) {
+        log.info("DEV OTP email suppressed: purpose={} to={} otp={} confirmUrl={} validMinutes={}",
+                purpose, toEmail, otpCode, confirmationUrl, validMinutes);
+    }
 }

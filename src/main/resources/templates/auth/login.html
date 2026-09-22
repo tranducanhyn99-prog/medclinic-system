@@ -24,9 +24,9 @@
                 <div class="mc-auth-panel">
                     <div class="mc-auth-eyebrow">Chào mừng trở lại</div>
                     <h1 class="mc-auth-title" id="loginTitle">Đăng nhập</h1>
-                    <p class="mc-auth-subtitle">Truy cập lịch hẹn, hồ sơ và các dịch vụ dành cho tài khoản của bạn.</p>
+                    <p class="mc-auth-subtitle">Nhập mật khẩu trước, sau đó xác thực OTP qua email để truy cập tài khoản.</p>
 
-                    <form th:action="@{/login}" method="post" class="mc-auth-form">
+                    <form th:action="@{/auth/login}" method="post" class="mc-auth-form">
                         <div class="mb-3">
                             <label for="usernameInput" class="form-label">Tên đăng nhập hoặc email</label>
                             <div class="input-group">
@@ -47,11 +47,7 @@
                             </div>
                         </div>
 
-                        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="remember-me" id="rememberMe">
-                                <label class="form-check-label small text-muted" for="rememberMe">Ghi nhớ đăng nhập</label>
-                            </div>
+                        <div class="d-flex justify-content-end mb-3">
                             <a th:href="@{/forgot-password}" class="small text-decoration-none fw-semibold">Quên mật khẩu?</a>
                         </div>
 

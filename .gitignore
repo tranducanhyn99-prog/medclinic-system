@@ -52,3 +52,6 @@ Mau_Thiet_Ke_Du_Lieu/
 
 ### Local Docker secrets ###
 .env
+
+# Runtime user-uploaded content
+/uploads/
