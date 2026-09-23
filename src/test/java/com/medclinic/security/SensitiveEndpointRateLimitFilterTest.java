@@ -47,6 +47,18 @@ class SensitiveEndpointRateLimitFilterTest {
         assertEquals(200, execute(filter, "GET", "/forgot-password", "10.0.0.2").getStatus());
     }
 
+    @Test
+    void bankCallbackUsesItsOwnLimit() throws Exception {
+        AtomicLong clock = new AtomicLong(5_000L);
+        SecurityAuditService audit = mock(SecurityAuditService.class);
+        SensitiveEndpointRateLimitFilter filter = new SensitiveEndpointRateLimitFilter(
+                10, 2, 1, 60, audit, new InMemoryRateLimitStore(), clock::get);
+
+        assertEquals(200, execute(filter, "POST", "/api/payments/bank/callback", "10.0.0.4").getStatus());
+        assertEquals(429, execute(filter, "POST", "/api/payments/bank/callback", "10.0.0.4").getStatus());
+        verify(audit).rateLimitRejected("/api/payments/bank/callback", "10.0.0.4");
+    }
+
     private MockHttpServletResponse execute(
             SensitiveEndpointRateLimitFilter filter,
             String method,

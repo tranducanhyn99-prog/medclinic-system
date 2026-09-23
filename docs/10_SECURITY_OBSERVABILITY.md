@@ -12,21 +12,23 @@ Tài liệu này mô tả các control bảo mật và khả năng quan sát v�
 - Error response không expose message, binding error hoặc stack trace.
 - Response thêm `Referrer-Policy: strict-origin-when-cross-origin`.
 - `Permissions-Policy` tắt camera, microphone và geolocation vì MedClinic hiện không sử dụng các capability này.
-- CSRF vẫn được bật cho browser workflow; chỉ H2 console và SockJS transport `/ws/**` dùng ngoại lệ hiện có.
+- CSRF vẫn được bật cho browser workflow; chỉ H2 console, SockJS transport `/ws/**` và callback bank server-to-server `/api/payments/bank/callback` dùng ngoại lệ. Callback bank bắt buộc HMAC SHA-256.
 
 ## 2. Rate limiting cho endpoint nhạy cảm
 
-`SensitiveEndpointRateLimitFilter` giới hạn request theo `remoteAddr + endpoint` trong từng JVM:
+`SensitiveEndpointRateLimitFilter` giới hạn request theo `remoteAddr + endpoint`:
 
 | Endpoint POST | Mặc định | Biến môi trường |
 | --- | ---: | --- |
-| `/login` | 20 request / 300 giây | `LOGIN_RATE_LIMIT_MAX` |
+| `/auth/login` | 20 request / 300 giây | `LOGIN_RATE_LIMIT_MAX` |
+| `/auth/otp`, `/auth/otp/resend` | 5 request / 300 giây | `PASSWORD_RESET_RATE_LIMIT_MAX` |
 | `/forgot-password` | 5 request / 300 giây | `PASSWORD_RESET_RATE_LIMIT_MAX` |
 | `/reset-password` | 5 request / 300 giây | `PASSWORD_RESET_RATE_LIMIT_MAX` |
+| `/api/payments/bank/callback` | 60 request / 300 giây | `PAYMENT_CALLBACK_RATE_LIMIT_MAX` |
 
 Cửa sổ thời gian dùng `AUTH_RATE_LIMIT_WINDOW_SECONDS` (mặc định 300). Khi vượt ngưỡng, server trả **HTTP 429** và header `Retry-After`.
 
-Rate limiter hiện là baseline cho deployment một instance. Nó cố ý dùng `request.getRemoteAddr()` thay vì tin trực tiếp `X-Forwarded-For`. Khi deploy sau reverse proxy, chỉ cấu hình forwarded-header trust khi proxy đó được kiểm soát. Nếu scale nhiều instance, cần chuyển enforcement sang gateway/WAF hoặc shared store như Redis để tránh mỗi JVM có một bucket riêng.
+Profile `dev` dùng in-memory store. Profile `sqlserver` mặc định dùng `JdbcSqlServerRateLimitStore`: khóa bucket là SHA-256 của IP + endpoint, cập nhật trong transaction `SERIALIZABLE` với `UPDLOCK/HOLDLOCK`, nên nhiều instance cùng nhìn một counter. Ứng dụng vẫn dùng địa chỉ đã được Spring xử lý; chỉ bật forwarded headers sau reverse proxy do đơn vị triển khai kiểm soát.
 
 ## 3. Security audit
 
@@ -37,13 +39,18 @@ Rate limiter hiện là baseline cho deployment một instance. Nó cố ý dùn
 - `LOGOUT`
 - `RATE_LIMIT_REJECTED`
 
-Log có principal/remote IP/reason phù hợp nhưng **không ghi password, remember-me key, reset token, DB credential hoặc SMTP secret**. Principal được sanitize CR/LF/TAB trước khi ghi để giảm log-injection.
+Log chỉ ghi hash rút gọn của principal/remote IP và reason đã sanitize; **không ghi password, email đầy đủ, remember-me key, OTP, reset/magic token, DB credential, bank callback secret hoặc SMTP secret**.
 
-Đồng thời Micrometer ghi hai metric custom, không dùng username làm tag để tránh high-cardinality:
+Audit nghiệp vụ bền vững nằm trong `business_audit_events`: thu tiền mặt, tạo yêu cầu VietQR, callback thành công/từ chối và đối soát thủ công. Bảng chỉ giữ mã sự kiện/thực thể và detail code, không lưu raw callback hay số tài khoản.
+
+Đồng thời Micrometer ghi các metric custom, không dùng username làm tag để tránh high-cardinality:
 
 ```text
 medclinic.security.authentication{outcome=success|failure|logout}
-medclinic.security.rate_limit.rejected{endpoint=/login|/forgot-password|/reset-password}
+medclinic.security.rate_limit.rejected{endpoint=/login|/forgot-password|/reset-password|/api/payments/bank/callback}
+medclinic.email.delivery{type=...,outcome=success|retry|failure}
+medclinic.email.consecutive_failures
+medclinic.retention.deleted{type=...}
 ```
 
 ## 4. Actuator access model
@@ -67,17 +74,18 @@ Kỳ vọng unauthenticated: HTTP 200 và body tương đương `{"status":"UP"}
 
 ## 5. Verification tự động
 
-- `SensitiveEndpointRateLimitFilterTest`: kiểm ngưỡng 429, `Retry-After`, reset cửa sổ và bucket độc lập.
+- `SensitiveEndpointRateLimitFilterTest`: kiểm ngưỡng 429, `Retry-After`, reset cửa sổ, bucket độc lập và giới hạn riêng cho callback thanh toán.
+- `SqlServerSharedRateLimitIntegrationTest`: kiểm store production thật sự dùng SQL Server và cùng bucket bị chặn sau khi vượt ngưỡng.
 - `SecurityAuditServiceTest`: kiểm custom Micrometer counters.
 - `SecurityHardeningIntegrationTest`: kiểm security headers, public health, ADMIN-only metrics và audit login/logout.
 - `SecurityObservabilityConfigurationTest`: khóa contract cho error detail, cookie policy, Actuator exposure và Docker local override.
-- Full clean baseline ngày 20/09/2026: **128 test case / 55 test class; 120 executed PASS, 8 environment-gated skipped, 0 failure, 0 error**.
-- JaCoCo: **78,52% line / 64,22% branch**, vượt quality gate 70% / 50%.
+- Full clean baseline ngày 23/09/2026: **147 test case; 138 executed PASS, 9 SQL environment-gated skipped, 0 failure, 0 error**.
+- JaCoCo: **76,51% line / 59,61% branch**, vượt quality gate 70% / 50%.
 
 ## 6. Giới hạn và bước production bên ngoài source code
 
-- Rate limit in-memory không thay WAF/gateway và không đồng bộ giữa nhiều instance.
+- Shared SQL rate limit bảo vệ ở tầng ứng dụng nhưng không thay WAF/gateway trước các đợt DDoS lớn.
 - Chưa áp CSP enforcement cứng vì UI hiện còn inline script/style; bật CSP nghiêm ngặt trước khi refactor nonce/hash có thể làm vỡ giao diện. Referrer/Permissions policy đã được áp dụng an toàn trước.
 - Production phải chạy HTTPS và giữ `SESSION_COOKIE_SECURE=true`.
-- Secret manager, log aggregation/SIEM, alert rule, retention policy và credential rotation thuộc hạ tầng deployment thực tế.
-- SMTP production, screen-reader release smoke và DBA deployment approval vẫn là external acceptance item như tài liệu production-readiness đã nêu.
+- Secret manager, log aggregation/SIEM, alert rule và credential rotation phải được nối vào hạ tầng triển khai; source đã cung cấp metric và retention job để tích hợp.
+- SMTP production, merchant onboarding MB, screen-reader release smoke và DBA deployment approval vẫn là external acceptance item.

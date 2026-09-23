@@ -111,6 +111,7 @@ public class SecurityConfig {
                     "/login", "/register", "/auth/**", "/forgot-password", "/reset-password", "/css/**", "/js/**", "/images/**",
                     "/webjars/**", "/h2-console/**", "/error/**", "/api/public/**"
                 ).permitAll()
+                .requestMatchers("/api/payments/bank/callback").permitAll()
                 .requestMatchers("/actuator/health").permitAll()
                 .requestMatchers("/actuator/**").hasRole("ADMIN")
                 .requestMatchers("/ws/**").authenticated()
@@ -132,7 +133,7 @@ public class SecurityConfig {
             )
             .csrf(csrf -> csrf
                 // Browser API requests use the same session cookie and must retain CSRF protection.
-                .ignoringRequestMatchers("/h2-console/**", "/ws/**")
+                .ignoringRequestMatchers("/h2-console/**", "/ws/**", "/api/payments/bank/callback")
             )
             .sessionManagement(session -> session
                 .sessionFixation(fixation -> fixation.migrateSession())

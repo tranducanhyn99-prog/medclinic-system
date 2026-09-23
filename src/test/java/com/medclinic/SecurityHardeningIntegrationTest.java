@@ -19,6 +19,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import org.springframework.http.MediaType;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -84,6 +85,19 @@ class SecurityHardeningIntegrationTest {
                 .andExpect(redirectedUrl("/login?logout=true"));
 
         assertEquals(before + 1.0, authenticationCount("logout"));
+    }
+
+    @Test
+    void bankCallbackIsPublicAndCsrfExemptButStillRejectedWithoutValidPaymentConfiguration() throws Exception {
+        mockMvc.perform(post("/api/payments/bank/callback")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("X-MedClinic-Signature", "00".repeat(32))
+                        .content("""
+                                {"eventId":"evt-security","transactionId":"txn-security",
+                                 "transferCode":"MC1ABCDEF","amount":100000}
+                                """))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.accepted").value(false));
     }
 
     private double authenticationCount(String outcome) {

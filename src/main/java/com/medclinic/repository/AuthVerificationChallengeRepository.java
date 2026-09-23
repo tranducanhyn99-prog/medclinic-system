@@ -16,6 +16,7 @@ public interface AuthVerificationChallengeRepository extends JpaRepository<AuthV
     Optional<AuthVerificationChallenge> findByMagicTokenHash(String magicTokenHash);
     List<AuthVerificationChallenge> findByUserIdAndTypeAndConsumedAtIsNull(Long userId, AuthChallengeType type);
     long countByUserIdAndTypeAndCreatedAtAfter(Long userId, AuthChallengeType type, LocalDateTime after);
+    long deleteByExpiresAtBefore(LocalDateTime cutoff);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select c from AuthVerificationChallenge c join fetch c.user where c.id = :id")

@@ -4,10 +4,13 @@ import com.medclinic.enums.PaymentMethod;
 import com.medclinic.service.AppointmentService;
 import com.medclinic.service.DoctorService;
 import com.medclinic.service.InvoiceService;
+import com.medclinic.service.BankTransferPaymentService;
 import com.medclinic.service.SpecialtyService;
+import com.medclinic.security.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -23,6 +26,7 @@ public class StaffReceptionController {
     private final DoctorService doctorService;
     private final SpecialtyService specialtyService;
     private final InvoiceService invoiceService;
+    private final BankTransferPaymentService bankTransferPaymentService;
 
     @GetMapping("/reception")
     public String receptionDesk(
@@ -111,14 +115,16 @@ public class StaffReceptionController {
     @GetMapping("/billing")
     public String billingList(Model model) {
         model.addAttribute("invoices", invoiceService.findAll());
+        model.addAttribute("bankPaymentAvailable", bankTransferPaymentService.isAvailable());
         return "staff/billing";
     }
 
     @PostMapping("/billing/pay/{invoiceId}")
     public String processPayment(@PathVariable Long invoiceId, 
                                  @RequestParam("method") PaymentMethod method,
+                                 @AuthenticationPrincipal CustomUserDetails userDetails,
                                  RedirectAttributes redirectAttributes) {
-        invoiceService.processPayment(invoiceId, method);
+        invoiceService.processPayment(invoiceId, method, userDetails == null ? null : userDetails.getId());
         redirectAttributes.addFlashAttribute("successMessage", "Thanh toán thành công");
         return "redirect:/staff/billing";
     }

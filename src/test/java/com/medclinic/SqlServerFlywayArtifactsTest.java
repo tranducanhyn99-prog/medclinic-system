@@ -36,6 +36,12 @@ class SqlServerFlywayArtifactsTest {
         assertTrue(inventoryMigration.contains("inventory_transactions"));
         assertTrue(inventoryMigration.contains("RESTOCK"));
         assertTrue(inventoryMigration.contains("DISPENSE"));
+        String p2Migration = normalized(
+                MIGRATIONS.resolve("V6__bank_payments_audit_and_shared_rate_limits.sql"));
+        assertTrue(p2Migration.contains("bank_transfer_payments"));
+        assertTrue(p2Migration.contains("business_audit_events"));
+        assertTrue(p2Migration.contains("security_rate_limit_buckets"));
+        assertTrue(p2Migration.contains("BANK_TRANSFER"));
     }
 
     @Test

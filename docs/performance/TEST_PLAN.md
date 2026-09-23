@@ -15,6 +15,8 @@ Mỗi lần đo phải ghi commit/working-tree state, profile Spring, database (
 | PERF-02 | `GET /patient/booking` khi đã đăng nhập | 10 lần sau warm-up | p50, p95 tải HTML | p95 < 1,5 giây |
 | PERF-03 | `GET /staff/reception` với dữ liệu ngày hiện tại | 10 lần sau warm-up | p50, p95 tải HTML | p95 < 1,5 giây |
 | PERF-04 | `GET /doctor/desk` với hàng chờ đại diện | 10 lần sau warm-up | p50, p95 tải HTML | p95 < 1,5 giây |
+| PERF-05 | Tạo trang VietQR cho hóa đơn chưa thanh toán | 30 lần sau warm-up | p50, p95 server response; lỗi | p95 < 1,5 giây, 0 lỗi |
+| PERF-06 | Callback payment hợp lệ + 10 lần retry cùng event id | 30 giao dịch | p50, p95; duplicate invoice update | p95 < 500 ms, mỗi invoice chỉ `PAID` một lần |
 
 ## Cách chạy đề xuất
 

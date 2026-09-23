@@ -99,9 +99,9 @@ Tài khoản demo dùng mật khẩu `123456`, chỉ dành cho profile `dev`/`de
 
 1. Quay lại session `staff` → **Thu ngân & Viện phí**.
 2. Mở hóa đơn mới; giao diện hiển thị phí khám, tiền thuốc và tổng tiền.
-3. Xác nhận thanh toán tiền mặt rồi mở hóa đơn PDF trong trình duyệt.
+3. Chọn một trong hai luồng: xác nhận tiền mặt, hoặc bấm **Tạo VietQR**, quét QR MB Bank và chỉ ra trạng thái đang chờ callback/đối soát; sau khi `PAID`, mở hóa đơn PDF trong trình duyệt.
 
-Điểm web cần nhấn mạnh: dữ liệu từ nhiều bước được tổng hợp thành view; endpoint xuất response PDF để xem/tải trực tiếp từ browser.
+Điểm web cần nhấn mạnh: QR được tạo theo số tiền/nội dung riêng, JavaScript poll trạng thái, callback HMAC chạy server-to-server và endpoint PDF trả file trực tiếp cho browser. Nếu chưa có tài khoản/callback thật, giữ `BANK_PAYMENT_ENABLED=false` và demo tiền mặt.
 
 ### 11:30–13:00 — Đăng ký, OTP và upload avatar
 

@@ -11,6 +11,7 @@ import com.medclinic.repository.AppointmentRepository;
 import com.medclinic.repository.InvoiceRepository;
 import com.medclinic.service.impl.InvoiceCodeReservationCoordinator;
 import com.medclinic.service.impl.InvoiceServiceImpl;
+import com.medclinic.service.BusinessAuditService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -29,6 +30,7 @@ import static org.mockito.Mockito.*;
 class InvoiceServiceTest {
     @Mock InvoiceRepository invoiceRepository;
     @Mock AppointmentRepository appointmentRepository;    @Mock InvoiceCodeReservationCoordinator coordinator;
+    @Mock BusinessAuditService auditService;
     @InjectMocks InvoiceServiceImpl service;
 
     private Appointment appointment(BigDecimal consultationFee) {

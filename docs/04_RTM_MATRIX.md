@@ -33,8 +33,9 @@
 | **FR-EXAM-04** | Xuất Đơn thuốc ra file PDF | UC5 | `medical_records`, `prescriptions` | `PdfExportService.exportPrescriptionPdf()` | `TC-PDF-01` |
 | **FR-EXAM-05** | Hàng chờ bác sĩ realtime sau commit | UC10 | `appointments` | `DoctorQueueChangedEvent`, `DoctorQueueWebSocketListener`, `WebSocketConfig`, Doctor Desk STOMP client | `DoctorQueueWebSocketListenerTest`, `DoctorQueueWebSocketAfterCommitIntegrationTest`, `MedicalRecordQueueEventTest` |
 | **FR-BILL-01** | Tự động sinh Hóa đơn viện phí | UC9 | `invoices` | `InvoiceService.createInvoiceForAppointment()` | `TC-BILL-01` |
-| **FR-BILL-02** | Thu viện phí tiền mặt; VNPAY enum dành cho roadmap và hiện bị từ chối | UC9 | `invoices` | `InvoiceService.processPayment()` | `TC-BILL-02` |
+| **FR-BILL-02** | Thu tiền mặt hoặc tạo VietQR chuyển khoản theo đúng số tiền/nội dung hóa đơn | UC9 | `invoices`, `bank_transfer_payments` | `InvoiceService`, `BankTransferPaymentService`, Staff billing controllers | `InvoiceServiceTest`, `BankTransferPaymentServiceTest` |
 | **FR-BILL-03** | Xuất Hóa đơn ra file PDF | UC9 | `invoices` | `PdfExportService.exportInvoicePdf()` | `TC-PDF-02` |
+| **FR-BILL-04** | Callback HMAC/idempotency hoặc đối soát thủ công có mã giao dịch; chỉ khi khớp mới cập nhật `PAID` | UC9 | `bank_transfer_payments`, `business_audit_events`, `invoices` | `BankPaymentCallbackController`, `BankTransferPaymentServiceImpl`, `BusinessAuditService` | `BankTransferPaymentServiceTest` |
 | **FR-ADMIN-01**| Dashboard thống kê KPI & Doanh thu| UC17 | `invoices`, `appointments` | `DashboardService.getDashboardStatistics()` | `TC-STAT-01` |
 | **FR-ADMIN-02**| Biểu đồ phân bổ ca khám & tỷ lệ trạng thái | UC17 | `appointments`, `invoices` | `DashboardService`, `AdminController` | `TC-STAT-02` |
 | **FR-ADMIN-03**| Quản lý danh mục thuốc, giá bán và ngưỡng nhập lại | UC15 | `medicines` | `MedicineService.updateCatalog()`, `AdminController` | `MedicineServiceTest`, `AuthenticatedPortalRenderIntegrationTest` |
@@ -47,5 +48,6 @@
 | Mã NFR | Mục tiêu | Implementation chính | Kiểm thử / bằng chứng |
 | :--- | :--- | :--- | :--- |
 | **NFR-SEC-06** | Session/cookie và response hardening | `SecurityConfig`, `application.yml` | `SecurityHardeningIntegrationTest`, `SecurityObservabilityConfigurationTest` |
-| **NFR-SEC-07** | Rate limiting + security audit | `SensitiveEndpointRateLimitFilter`, `SecurityAuditService`, `SecurityConfig` | `SensitiveEndpointRateLimitFilterTest`, `SecurityAuditServiceTest`, `SecurityHardeningIntegrationTest` |
-| **NFR-OPS-01** | Health/metrics có kiểm soát truy cập | Spring Boot Actuator, Micrometer, `SecurityConfig`, `application.yml` | `SecurityHardeningIntegrationTest`, runtime smoke `/actuator/health` |
+| **NFR-SEC-07** | Shared rate limiting + security audit không lưu IP/principal thô | `SensitiveEndpointRateLimitFilter`, `JdbcSqlServerRateLimitStore`, `SecurityAuditService` | `SensitiveEndpointRateLimitFilterTest`, `SecurityAuditServiceTest`, SQL runtime acceptance |
+| **NFR-SEC-08** | Callback thanh toán ký HMAC, idempotent, exact amount/reference | `BankPaymentCallbackController`, `HmacSignatureVerifier`, `BankTransferPaymentServiceImpl` | `BankTransferPaymentServiceTest` |
+| **NFR-OPS-01/02** | Health/metrics, email retry, backup/restore và retention | Actuator, `EmailDeliveryMonitor`, `SecurityDataRetentionJob`, `ops/*.ps1` | `EmailServiceImplTest`, restore drill, runtime smoke `/actuator/health` |

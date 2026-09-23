@@ -8,6 +8,7 @@ import com.medclinic.exception.BusinessLogicException;
 import com.medclinic.repository.AppointmentRepository;
 import com.medclinic.repository.InvoiceRepository;
 import com.medclinic.service.InvoiceService;
+import com.medclinic.service.BusinessAuditService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +24,7 @@ public class InvoiceServiceImpl implements InvoiceService {
     private final InvoiceRepository invoiceRepository;
     private final AppointmentRepository appointmentRepository;
     private final InvoiceCodeReservationCoordinator invoiceCodeReservationCoordinator;
+    private final BusinessAuditService auditService;
 
     @Override
     @Transactional
@@ -55,6 +57,12 @@ public class InvoiceServiceImpl implements InvoiceService {
     @Override
     @Transactional
     public Invoice processPayment(Long invoiceId, PaymentMethod paymentMethod) {
+        return processPayment(invoiceId, paymentMethod, null);
+    }
+
+    @Override
+    @Transactional
+    public Invoice processPayment(Long invoiceId, PaymentMethod paymentMethod, Long actorId) {
         Invoice invoice = invoiceRepository.findByIdForUpdate(invoiceId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy hóa đơn"));
         if (invoice.getPaymentStatus() != PaymentStatus.UNPAID) {
@@ -67,8 +75,10 @@ public class InvoiceServiceImpl implements InvoiceService {
         invoice.setPaymentStatus(PaymentStatus.PAID);
         invoice.setPaymentMethod(paymentMethod);
         invoice.setPaidAt(LocalDateTime.now());
-
-        return invoiceRepository.save(invoice);
+        Invoice saved = invoiceRepository.save(invoice);
+        auditService.record(actorId, "CASH_PAYMENT_CONFIRMED", "INVOICE", invoiceId,
+                "SUCCESS", invoice.getInvoiceCode(), "STAFF_CASH_COLLECTION");
+        return saved;
     }
 
     @Override

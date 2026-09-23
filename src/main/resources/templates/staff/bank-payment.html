@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/dashboard}">
+<head>
+    <title>Thanh toán VietQR - MedClinic</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="mc-page-header border-bottom pb-3">
+        <div>
+            <h1 class="mc-page-title"><i class="bi bi-qr-code text-primary me-2"></i>Thanh Toán Chuyển Khoản</h1>
+            <p class="mc-page-subtitle">Quét VietQR và giữ nguyên số tiền cùng nội dung chuyển khoản.</p>
+        </div>
+        <a th:href="@{/staff/billing}" class="btn btn-sm btn-outline-secondary">Về danh sách hóa đơn</a>
+    </div>
+
+    <div class="row g-4 justify-content-center">
+        <div class="col-lg-5">
+            <section class="mc-workflow-card text-center h-100" aria-labelledby="qrTitle">
+                <h2 id="qrTitle" class="h5 fw-bold mb-3">Quét mã bằng ứng dụng ngân hàng</h2>
+                <img th:src="${payment.qrImageUrl}" alt="Mã VietQR thanh toán viện phí"
+                     class="img-fluid rounded border" style="max-width:360px">
+                <p class="small text-muted mt-3 mb-0">QR được tạo theo chuẩn VietQR. MedClinic không thu thập thông tin đăng nhập ngân hàng.</p>
+            </section>
+        </div>
+        <div class="col-lg-5">
+            <section class="mc-workflow-card h-100" aria-labelledby="paymentTitle">
+                <h2 id="paymentTitle" class="h5 fw-bold mb-3">Thông tin giao dịch</h2>
+                <dl class="row mb-0">
+                    <dt class="col-5 text-muted">Ngân hàng</dt><dd class="col-7 fw-semibold" th:text="${payment.bankName}">MB Bank</dd>
+                    <dt class="col-5 text-muted">Số tài khoản</dt><dd class="col-7 fw-semibold" th:text="${payment.accountNo}">0000000000</dd>
+                    <dt class="col-5 text-muted">Chủ tài khoản</dt><dd class="col-7 fw-semibold" th:text="${payment.accountName}">MEDCLINIC</dd>
+                    <dt class="col-5 text-muted">Mã hóa đơn</dt><dd class="col-7" th:text="${payment.invoiceCode}">INV-001</dd>
+                    <dt class="col-5 text-muted">Số tiền</dt>
+                    <dd class="col-7 fw-bold text-primary fs-5" th:text="${#numbers.formatDecimal(payment.amount, 0, 'COMMA', 0, 'POINT') + ' đ'}">100.000 đ</dd>
+                    <dt class="col-5 text-muted">Nội dung</dt>
+                    <dd class="col-7"><code class="fs-6 user-select-all" th:text="${payment.transferCode}">MC1ABCDEF</code></dd>
+                    <dt class="col-5 text-muted">Hết hạn</dt><dd class="col-7" th:text="${#temporals.format(payment.expiresAt, 'dd/MM/yyyy HH:mm')}">23/09/2026 16:00</dd>
+                </dl>
+
+                <div id="paymentStatus" class="alert mt-3 mb-3"
+                     th:classappend="${payment.status.name() == 'CONFIRMED' ? 'alert-success' : 'alert-warning'}"
+                     role="status" aria-live="polite">
+                    <i class="bi bi-clock-history me-1"></i>
+                    <span th:text="${payment.status.name() == 'CONFIRMED' ? 'Đã xác nhận thanh toán' : 'Đang chờ ngân hàng xác nhận'}">Đang chờ xác nhận</span>
+                </div>
+
+                <details th:if="${payment.status.name() != 'CONFIRMED'}" class="border rounded p-3">
+                    <summary class="fw-semibold">Đối soát thủ công tại quầy</summary>
+                    <p class="small text-muted mt-2">Chỉ dùng sau khi lễ tân đã kiểm tra giao dịch trong tài khoản ngân hàng.</p>
+                    <form th:action="@{/staff/billing/bank/payment/{id}/confirm(id=${payment.paymentId})}" method="post">
+                        <label for="bankTransactionId" class="form-label">Mã giao dịch ngân hàng</label>
+                        <input id="bankTransactionId" name="bankTransactionId" class="form-control mb-2"
+                               minlength="6" maxlength="100" pattern="[A-Za-z0-9._-]{6,100}" required>
+                        <button class="btn btn-outline-success w-100" type="submit">Xác nhận đã đối soát</button>
+                    </form>
+                </details>
+            </section>
+        </div>
+    </div>
+</div>
+
+<div layout:fragment="scripts">
+<script th:inline="javascript">
+const statusUrl = /*[[@{/staff/billing/bank/payment/{id}/status(id=${payment.paymentId})}]]*/ '';
+const initialStatus = /*[[${payment.status.name()}]]*/ 'PENDING';
+if (initialStatus === 'PENDING') {
+    const timer = window.setInterval(async () => {
+        try {
+            const response = await fetch(statusUrl, {headers: {'Accept': 'application/json'}});
+            if (!response.ok) return;
+            const data = await response.json();
+            if (data.confirmed) {
+                window.clearInterval(timer);
+                document.getElementById('paymentStatus').className = 'alert alert-success mt-3 mb-3';
+                document.getElementById('paymentStatus').textContent = 'Đã xác nhận thanh toán. Đang quay về danh sách hóa đơn...';
+                window.setTimeout(() => window.location.assign('/staff/billing'), 900);
+            }
+        } catch (_) {
+            // Giữ màn hình để lễ tân có thể làm mới hoặc đối soát thủ công.
+        }
+    }, 3000);
+}
+</script>
+</div>
+</body>
+</html>

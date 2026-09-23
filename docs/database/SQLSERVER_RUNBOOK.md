@@ -24,7 +24,7 @@ DBA chỉ cần tạo database rỗng và cấp quyền migration cho applicatio
 sqlcmd -S localhost -E -C -Q "CREATE DATABASE [medclinic_db];"
 ```
 
-Khi app khởi động với profile `sqlserver`, Flyway tự tạo `flyway_schema_history`, chạy V1–V5; sau đó Hibernate `validate` mapping entity. Startup phải fail nếu migration hoặc schema validation không đạt.
+Khi app khởi động với profile `sqlserver`, Flyway tự tạo `flyway_schema_history`, chạy V1–V6; sau đó Hibernate `validate` mapping entity. Startup phải fail nếu migration hoặc schema validation không đạt.
 
 Sau lần migrate đầu, có thể giảm quyền DDL của runtime principal theo chính sách môi trường nếu tổ chức tách deployment principal và application principal.
 
@@ -78,7 +78,24 @@ WHERE object_id = OBJECT_ID('appointments')
   AND name = 'uk_appointment_date_queue_sequence';
 ```
 
-Kỳ vọng: 18 bảng ứng dụng; fresh DB có V1–V5 kiểu `SQL`, còn legacy adoption có version 1 kiểu `BASELINE` và V2–V5 kiểu `SQL`; tất cả row history phải `success=1`.
+Kỳ vọng: 21 bảng ứng dụng; fresh DB có V1–V6 kiểu `SQL`, còn legacy adoption có version 1 kiểu `BASELINE` và V2–V6 kiểu `SQL`; tất cả row history phải `success=1`.
+
+## Backup và restore drill
+
+Tạo backup nhất quán của SQL Server cùng uploads:
+
+```powershell
+.\ops\backup.ps1
+```
+
+Diễn tập restore vào database tạm, chạy `DBCC CHECKDB` rồi tự xóa database drill:
+
+```powershell
+$latest = Get-ChildItem .\backups -Recurse -Filter *.bak | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+.\ops\restore-drill.ps1 -BackupFile $latest.FullName
+```
+
+Không dùng restore drill để ghi đè `medclinic_db`. Restore production cần change approval, maintenance window và backup mới ngay trước thao tác.
 
 ## 6. SQL Server integration tests
 

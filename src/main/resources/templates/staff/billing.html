@@ -14,7 +14,7 @@
             <h3 class="mc-page-title">
                 <i class="bi bi-credit-card-fill text-success me-2"></i>Quản Lý Viện Phí & Quầy Thu Ngân
             </h3>
-            <p class="mc-page-subtitle">Xác nhận thanh toán tiền mặt tại quầy hoặc qua cổng VNPay và xuất hóa đơn chuẩn y khoa.</p>
+            <p class="mc-page-subtitle">Thu tiền mặt hoặc tạo VietQR chuyển khoản ngân hàng; chỉ quyết toán khi giao dịch đã được đối soát.</p>
         </div>
         <div>
             <a th:href="@{/staff/reception}" class="btn btn-sm btn-outline-primary">
@@ -120,11 +120,23 @@
                             <td class="text-end pe-3">
                                 <!-- If UNPAID: Pay Button opening Modal -->
                                 <div th:if="${inv.paymentStatus.name() == 'UNPAID'}">
+                                    <div class="d-flex flex-wrap justify-content-end gap-2">
                                     <button type="button" class="btn btn-sm btn-success fw-semibold"
                                             data-bs-toggle="modal"
                                             th:data-bs-target="${'#payModal' + inv.id}">
                                         <i class="bi bi-cash-coin me-1"></i> Thu Tiền
                                     </button>
+                                    <form th:if="${bankPaymentAvailable}"
+                                          th:action="@{/staff/billing/bank/{id}(id=${inv.id})}" method="post">
+                                        <button type="submit" class="btn btn-sm btn-outline-primary fw-semibold">
+                                            <i class="bi bi-qr-code me-1"></i> Tạo VietQR
+                                        </button>
+                                    </form>
+                                    <span th:unless="${bankPaymentAvailable}" class="small text-muted align-self-center"
+                                          title="Cần cấu hình BANK_PAYMENT_* trong môi trường triển khai">
+                                        VietQR chưa cấu hình
+                                    </span>
+                                    </div>
 
                                     <!-- Payment Modal -->
                                     <div class="modal fade text-start" th:id="${'payModal' + inv.id}" tabindex="-1" th:attr="aria-labelledby=${'payModalTitle-' + inv.id}">
@@ -155,9 +167,9 @@
 
                                                         <div class="mb-3">
                                                             <label class="form-label fw-semibold" th:for="${'paymentMethod-' + inv.id}">Phương thức thanh toán <span class="text-danger">*</span></label>
-                                                            <select class="form-select" th:id="${'paymentMethod-' + inv.id}" name="method" required>
-                                                                <option value="CASH" selected>Tiền mặt tại quầy</option>
-                                                            </select>
+                                                            <input type="hidden" name="method" value="CASH">
+                                                            <input class="form-control" th:id="${'paymentMethod-' + inv.id}"
+                                                                   value="Tiền mặt tại quầy" readonly>
                                                         </div>
                                                     </div>
                                                     <div class="modal-footer">

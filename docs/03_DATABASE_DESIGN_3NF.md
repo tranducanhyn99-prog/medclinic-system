@@ -30,6 +30,8 @@ erDiagram
     USERS ||--o{ INVENTORY_TRANSACTIONS : "performs"
 
     APPOINTMENTS ||--o| INVOICES : "billed_as"
+    INVOICES ||--o{ BANK_TRANSFER_PAYMENTS : "paid_by"
+    USERS ||--o{ BUSINESS_AUDIT_EVENTS : "acts_in"
     DAILY_QUEUE_COUNTERS ||--|| APPOINTMENTS : "allocates_daily_sequence"
     INVOICE_CODE_RESERVATIONS ||--|| INVOICES : "reserves_unique_code"
     USERS ||--o{ NOTIFICATIONS : "receives"
@@ -202,7 +204,7 @@ erDiagram
 | `consultation_fee`| DECIMAL(12,2)| NOT NULL | Tiền công khám bác sĩ |
 | `medicine_fee` | DECIMAL(12,2)| NOT NULL, DEFAULT 0 | Tổng tiền thuốc trong đơn |
 | `total_amount` | DECIMAL(12,2)| NOT NULL | Tổng tiền thanh toán (`consultation_fee + medicine_fee`) |
-| `payment_method`| NVARCHAR(20) | NOT NULL | Hiện nhận `CASH`; `VNPAY` chỉ được mở sau khi có redirect/IPN/callback |
+| `payment_method`| NVARCHAR(20) | NOT NULL | `CASH`, `BANK_TRANSFER`; `VNPAY` chỉ giữ tương thích dữ liệu cũ và không được UI tạo mới |
 | `payment_status`| NVARCHAR(20) | NOT NULL | `UNPAID`, `PAID`, `REFUNDED` |
 | `paid_at` | DATETIME2 | NULL | Thời điểm thanh toán |
 | `created_at` | DATETIME2 | NOT NULL | Thời điểm lập hóa đơn |
@@ -232,6 +234,28 @@ erDiagram
 - `id` BIGINT IDENTITY PK; `user_id` FK -> `users(id)`; `type` (`REGISTRATION`, `LOGIN`); `code_hash` NVARCHAR(100); `magic_token_hash` NVARCHAR(64) UNIQUE; `expires_at`; `consumed_at`; `attempts`; `created_at`.
 - OTP 6 số chỉ lưu BCrypt hash; magic token entropy cao chỉ lưu SHA-256 hash. Challenge hết hạn sau 5 phút, dùng một lần và tối đa 5 lần nhập OTP sai. Gửi lại mã sẽ consume challenge cũ và tạo challenge mới.
 
+### 3.18. Bảng `bank_transfer_payments` (Yêu cầu chuyển khoản VietQR)
+
+| Cột | Ràng buộc / ý nghĩa |
+|---|---|
+| `id` | BIGINT IDENTITY, PK |
+| `invoice_id` | FK → `invoices`; một hóa đơn có thể tạo lại yêu cầu sau khi yêu cầu cũ hết hạn |
+| `transfer_code` | NVARCHAR(25), UNIQUE; nội dung chuyển khoản riêng để đối soát |
+| `amount` | DECIMAL(12,2), CHECK > 0; snapshot số tiền phải khớp callback |
+| `bank_id` | Mã BIN/short code ngân hàng thụ hưởng, ví dụ MB `970422` |
+| `status` | `PENDING`, `CONFIRMED`, `REJECTED`, `EXPIRED` |
+| `provider_event_id` | UNIQUE filtered khi khác NULL; idempotency của callback |
+| `bank_transaction_id` | UNIQUE filtered khi khác NULL; chống dùng một giao dịch cho nhiều hóa đơn |
+| `expires_at`, `confirmed_at`, `created_at`, `version` | Thời hạn, thời điểm xác nhận và optimistic version |
+
+### 3.19. Bảng `business_audit_events` (Audit nghiệp vụ)
+
+Lưu actor id (nếu có), action, entity type/id, outcome, correlation id, detail code và thời điểm. Bảng không lưu raw callback, số tài khoản, password, OTP, token hoặc secret. Các luồng tiền mặt, tạo VietQR, callback và đối soát thủ công đều ghi sự kiện.
+
+### 3.20. Bảng `security_rate_limit_buckets` (Rate limit dùng chung)
+
+Khóa chính `bucket_key` là SHA-256 của remote IP + endpoint; `window_start` và `request_count` được cập nhật trong transaction `SERIALIZABLE` với SQL Server lock hints. Nhờ đó nhiều instance dùng chung ngưỡng mà không lưu IP thô.
+
 > SQL Server dùng `NVARCHAR`/`NVARCHAR(MAX)` thông qua `hibernate.use_nationalized_character_data=true` để bảo toàn Unicode tiếng Việt trên collation `SQL_Latin1_General_CP1_CI_AS`.
 
 ## 4. Triển khai migration
@@ -245,16 +269,17 @@ Các migration hiện tại:
 - `src/main/resources/db/migration/sqlserver/V3__restore_jdbc_session_state.sql`: trả SQL Server session về `NOCOUNT OFF` để connection pool/JDBC generated keys hoạt động ổn định sau migration.
 - `src/main/resources/db/migration/sqlserver/V4__inventory_restock_and_low_stock.sql`: thêm `medicines.reorder_level`, bảng `inventory_transactions`, FK/check/index phục vụ cảnh báo tồn thấp và audit nhập/xuất kho.
 - `src/main/resources/db/migration/sqlserver/V5__email_otp_and_profile_security.sql`: thêm `users.email_verified`, `users.otp_bypass` và bảng `auth_verification_challenges` cho OTP/magic link 5 phút.
+- `src/main/resources/db/migration/sqlserver/V6__bank_payments_audit_and_shared_rate_limits.sql`: thêm VietQR payment request, audit nghiệp vụ, shared rate-limit bucket và mở `BANK_TRANSFER` trong payment method.
 
 V1/V2 được kiểm tra tự động để luôn đồng bộ nội dung với `docs/database/SQLSERVER_BASELINE_SCHEMA_2026-09-19.sql` và `docs/database/SQLSERVER_REFERENCE_DATA_2026-09-19.sql`.
 
 ### Database mới
 
-Flyway tạo `flyway_schema_history`, áp dụng tuần tự `V1` đến `V5`; sau đó Hibernate chạy `validate`. Nếu schema không khớp entity, application startup phải fail.
+Flyway tạo `flyway_schema_history`, áp dụng tuần tự `V1` đến `V6`; sau đó Hibernate chạy `validate`. Nếu schema không khớp entity, application startup phải fail.
 
 ### Database legacy 16 bảng
 
-Production mặc định giữ `baseline-on-migrate=false`. Sau backup và pre-check xác nhận đúng baseline 16 bảng, operator mới bật `SPRING_FLYWAY_BASELINE_ON_MIGRATE=true` cho lần adoption đầu tiên. Flyway ghi baseline version 1, bỏ qua V1 và áp dụng các migration sau đó (`V2` đến `V5`). Sau khi history được tạo, bỏ opt-in này. Không baseline schema dở dang hoặc không rõ nguồn gốc.
+Production mặc định giữ `baseline-on-migrate=false`. Sau backup và pre-check xác nhận đúng baseline 16 bảng, operator mới bật `SPRING_FLYWAY_BASELINE_ON_MIGRATE=true` cho lần adoption đầu tiên. Flyway ghi baseline version 1, bỏ qua V1 và áp dụng các migration sau đó (`V2` đến `V6`). Sau khi history được tạo, bỏ opt-in này. Không baseline schema dở dang hoặc không rõ nguồn gốc.
 
 `SqlServerFlywayMigrationIntegrationTest` kiểm chứng cả fresh migration và legacy adoption trên database disposable `medclinic_flyway_it`, sau đó drop database test. Docker init chỉ áp dụng guard `0`/`16` khi chưa có `flyway_schema_history`; khi history đã tồn tại, Flyway/Hibernate chịu trách nhiệm kiểm tra các version schema tương lai.
 

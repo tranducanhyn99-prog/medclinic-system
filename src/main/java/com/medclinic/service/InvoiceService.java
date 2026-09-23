@@ -10,6 +10,7 @@ import java.util.List;
 public interface InvoiceService {
     Invoice createInvoiceForAppointment(Long appointmentId, BigDecimal medicineFee);
     Invoice processPayment(Long invoiceId, PaymentMethod paymentMethod);
+    Invoice processPayment(Long invoiceId, PaymentMethod paymentMethod, Long actorId);
     Invoice findByAppointmentId(Long appointmentId);
     Invoice findById(Long invoiceId);
     List<Invoice> findAllByStatus(PaymentStatus status);

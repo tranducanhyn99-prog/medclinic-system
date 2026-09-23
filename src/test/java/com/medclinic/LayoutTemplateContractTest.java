@@ -72,6 +72,12 @@ class LayoutTemplateContractTest {
         String billing = read("staff/billing.html");
         assertTrue(billing.contains("aria-labelledby=${'payModalTitle-' + inv.id}"));
         assertTrue(billing.contains("th:for=\"${'paymentMethod-' + inv.id}\""));
+
+        String bankPayment = read("staff/bank-payment.html");
+        assertTrue(bankPayment.contains("aria-live=\"polite\""));
+        assertTrue(bankPayment.contains("fetch(statusUrl"));
+        assertTrue(bankPayment.contains("bankTransactionId"));
+        assertBalancedScriptTags(bankPayment);
     }
 
     @Test

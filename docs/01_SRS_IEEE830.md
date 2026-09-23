@@ -88,8 +88,9 @@ Hệ thống được phát triển theo mô hình kiến trúc phân tầng chu
 
 ### 3.6. Phân hệ Hóa đơn & Thu viện phí (Billing & Invoice)
 - **FR-BILL-01 (Tự động sinh Hóa đơn):** Khi bác sĩ hoàn tất khám, hệ thống tự động tính tổng tiền (Tiền công khám + Tiền thuốc trong đơn) và tạo Hóa đơn viện phí (`Invoice`).
-- **FR-BILL-02 (Thu viện phí):** Lễ tân thực hiện thu tiền mặt tại quầy, chuyển trạng thái hóa đơn sang `PAID`. VNPay sandbox/IPN/callback là backlog cho đến khi có đặc tả tích hợp và kiểm thử riêng; hệ thống hiện từ chối phương thức này để tránh ghi nhận thanh toán giả.
+- **FR-BILL-02 (Thu viện phí):** Lễ tân có thể xác nhận tiền mặt tại quầy. Với chuyển khoản, hệ thống tạo VietQR chứa đúng ngân hàng, tài khoản, số tiền và nội dung riêng của hóa đơn; hóa đơn vẫn `UNPAID` cho tới khi đối soát thành công.
 - **FR-BILL-03 (Xuất Hóa đơn PDF):** Hệ thống hỗ trợ xuất và in Hóa đơn thanh toán viện phí định dạng PDF.
+- **FR-BILL-04 (Xác nhận chuyển khoản):** Callback server-to-server phải có HMAC SHA-256, event id và bank transaction id duy nhất, khớp tuyệt đối transfer code và số tiền, còn thời hạn và có tính idempotent. Lễ tân được xác nhận thủ công chỉ sau khi nhập mã giao dịch đã kiểm tra trên tài khoản ngân hàng; mọi kết quả được ghi audit trail.
 
 ### 3.7. Phân hệ Quản trị & Báo cáo Doanh thu (Admin Dashboard & Reports)
 - **FR-ADMIN-01 (Dashboard KPI):** Admin theo dõi tổng số bệnh nhân, số bác sĩ, số ca khám hôm nay, tổng doanh thu thực thu.
@@ -114,10 +115,12 @@ Hệ thống được phát triển theo mô hình kiến trúc phân tầng chu
 - **NFR-SEC-04:** Chống **SQL Injection** thông qua cơ chế Parameterized Query của Spring Data JPA.
 - **NFR-SEC-05:** Token khôi phục mật khẩu chỉ lưu dưới dạng SHA-256 hash, có hạn 24 giờ, có `used_at`, và response yêu cầu reset không làm lộ email có tồn tại hay không.
 - **NFR-SEC-06:** Session phải chống session fixation, giới hạn thời gian sống hợp lý; cookie phiên dùng `HttpOnly` + `SameSite=Lax`, profile SQL Server production mặc định `Secure=true`; response không lộ stacktrace/binding error và bổ sung các security header cần thiết.
-- **NFR-SEC-07:** Các endpoint xác thực/khôi phục mật khẩu nhạy cảm phải có rate limit theo remote IP + endpoint; sự kiện đăng nhập thành công/thất bại, logout và rate-limit rejection phải được audit log/đếm metric mà không ghi password, token hoặc secret.
+- **NFR-SEC-07:** Các endpoint xác thực/khôi phục mật khẩu nhạy cảm phải có rate limit theo remote IP + endpoint. Profile SQL Server dùng shared bucket để nhiều instance cùng áp dụng một ngưỡng; khóa bucket và log principal/IP được băm, không ghi password, token hoặc secret.
+- **NFR-SEC-08:** Callback thanh toán ngân hàng được miễn CSRF vì không dùng browser session, nhưng bắt buộc chữ ký HMAC constant-time, idempotency và kiểm tra số tiền/nội dung trước khi cập nhật hóa đơn.
 
 ### 4.3. Khả năng quan sát & Vận hành (Operational Observability)
 - **NFR-OPS-01:** Hệ thống phải cung cấp health endpoint tối thiểu cho giám sát liveness/readiness ở mức ứng dụng và metrics cho vận hành; health public chỉ lộ trạng thái tổng quát, còn metrics chỉ cho `ROLE_ADMIN`.
+- **NFR-OPS-02:** Email có retry hữu hạn và metric success/retry/failure; dữ liệu SQL Server và uploads phải có backup kèm checksum, restore drill định kỳ, retention cho token/bucket/audit và secret nằm ngoài repository.
 
 ### 4.4. Tính toàn vẹn dữ liệu & Xử lý đồng thời (Data Integrity & Concurrency)
 - **NFR-ACID-01:** Các workflow đặt lịch, check-in, hoàn tất bệnh án, trừ kho và lập hóa đơn được bao trong transaction Spring. Booking khai báo `READ_COMMITTED`; các transaction còn lại dùng isolation mặc định của datasource/SQL Server.
@@ -129,7 +132,7 @@ Hệ thống được phát triển theo mô hình kiến trúc phân tầng chu
 
 
 ## 5. PHẠM VI TƯƠNG LAI (FUTURE SCOPE)
-- VNPay redirect/IPN/callback với kiểm tra chữ ký và idempotency.
+- Tích hợp trực tiếp MB VietQR Paygate/App-to-App sau khi phòng khám hoàn tất hợp đồng merchant và nhận credential/checksum chính thức. Bản hiện tại dùng VietQR tới tài khoản ngân hàng cấu hình và callback HMAC trung gian.
 - Đánh giá bác sĩ sau ca khám.
 - UI Admin quản trị lịch trực/TimeSlot.
 - Notification center hoàn chỉnh trên nền entity/repository hiện có.

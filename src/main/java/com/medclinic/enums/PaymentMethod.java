@@ -2,7 +2,8 @@ package com.medclinic.enums;
 
 public enum PaymentMethod {
     CASH("Tiền mặt tại quầy"),
-    VNPAY("Cổng VNPAY Sandbox");
+    BANK_TRANSFER("Chuyển khoản ngân hàng qua VietQR"),
+    VNPAY("VNPAY (legacy/không sử dụng)");
 
     private final String displayName;
 
@@ -14,4 +15,3 @@ public enum PaymentMethod {
         return displayName;
     }
 }
-

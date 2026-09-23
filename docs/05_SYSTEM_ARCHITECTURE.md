@@ -81,7 +81,7 @@ graph TD
 - **Mã hóa:** Giải thuật băm mật khẩu `BCryptPasswordEncoder` với salt ngẫu nhiên.
 - **Password reset:** Token thô chỉ gửi qua email; CSDL lưu SHA-256 hash trong `password_reset_tokens`, hạn 24 giờ và đánh dấu `used_at` sau khi dùng.
 - **Session/cookie hardening:** Session timeout 30 phút; chống session fixation bằng `migrateSession`; `JSESSIONID` dùng `HttpOnly` + `SameSite=Lax`. Profile SQL Server mặc định `Secure=true`; local HTTP phải opt-out rõ ràng.
-- **Abuse protection:** `POST /login`, `/forgot-password`, `/reset-password` dùng rate limit theo remote IP + endpoint, mặc định 20 login và 5 reset request trong cửa sổ 300 giây; trả HTTP 429 + `Retry-After` khi vượt ngưỡng.
+- **Abuse protection:** các POST xác thực/OTP/reset dùng rate limit theo remote IP + endpoint, mặc định 20 login và 5 request nhạy cảm trong 300 giây. Profile SQL Server dùng bucket chung trong DB với khóa IP đã băm; trả HTTP 429 + `Retry-After` khi vượt ngưỡng.
 - **Response hardening:** Không expose error message/binding error/stacktrace; thêm `Referrer-Policy: strict-origin-when-cross-origin` và `Permissions-Policy` tắt camera/microphone/geolocation.
 
 ### 2.3. Business Service Layer & Concurrency Engine (Tầng Nghiệp vụ)
@@ -93,6 +93,8 @@ graph TD
 - **Xử lý Bất đồng bộ & Realtime:**
   - Tích hợp `@EnableAsync` với `AsyncConfig.taskExecutor` riêng (Core Pool: 4, Max Pool: 10, Queue: 100, prefix `medclinic-async-`) để không xung đột với các executor nội bộ của WebSocket/STOMP.
   - Booking/hủy lịch phát `AppointmentEmailEvent`; `AppointmentEmailListener` dùng `@TransactionalEventListener(AFTER_COMMIT)` + `@Async`, nên email chỉ gửi sau commit và lỗi SMTP không rollback dữ liệu nghiệp vụ.
+  - Email retry hữu hạn và xuất Micrometer metric `medclinic.email.delivery`; recipient chỉ xuất hiện dưới dạng hash trong log.
+  - Thanh toán chuyển khoản tạo VietQR từ cấu hình ngân hàng (MB Bank dùng BIN `970422`). Callback công khai chỉ được chấp nhận khi HMAC SHA-256, event id, bank transaction id, transfer code và amount đều hợp lệ; hóa đơn được lock trước khi đổi `PAID`.
   - Check-in, bắt đầu khám và hoàn tất khám phát `DoctorQueueChangedEvent`. `DoctorQueueWebSocketListener` chỉ xử lý ở pha `AFTER_COMMIT`, sau đó gửi payload tối thiểu qua `SimpMessagingTemplate.convertAndSendToUser(..., "/queue/doctor", ...)`; rollback không tạo thông báo realtime.
 - **Động cơ Xuất PDF & QR Code:**
   - `OpenPDF`: Sinh tài liệu PDF đơn thuốc và hóa đơn bằng luồng `ByteArrayOutputStream`, truyền trực tiếp qua `InputStreamResource` không ghi rác ra ổ đĩa máy chủ.
@@ -104,7 +106,7 @@ graph TD
   - Profile `dev`: H2 In-Memory Database (tự động khởi tạo schema và seed data, zero-configuration).
   - Profile `sqlserver`: Microsoft SQL Server — database chính cho môi trường hiện tại và production.
   - Profile `mysql`: giữ lại cho khả năng tương thích/roadmap tương lai; không thuộc phạm vi nghiệm thu hiện tại.
-- **Schema versioning:** Profile `sqlserver` dùng Flyway V1/V2/V3 chạy trước Hibernate; `ddl-auto=validate` chỉ xác minh mapping sau migration. Database legacy 16 bảng chỉ được nhận quản lý bằng baseline version 1 khi operator bật opt-in sau pre-check/backup; mặc định production không tự baseline.
+- **Schema versioning:** Profile `sqlserver` dùng Flyway V1–V6 chạy trước Hibernate; `ddl-auto=validate` chỉ xác minh mapping sau migration. Database legacy 16 bảng chỉ được nhận quản lý bằng baseline version 1 khi operator bật opt-in sau pre-check/backup; mặc định production không tự baseline.
 - **Migration safety:** Docker init chỉ áp dụng guard `0`/`16` khi chưa có Flyway history; khi history đã tồn tại, versioning thuộc Flyway/Hibernate. Migration test destructive chạy trên database disposable `medclinic_flyway_it`, không dùng production database.
 - **Chuẩn hóa CSDL:** Toàn bộ quan hệ được thiết kế chuẩn mực **3NF**.
 

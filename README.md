@@ -49,11 +49,11 @@ Tại các phòng khám tư nhân quy mô vừa và nhỏ ở Việt Nam, việc
 - Cung cấp cổng đặt lịch khám bệnh trực tuyến mọi lúc mọi nơi theo chuyên khoa, bác sĩ và khung giờ 30 phút.
 - Tự động hóa khâu tiếp nhận tại quầy: check-in qua mã QR, cấp số thứ tự điện tử (STT) và tiếp nhận bệnh nhân vãng lai (walk-in).
 - Hỗ trợ bác sĩ khám bệnh với Bàn khám điện tử, kê đơn thuốc tự động trừ tồn kho dược phẩm và truy xuất nhanh tiền sử bệnh án.
-- Tự động tạo hóa đơn viện phí, hỗ trợ thanh toán tiền mặt tại quầy và xuất PDF đơn thuốc/hóa đơn chuẩn y khoa. VNPay/IPN được giữ trong roadmap tương lai.
+- Tự động tạo hóa đơn viện phí, thu tiền mặt hoặc tạo VietQR chuyển khoản tới tài khoản ngân hàng cấu hình (ví dụ MB Bank), xác nhận bằng callback HMAC/idempotency hoặc đối soát thủ công, và xuất PDF.
 
 ### Điểm nổi bật & Thách thức kỹ thuật
 - **Kiểm soát đồng thời chống Double Booking:** Luồng đặt lịch khóa bản ghi TimeSlot khi ghi (`findByIdForUpdate`) và vẫn duy trì `@Version` để phát hiện cập nhật cạnh tranh. Kết hợp transaction `READ_COMMITTED`, trạng thái slot và ràng buộc CSDL giúp booking thất bại an toàn khi có tranh chấp.
-- **Cơ sở dữ liệu Microsoft SQL Server đạt chuẩn 3NF:** 18 bảng ứng dụng sau Flyway V1–V5, Unicode `NVARCHAR`; Hibernate production chỉ `validate`, không tự sửa schema.
+- **Cơ sở dữ liệu Microsoft SQL Server đạt chuẩn 3NF:** 21 bảng ứng dụng sau Flyway V1–V6, Unicode `NVARCHAR`; Hibernate production chỉ `validate`, không tự sửa schema.
 - **Phân quyền người dùng dựa trên vai trò (RBAC):** Bảo vệ chặt chẽ các tài nguyên theo 4 vai trò: `ROLE_PATIENT`, `ROLE_DOCTOR`, `ROLE_STAFF`, `ROLE_ADMIN` thông qua Spring Security 6.
 - **Tích hợp đa dịch vụ:** Tự động tạo mã QR Base64 bằng Google ZXing, xuất hóa đơn & toa thuốc chuẩn PDF bằng OpenPDF, và gửi email xác nhận bất đồng bộ `@Async`.
 
@@ -65,8 +65,8 @@ Tại các phòng khám tư nhân quy mô vừa và nhỏ ở Việt Nam, việc
 | :--- | :--- |
 | **Concurrency & Transaction** | Row lock + `@Version`, chống double-booking, cấp STT đồng thời, khóa tồn kho và rollback nghiệp vụ |
 | **Realtime Messaging** | Spring WebSocket/STOMP user destination; queue event chỉ broadcast `AFTER_COMMIT`, không phát khi transaction rollback |
-| **SQL Server production-readiness** | Flyway V1–V5, legacy baseline opt-in có guard, `ddl-auto=validate`, Unicode `NVARCHAR` và SQL Server integration test |
-| **Security** | RBAC, CSRF, BCrypt, email OTP/magic link, session-fixation protection, Secure/HttpOnly/SameSite cookies, rate limit và audit log |
+| **SQL Server production-readiness** | Flyway V1–V6, legacy baseline opt-in có guard, `ddl-auto=validate`, Unicode `NVARCHAR`, backup/restore drill và SQL Server integration test |
+| **Security** | RBAC, CSRF, BCrypt, email OTP/magic link, session-fixation protection, Secure/HttpOnly/SameSite cookies, shared SQL rate limit và audit log |
 | **Observability** | Spring Boot Actuator + Micrometer; public health chỉ trả status, metrics yêu cầu ADMIN, custom security counters |
 | **Quality Engineering** | Unit/integration/concurrency test, SQL Server E2E có environment guard và JaCoCo quality gate trên `mvn verify` |
 | **CI/CD & Delivery** | GitHub Actions cho push/PR, artifact JAR + JaCoCo report, Dockerfile multi-stage và SQL Server Compose |
@@ -102,7 +102,7 @@ Tại các phòng khám tư nhân quy mô vừa và nhỏ ở Việt Nam, việc
 - [x] **Tra Cứu Nhanh Tiếp Nhận:** Tìm kiếm hồ sơ bệnh nhân qua mã đặt lịch, số điện thoại hoặc họ tên.
 - [x] **Check-in & Cấp STT Tự Động:** Quét mã QR/xác nhận thông tin và cấp số thứ tự khám tự động (`STT-01`, `STT-02`...).
 - [x] **Đăng Ký Khám Vãng Lai (Walk-in):** Đăng ký trực tiếp tại quầy cho người bệnh chưa đặt lịch trước.
-- [x] **Quản Lý Hóa Đơn & Thu Phí:** Quản lý viện phí và xác nhận thanh toán tiền mặt tại quầy. VNPay/IPN là future scope.
+- [x] **Quản Lý Hóa Đơn & Thu Phí:** Thu tiền mặt hoặc VietQR chuyển khoản ngân hàng. Hóa đơn chỉ chuyển `PAID` khi callback HMAC khớp số tiền/nội dung hoặc lễ tân nhập mã giao dịch sau đối soát.
 
 ### ⚙️ Phân Hệ Quản Trị Hệ Thống (Admin System)
 - [x] **Bảng Điều Khiển KPI:** Thống kê tổng bệnh nhân, tổng bác sĩ, ca khám trong ngày và tổng doanh thu.
@@ -163,7 +163,7 @@ graph TD
 | **Bảo mật** | Spring Security | 6.x | Xác thực, phân quyền 4 vai trò (RBAC), CSRF, BCrypt |
 | **Cơ sở dữ liệu chính** | **Microsoft SQL Server** | **2019 / 2022** | Hệ quản trị CSDL quan hệ chính thức cho dự án |
 | **Driver CSDL** | Microsoft JDBC Driver for SQL Server (`mssql-jdbc`) | 12.6+ | Kết nối hiệu năng cao, bảo mật TLS/SSL |
-| **Schema migration** | Flyway + `flyway-sqlserver` | 10.10.0 | V1–V5 versioning, legacy baseline adoption, chạy trước Hibernate validate |
+| **Schema migration** | Flyway + `flyway-sqlserver` | 10.10.0 | V1–V6 versioning, legacy baseline adoption, chạy trước Hibernate validate |
 | **Cơ sở dữ liệu Test** | H2 Database In-Memory | 2.x | Chạy kiểm thử tự động và chạy thử nghiệm zero-config |
 | **ORM / JPA** | Hibernate / Spring Data JPA | 6.5.3 | Quản lý thực thể, Optimistic Lock (`@Version`) |
 | **Giao diện** | Thymeleaf + Layout Dialect | 3.x | Template Engine kết xuất server-side |
@@ -185,7 +185,7 @@ Toàn bộ tài liệu chuẩn kỹ thuật phần mềm được lưu trữ đ�
 
 1. 📄 [**01_SRS_IEEE830.md**](docs/01_SRS_IEEE830.md): Đặc tả yêu cầu phần mềm và phạm vi hiện tại.
 2. 📐 [**02_UML_DESIGN.md**](docs/02_UML_DESIGN.md): Thiết kế Sơ đồ UML 2.5 (Use Case Diagram, Activity Diagrams, Sequence Diagrams luồng Concurrency, Class Diagram).
-3. 🗄️ [**03_DATABASE_DESIGN_3NF.md**](docs/03_DATABASE_DESIGN_3NF.md): Thiết kế 18 bảng ứng dụng và từ điển dữ liệu SQL Server.
+3. 🗄️ [**03_DATABASE_DESIGN_3NF.md**](docs/03_DATABASE_DESIGN_3NF.md): Thiết kế 21 bảng ứng dụng và từ điển dữ liệu SQL Server.
 4. 🧭 [**04_RTM_MATRIX.md**](docs/04_RTM_MATRIX.md): Ma trận truy vết yêu cầu 2 chiều (Requirements Traceability Matrix).
 5. 🏛️ [**05_SYSTEM_ARCHITECTURE.md**](docs/05_SYSTEM_ARCHITECTURE.md): Tài liệu Kiến trúc Hệ thống chi tiết (Layered Architecture, Design Patterns).
 6. 🎨 [**06_UI_UX_DESIGN.md**](docs/06_UI_UX_DESIGN.md): Đặc tả giao diện, responsive và accessibility.
@@ -235,7 +235,7 @@ cp .env.example .env
 docker compose up --build
 ```
 
-Compose khởi động SQL Server 2022, Mailpit và ứng dụng tại **http://localhost:8080**. Init job chỉ chấp nhận DB rỗng hoặc schema legacy 16 bảng chưa có Flyway history; Flyway chạy V1–V5 (DB mới có 18 bảng ứng dụng) rồi Hibernate `validate`. SQL Server mặc định dùng host port `14333`, app kết nối nội bộ `sqlserver:1433`. Volume `medclinic-uploads` giữ avatar qua lần `down`/`up` không xóa volume. [Biên bản nghiệm thu mới](docs/15_P0_RUNTIME_ACCEPTANCE_2026-09-23.md) ghi kết quả Compose/SQL Server ngày 23/09/2026; [biên bản cũ](docs/11_DOCKER_RUNTIME_ACCEPTANCE.md) chỉ phản ánh mốc V1–V3.
+Compose khởi động SQL Server 2022, Mailpit và ứng dụng tại **http://localhost:8080**. Init job chỉ chấp nhận DB rỗng hoặc schema legacy 16 bảng chưa có Flyway history; Flyway chạy V1–V6 (DB mới có 21 bảng ứng dụng) rồi Hibernate `validate`. SQL Server mặc định dùng host port `14333`, app kết nối nội bộ `sqlserver:1433`. Volume `medclinic-uploads` giữ avatar qua lần `down`/`up` không xóa volume. [Biên bản P2](docs/18_P2_PRODUCTION_READINESS_AND_BANK_PAYMENT_2026-09-23.md) mô tả backup, giám sát và VietQR; [biên bản P0](docs/15_P0_RUNTIME_ACCEPTANCE_2026-09-23.md) ghi mốc V1–V5 trước đó.
 
 **Email demo:** Compose dùng Mailpit, hộp thư chỉ mở trên máy chạy Docker tại **http://localhost:8025**. Tài khoản seed đăng nhập không cần OTP; tài khoản bệnh nhân mới phải mở email trong Mailpit để lấy OTP hoặc bấm magic link. Email không gửi ra Internet. Không đưa cổng Mailpit lên mạng công cộng hoặc dùng profile `demo` cho dữ liệu thật.
 
@@ -270,9 +270,9 @@ GO
 #### 2.3. Flyway migration và cấu hình secret qua môi trường
 Production dùng Flyway làm schema owner và `ddl-auto=validate`, vì vậy Hibernate **không tự tạo hoặc sửa schema**.
 
-Với database mới, DBA chỉ tạo database rỗng và cấu hình quyền/secret. Khi application khởi động bằng profile `sqlserver`, Flyway tự tạo `flyway_schema_history`, áp dụng tuần tự V1–V5; Hibernate `validate` chạy sau migration.
+Với database mới, DBA chỉ tạo database rỗng và cấu hình quyền/secret. Khi application khởi động bằng profile `sqlserver`, Flyway tự tạo `flyway_schema_history`, áp dụng tuần tự V1–V6; Hibernate `validate` chạy sau migration.
 
-Với database legacy đã có đúng baseline 16 bảng nhưng chưa có Flyway history, phải backup + pre-check trước. Production mặc định giữ `baseline-on-migrate=false`; chỉ trong lần adoption có chủ đích mới đặt `SPRING_FLYWAY_BASELINE_ON_MIGRATE=true` để Flyway ghi baseline version 1 rồi chạy V2–V5. Sau khi history được tạo, bỏ opt-in này. Không baseline schema dở dang hoặc không rõ nguồn gốc.
+Với database legacy đã có đúng baseline 16 bảng nhưng chưa có Flyway history, phải backup + pre-check trước. Production mặc định giữ `baseline-on-migrate=false`; chỉ trong lần adoption có chủ đích mới đặt `SPRING_FLYWAY_BASELINE_ON_MIGRATE=true` để Flyway ghi baseline version 1 rồi chạy V2–V6. Sau khi history được tạo, bỏ opt-in này. Không baseline schema dở dang hoặc không rõ nguồn gốc.
 
 Các file `docs/database/SQLSERVER_BASELINE_SCHEMA_2026-09-19.sql` và `SQLSERVER_REFERENCE_DATA_2026-09-19.sql` vẫn được giữ làm bản review/audit; test tự động bảo đảm chúng đồng bộ với Flyway V1/V2; V3 khôi phục trạng thái JDBC session (`NOCOUNT OFF`) sau reference-data migration.
 
@@ -289,9 +289,15 @@ $env:SESSION_COOKIE_SECURE="true"  # production HTTPS
 $env:LOGIN_RATE_LIMIT_MAX="20"
 $env:PASSWORD_RESET_RATE_LIMIT_MAX="5"
 $env:AUTH_RATE_LIMIT_WINDOW_SECONDS="300"
+$env:AUTH_RATE_LIMIT_STORE="jdbc"
+$env:BANK_PAYMENT_ENABLED="true"
+$env:BANK_PAYMENT_BANK_ID="970422" # MB Bank
+$env:BANK_PAYMENT_ACCOUNT_NO="<beneficiary-account>"
+$env:BANK_PAYMENT_ACCOUNT_NAME="<BENEFICIARY NAME>"
+$env:BANK_PAYMENT_CALLBACK_SECRET="<random-secret-at-least-32-characters>"
 ```
 
-Chi tiết fresh/legacy migration và production handoff xem `docs/database/SQLSERVER_RUNBOOK.md` và `docs/database/PRODUCTION_ADMIN_PROVISIONING.md`.
+Production chạy `sqlserver,prod`; guard sẽ từ chối nếu đồng thời bật `dev` hoặc `demo`. Chi tiết fresh/legacy migration, backup/restore và payment xem `docs/database/SQLSERVER_RUNBOOK.md`, `docs/database/PRODUCTION_ADMIN_PROVISIONING.md` và `docs/18_P2_PRODUCTION_READINESS_AND_BANK_PAYMENT_2026-09-23.md`.
 
 > 💡 **Mẹo chạy nhanh không cần cài SQL Server (Dev In-Memory):** Nếu chưa cài đặt SQL Server trên máy, bạn vẫn có thể khởi chạy ngay lập tức bằng CSDL nhúng **H2 Database** tích hợp sẵn (Profile `dev`), toàn bộ dữ liệu mẫu vẫn tự động nạp bình thường.
 
@@ -409,7 +415,7 @@ medclinic-system/
 │   │   └── resources/
 │   │       ├── templates/                # Thymeleaf HTML Templates
 │   │       ├── static/                   # File tĩnh (CSS, JS, Images)
-│   │       ├── db/migration/sqlserver/   # Flyway V1–V5
+│   │       ├── db/migration/sqlserver/   # Flyway V1–V6
 │   │       └── application.yml           # Profiles dev H2 / sqlserver / mysql-roadmap; nhận secret qua env
 │   └── test/java/com/medclinic/          # Bộ bài kiểm thử tự động JUnit 5 & Mockito
 ├── pom.xml                               # Maven, mssql-jdbc, Flyway SQL Server, JaCoCo...
