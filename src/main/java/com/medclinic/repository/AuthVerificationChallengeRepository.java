@@ -10,10 +10,12 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
+import java.time.LocalDateTime;
 
 public interface AuthVerificationChallengeRepository extends JpaRepository<AuthVerificationChallenge, Long> {
     Optional<AuthVerificationChallenge> findByMagicTokenHash(String magicTokenHash);
     List<AuthVerificationChallenge> findByUserIdAndTypeAndConsumedAtIsNull(Long userId, AuthChallengeType type);
+    long countByUserIdAndTypeAndCreatedAtAfter(Long userId, AuthChallengeType type, LocalDateTime after);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select c from AuthVerificationChallenge c join fetch c.user where c.id = :id")

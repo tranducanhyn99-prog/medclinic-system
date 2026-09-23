@@ -1,7 +1,7 @@
 # NGHIỆP VỤ KHO THUỐC: CẢNH BÁO TỒN THẤP & NHẬP BỔ SUNG
 
-**Dự án:** MedClinic  
-**Ngày cập nhật:** 22/09/2026  
+**Dự án:** MedClinic<br>
+**Ngày cập nhật:** 22/09/2026<br>
 **Phạm vi:** Admin kho thuốc, bác sĩ kê đơn, audit nhập/xuất kho.
 
 ## 1. Mục tiêu nghiệp vụ

@@ -35,6 +35,7 @@ import java.time.LocalDateTime;
 @Controller
 @RequiredArgsConstructor
 public class AuthController {
+    private static final String PENDING_OTP_CHALLENGE_ID = "PENDING_OTP_CHALLENGE_ID";
 
     private final UserService userService;
     private final PasswordResetService passwordResetService;
@@ -75,6 +76,7 @@ public class AuthController {
             }
 
             var issued = authVerificationService.issueChallenge(user.getId(), AuthChallengeType.LOGIN);
+            request.getSession(true).setAttribute(PENDING_OTP_CHALLENGE_ID, issued.challengeId());
             redirectAttributes.addFlashAttribute("successMessage",
                     "Mã OTP đã được gửi đến " + issued.maskedEmail() + ".");
             return "redirect:/auth/otp?challenge=" + issued.challengeId();
@@ -94,6 +96,7 @@ public class AuthController {
     @PostMapping("/register")
     public String handleRegister(@Valid @ModelAttribute("registerDto") UserRegisterDto registerDto,
                                  BindingResult bindingResult,
+                                 HttpServletRequest request,
                                  RedirectAttributes redirectAttributes,
                                  Model model) {
         if (bindingResult.hasErrors()) {
@@ -102,6 +105,7 @@ public class AuthController {
         try {
             User user = userService.registerPatient(registerDto);
             var issued = authVerificationService.issueChallenge(user.getId(), AuthChallengeType.REGISTRATION);
+            request.getSession(true).setAttribute(PENDING_OTP_CHALLENGE_ID, issued.challengeId());
             redirectAttributes.addFlashAttribute("successMessage",
                     "Tài khoản đã được tạo. Hãy xác thực email " + issued.maskedEmail() + " để kích hoạt.");
             return "redirect:/auth/otp?challenge=" + issued.challengeId();
@@ -134,6 +138,7 @@ public class AuthController {
                             RedirectAttributes redirectAttributes) {
         try {
             var result = authVerificationService.verifyCode(challengeId, code);
+            clearPendingChallenge(request);
             establishSession(result.user(), request);
             securityAuditService.authenticationSuccess(result.user().getUsername(), request.getRemoteAddr());
             redirectAttributes.addFlashAttribute("successMessage",
@@ -147,9 +152,16 @@ public class AuthController {
 
     @PostMapping("/auth/otp/resend")
     public String resendOtp(@RequestParam Long challengeId,
+                            HttpServletRequest request,
                             RedirectAttributes redirectAttributes) {
+        HttpSession session = request.getSession(false);
+        if (session == null || !challengeId.equals(session.getAttribute(PENDING_OTP_CHALLENGE_ID))) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Phiên xác thực không hợp lệ. Vui lòng đăng nhập lại.");
+            return "redirect:/login";
+        }
         try {
             var issued = authVerificationService.resendChallenge(challengeId);
+            session.setAttribute(PENDING_OTP_CHALLENGE_ID, issued.challengeId());
             redirectAttributes.addFlashAttribute("successMessage",
                     "Mã OTP mới đã được gửi đến " + issued.maskedEmail() + ".");
             return "redirect:/auth/otp?challenge=" + issued.challengeId();
@@ -235,7 +247,13 @@ public class AuthController {
             userService.updateUserProfile(userDetails.getId(), fullName, phone, gender, dateOfBirth, address);
             if (avatar != null && !avatar.isEmpty()) {
                 String avatarUrl = avatarStorageService.storeAvatar(avatar, current.getAvatarUrl());
-                userService.updateAvatar(userDetails.getId(), avatarUrl);
+                try {
+                    userService.updateAvatar(userDetails.getId(), avatarUrl);
+                } catch (Exception exception) {
+                    avatarStorageService.deleteAvatar(avatarUrl);
+                    throw exception;
+                }
+                avatarStorageService.deleteAvatar(current.getAvatarUrl());
             }
             redirectAttributes.addFlashAttribute("successMessage", "Cập nhật hồ sơ cá nhân thành công!");
         } catch (Exception exception) {
@@ -275,6 +293,13 @@ public class AuthController {
         request.changeSessionId();
         session = request.getSession(false);
         session.setAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, context);
+    }
+
+    private void clearPendingChallenge(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            session.removeAttribute(PENDING_OTP_CHALLENGE_ID);
+        }
     }
 
     private String redirectFor(User user) {

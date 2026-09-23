@@ -171,4 +171,59 @@ class OtpAuthenticationIntegrationTest {
         assertEquals(user.getId(), authVerificationService.verifyCode(second.challengeId(), secondCode.getValue()).user().getId());
     }
 
+    @Test
+    void resendRequiresTheSessionThatStartedTheChallenge() throws Exception {
+        Role patientRole = roleRepository.findByName(RoleType.ROLE_PATIENT).orElseThrow();
+        String suffix = UUID.randomUUID().toString().substring(0, 8);
+        String email = "session_" + suffix + "@example.test";
+        User user = userRepository.save(User.builder()
+                .username("session_" + suffix).password(passwordEncoder.encode("password123"))
+                .fullName("Session Patient").email(email).role(patientRole)
+                .emailVerified(true).otpBypass(false).isActive(true).build());
+
+        MvcResult login = mockMvc.perform(post("/auth/login").with(csrf())
+                        .param("username", user.getUsername()).param("password", "password123"))
+                .andExpect(status().is3xxRedirection()).andReturn();
+        long challengeId = Long.parseLong(login.getResponse().getRedirectedUrl().split("=")[1]);
+        MockHttpSession ownerSession = (MockHttpSession) login.getRequest().getSession(false);
+        assertNotNull(ownerSession);
+        clearInvocations(emailService);
+
+        mockMvc.perform(post("/auth/otp/resend").with(csrf())
+                        .param("challengeId", Long.toString(challengeId)))
+                .andExpect(redirectedUrl("/login"));
+        mockMvc.perform(post("/auth/otp/resend").session(new MockHttpSession()).with(csrf())
+                        .param("challengeId", Long.toString(challengeId)))
+                .andExpect(redirectedUrl("/login"));
+        verifyNoInteractions(emailService);
+
+        assertEquals(challengeId, authVerificationService.getChallengeInfo(challengeId).challengeId());
+        MvcResult resent = mockMvc.perform(post("/auth/otp/resend").session(ownerSession).with(csrf())
+                        .param("challengeId", Long.toString(challengeId)))
+                .andExpect(status().is3xxRedirection()).andReturn();
+        assertTrue(resent.getResponse().getRedirectedUrl().startsWith("/auth/otp?challenge="));
+        verify(emailService).sendAuthenticationOtpEmail(eq(email), anyString(),
+                anyString(), anyString(), eq(5L), eq("đăng nhập"));
+    }
+
+    @Test
+    void resendLimitKeepsLatestChallengeUsable() {
+        Role patientRole = roleRepository.findByName(RoleType.ROLE_PATIENT).orElseThrow();
+        String suffix = UUID.randomUUID().toString().substring(0, 8);
+        String email = "limit_" + suffix + "@example.test";
+        User user = userRepository.save(User.builder()
+                .username("limit_" + suffix).password(passwordEncoder.encode("password123"))
+                .fullName("Limit Patient").email(email).role(patientRole)
+                .emailVerified(true).otpBypass(false).isActive(true).build());
+
+        var first = authVerificationService.issueChallenge(user.getId(), AuthChallengeType.LOGIN);
+        var second = authVerificationService.resendChallenge(first.challengeId());
+        var third = authVerificationService.resendChallenge(second.challengeId());
+        assertThrows(BusinessLogicException.class,
+                () -> authVerificationService.resendChallenge(third.challengeId()));
+        assertEquals(third.challengeId(), authVerificationService.getChallengeInfo(third.challengeId()).challengeId());
+        verify(emailService, times(3)).sendAuthenticationOtpEmail(eq(email), anyString(),
+                anyString(), anyString(), anyLong(), anyString());
+    }
+
 }

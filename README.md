@@ -8,9 +8,6 @@
 [![Thymeleaf](https://img.shields.io/badge/Thymeleaf-3.x-005F0E.svg?style=for-the-badge&logo=thymeleaf)](https://www.thymeleaf.org/)
 [![Database](https://img.shields.io/badge/Database-SQL%20Server%20%7C%20H2-004880.svg?style=for-the-badge&logo=microsoftsqlserver)](https://www.microsoft.com/sql-server/)
 [![CI](https://github.com/tranducanhyn99-prog/medclinic-system/actions/workflows/ci.yml/badge.svg)](https://github.com/tranducanhyn99-prog/medclinic-system/actions/workflows/ci.yml)
-[![Line Coverage](https://img.shields.io/badge/Line%20Coverage-78.52%25-brightgreen.svg?style=for-the-badge)](https://github.com/tranducanhyn99-prog/medclinic-system/actions/workflows/ci.yml)
-[![Branch Coverage](https://img.shields.io/badge/Branch%20Coverage-64.22%25-brightgreen.svg?style=for-the-badge)](https://github.com/tranducanhyn99-prog/medclinic-system/actions/workflows/ci.yml)
-[![Tests](https://img.shields.io/badge/Tests-128%20total%20%7C%20120%20executed-success.svg?style=for-the-badge&logo=junit5)](https://junit.org/junit5/)
 [![Docker](https://img.shields.io/badge/Docker-Compose%20Ready-2496ED.svg?style=for-the-badge&logo=docker)](compose.yml)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](LICENSE)
 
@@ -56,7 +53,7 @@ Tại các phòng khám tư nhân quy mô vừa và nhỏ ở Việt Nam, việc
 
 ### Điểm nổi bật & Thách thức kỹ thuật
 - **Kiểm soát đồng thời chống Double Booking:** Luồng đặt lịch khóa bản ghi TimeSlot khi ghi (`findByIdForUpdate`) và vẫn duy trì `@Version` để phát hiện cập nhật cạnh tranh. Kết hợp transaction `READ_COMMITTED`, trạng thái slot và ràng buộc CSDL giúp booking thất bại an toàn khi có tranh chấp.
-- **Cơ sở dữ liệu Microsoft SQL Server đạt chuẩn 3NF:** 16 bảng quan hệ, Unicode `NVARCHAR` và schema versioning bằng Flyway; Hibernate production chỉ `validate`, không tự mutate schema.
+- **Cơ sở dữ liệu Microsoft SQL Server đạt chuẩn 3NF:** 18 bảng ứng dụng sau Flyway V1–V5, Unicode `NVARCHAR`; Hibernate production chỉ `validate`, không tự sửa schema.
 - **Phân quyền người dùng dựa trên vai trò (RBAC):** Bảo vệ chặt chẽ các tài nguyên theo 4 vai trò: `ROLE_PATIENT`, `ROLE_DOCTOR`, `ROLE_STAFF`, `ROLE_ADMIN` thông qua Spring Security 6.
 - **Tích hợp đa dịch vụ:** Tự động tạo mã QR Base64 bằng Google ZXing, xuất hóa đơn & toa thuốc chuẩn PDF bằng OpenPDF, và gửi email xác nhận bất đồng bộ `@Async`.
 
@@ -68,10 +65,10 @@ Tại các phòng khám tư nhân quy mô vừa và nhỏ ở Việt Nam, việc
 | :--- | :--- |
 | **Concurrency & Transaction** | Row lock + `@Version`, chống double-booking, cấp STT đồng thời, khóa tồn kho và rollback nghiệp vụ |
 | **Realtime Messaging** | Spring WebSocket/STOMP user destination; queue event chỉ broadcast `AFTER_COMMIT`, không phát khi transaction rollback |
-| **SQL Server production-readiness** | Flyway V1/V2/V3, legacy baseline opt-in có guard, `ddl-auto=validate`, Unicode `NVARCHAR` và SQL Server integration test |
-| **Security** | RBAC, CSRF, BCrypt, session-fixation protection, Secure/HttpOnly/SameSite cookies, per-IP rate limit cho login/reset và audit log |
+| **SQL Server production-readiness** | Flyway V1–V5, legacy baseline opt-in có guard, `ddl-auto=validate`, Unicode `NVARCHAR` và SQL Server integration test |
+| **Security** | RBAC, CSRF, BCrypt, email OTP/magic link, session-fixation protection, Secure/HttpOnly/SameSite cookies, rate limit và audit log |
 | **Observability** | Spring Boot Actuator + Micrometer; public health chỉ trả status, metrics yêu cầu ADMIN, custom security counters |
-| **Quality Engineering** | 128 test case, 120 executed PASS, JaCoCo **78.52% line / 64.22% branch**, quality gate trên `mvn verify` |
+| **Quality Engineering** | Unit/integration/concurrency test, SQL Server E2E có environment guard và JaCoCo quality gate trên `mvn verify` |
 | **CI/CD & Delivery** | GitHub Actions cho push/PR, artifact JAR + JaCoCo report, Dockerfile multi-stage và SQL Server Compose |
 | **UX & Accessibility** | Responsive dashboard, keyboard/focus contract, ARIA/live-region audit và UI smoke đa kích thước |
 
@@ -88,6 +85,7 @@ Tại các phòng khám tư nhân quy mô vừa và nhỏ ở Việt Nam, việc
 ## ✨ Tính Năng Nổi Bật (Key Features)
 
 ### 🧑‍💼 Phân Hệ Bệnh Nhân (Patient Portal)
+- [x] **Tài khoản và hồ sơ:** Đăng ký cần xác thực email; đăng nhập tài khoản thường cần OTP hoặc magic link; sửa thông tin cá nhân, avatar và đổi mật khẩu.
 - [x] **Tra cứu & Tìm kiếm:** Xem danh sách bác sĩ chuyên khoa, học hàm/học vị, số năm kinh nghiệm và giá khám.
 - [x] **Đặt lịch thông minh:** Chọn ngày, chuyên khoa, bác sĩ và khung giờ trống được tải động bằng AJAX REST API.
 - [x] **Mã QR Cuộc Hẹn:** Tự động nhận mã đặt lịch (`MED-YYMMDD-XXXX`) và mã QR định dạng Base64 dùng để check-in tức thì tại quầy.
@@ -110,6 +108,7 @@ Tại các phòng khám tư nhân quy mô vừa và nhỏ ở Việt Nam, việc
 - [x] **Bảng Điều Khiển KPI:** Thống kê tổng bệnh nhân, tổng bác sĩ, ca khám trong ngày và tổng doanh thu.
 - [x] **Trực Quan Hóa Dữ Liệu:** Biểu đồ Chart.js phân bổ ca khám theo chuyên khoa và tỷ lệ trạng thái lịch hẹn.
 - [x] **Quản Trị Danh Mục:** CRUD Chuyên khoa, Hồ sơ bác sĩ, Danh mục & Giá thuốc, Khóa/Mở tài khoản người dùng.
+- [x] **Kho thuốc:** Ngưỡng cảnh báo tồn thấp, nhập bổ sung và nhật ký RESTOCK/DISPENSE; kê đơn trừ tồn trong cùng transaction.
 
 ---
 
@@ -164,7 +163,7 @@ graph TD
 | **Bảo mật** | Spring Security | 6.x | Xác thực, phân quyền 4 vai trò (RBAC), CSRF, BCrypt |
 | **Cơ sở dữ liệu chính** | **Microsoft SQL Server** | **2019 / 2022** | Hệ quản trị CSDL quan hệ chính thức cho dự án |
 | **Driver CSDL** | Microsoft JDBC Driver for SQL Server (`mssql-jdbc`) | 12.6+ | Kết nối hiệu năng cao, bảo mật TLS/SSL |
-| **Schema migration** | Flyway + `flyway-sqlserver` | 10.10.0 | V1/V2/V3 versioning, legacy baseline adoption, chạy trước Hibernate validate |
+| **Schema migration** | Flyway + `flyway-sqlserver` | 10.10.0 | V1–V5 versioning, legacy baseline adoption, chạy trước Hibernate validate |
 | **Cơ sở dữ liệu Test** | H2 Database In-Memory | 2.x | Chạy kiểm thử tự động và chạy thử nghiệm zero-config |
 | **ORM / JPA** | Hibernate / Spring Data JPA | 6.5.3 | Quản lý thực thể, Optimistic Lock (`@Version`) |
 | **Giao diện** | Thymeleaf + Layout Dialect | 3.x | Template Engine kết xuất server-side |
@@ -176,7 +175,7 @@ graph TD
 | **Kiểm thử** | JUnit 5, Mockito, JaCoCo | 5.x / 0.8.12 | Unit/integration/concurrency test + quality gate |
 | **Observability** | Spring Boot Actuator + Micrometer | Spring Boot 3.3.5 | Health/metrics có kiểm soát truy cập + custom security counters |
 | **CI/CD** | GitHub Actions | Windows hosted runner | `mvn verify`, artifact JAR và JaCoCo report cho push/PR |
-| **Container** | Docker + Compose | SQL Server 2022 | Build image đa tầng và dựng app + database cho local/demo |
+| **Container** | Docker + Compose | SQL Server 2022 | App, database, Mailpit demo và volume lưu avatar |
 
 ---
 
@@ -184,14 +183,19 @@ graph TD
 
 Toàn bộ tài liệu chuẩn kỹ thuật phần mềm được lưu trữ đầy đủ trong thư mục [`docs/`](docs/):
 
-1. 📄 [**01_SRS_IEEE830.md**](docs/01_SRS_IEEE830.md): Đặc tả yêu cầu phần mềm theo chuẩn quốc tế **IEEE Std 830-1998** (29 Yêu cầu chức năng + 12 Yêu cầu phi chức năng).
+1. 📄 [**01_SRS_IEEE830.md**](docs/01_SRS_IEEE830.md): Đặc tả yêu cầu phần mềm và phạm vi hiện tại.
 2. 📐 [**02_UML_DESIGN.md**](docs/02_UML_DESIGN.md): Thiết kế Sơ đồ UML 2.5 (Use Case Diagram, Activity Diagrams, Sequence Diagrams luồng Concurrency, Class Diagram).
-3. 🗄️ [**03_DATABASE_DESIGN_3NF.md**](docs/03_DATABASE_DESIGN_3NF.md): Thiết kế CSDL 16 bảng & Chứng minh chuẩn hóa 3NF kèm Từ điển dữ liệu chi tiết cho SQL Server.
+3. 🗄️ [**03_DATABASE_DESIGN_3NF.md**](docs/03_DATABASE_DESIGN_3NF.md): Thiết kế 18 bảng ứng dụng và từ điển dữ liệu SQL Server.
 4. 🧭 [**04_RTM_MATRIX.md**](docs/04_RTM_MATRIX.md): Ma trận truy vết yêu cầu 2 chiều (Requirements Traceability Matrix).
 5. 🏛️ [**05_SYSTEM_ARCHITECTURE.md**](docs/05_SYSTEM_ARCHITECTURE.md): Tài liệu Kiến trúc Hệ thống chi tiết (Layered Architecture, Design Patterns).
 6. 🎨 [**06_UI_UX_DESIGN.md**](docs/06_UI_UX_DESIGN.md): Đặc tả giao diện, responsive và accessibility.
 7. ✅ [**09_RELEASE_ACCEPTANCE.md**](docs/09_RELEASE_ACCEPTANCE.md): Kịch bản nghiệm thu E2E trên SQL Server cho toàn bộ luồng đặt lịch → check-in → khám → kê thuốc → hóa đơn → thanh toán/PDF.
 8. 🛡️ [**10_SECURITY_OBSERVABILITY.md**](docs/10_SECURITY_OBSERVABILITY.md): Baseline hardening, rate limiting, audit log, Actuator health/metrics và hướng vận hành.
+9. 💊 [**13_INVENTORY_RESTOCK_WORKFLOW_2026-09-22.md**](docs/13_INVENTORY_RESTOCK_WORKFLOW_2026-09-22.md): Luồng nhập/xuất kho, ngưỡng tồn thấp và audit transaction.
+10. 📋 [**14_NEXT_TASKS_2026-09-23.md**](docs/14_NEXT_TASKS_2026-09-23.md): Tasklist và tiêu chí nghiệm thu giai đoạn tiếp theo.
+11. 🐳 [**15_P0_RUNTIME_ACCEPTANCE_2026-09-23.md**](docs/15_P0_RUNTIME_ACCEPTANCE_2026-09-23.md): Biên bản Docker, SQL Server, Mailpit, OTP và avatar runtime.
+12. 🎬 [**16_DEFENSE_DEMO_PACKAGE_2026-09-23.md**](docs/16_DEFENSE_DEMO_PACKAGE_2026-09-23.md): Kịch bản demo 10–15 phút, checklist và phương án dự phòng.
+13. 🔎 [**17_P1_REVIEW_AND_UI_ACCEPTANCE_2026-09-23.md**](docs/17_P1_REVIEW_AND_UI_ACCEPTANCE_2026-09-23.md): Review nhánh, verification và kiểm tra UI tại ba breakpoint.
 
 ---
 
@@ -231,7 +235,9 @@ cp .env.example .env
 docker compose up --build
 ```
 
-Compose sẽ khởi động SQL Server 2022, đợi database healthy, tạo `medclinic_db` và kiểm tra schema safety (`0` hoặc `16` bảng ứng dụng). Sau đó app khởi động tại **http://localhost:8080**; Flyway tự chạy migration V1/V2/V3 trước khi Hibernate `validate`. Cả SQL Server và application đều có healthcheck. SQL Server container mặc định publish ở host port `14333` (`SQLSERVER_HOST_PORT`) để không xung đột SQL Server Windows trên `1433`; app trong Compose vẫn kết nối nội bộ `sqlserver:1433`. Chi tiết nghiệm thu runtime xem `docs/11_DOCKER_RUNTIME_ACCEPTANCE.md`.
+Compose khởi động SQL Server 2022, Mailpit và ứng dụng tại **http://localhost:8080**. Init job chỉ chấp nhận DB rỗng hoặc schema legacy 16 bảng chưa có Flyway history; Flyway chạy V1–V5 (DB mới có 18 bảng ứng dụng) rồi Hibernate `validate`. SQL Server mặc định dùng host port `14333`, app kết nối nội bộ `sqlserver:1433`. Volume `medclinic-uploads` giữ avatar qua lần `down`/`up` không xóa volume. [Biên bản nghiệm thu mới](docs/15_P0_RUNTIME_ACCEPTANCE_2026-09-23.md) ghi kết quả Compose/SQL Server ngày 23/09/2026; [biên bản cũ](docs/11_DOCKER_RUNTIME_ACCEPTANCE.md) chỉ phản ánh mốc V1–V3.
+
+**Email demo:** Compose dùng Mailpit, hộp thư chỉ mở trên máy chạy Docker tại **http://localhost:8025**. Tài khoản seed đăng nhập không cần OTP; tài khoản bệnh nhân mới phải mở email trong Mailpit để lấy OTP hoặc bấm magic link. Email không gửi ra Internet. Không đưa cổng Mailpit lên mạng công cộng hoặc dùng profile `demo` cho dữ liệu thật.
 
 > Cấu hình Compose dùng tài khoản `sa` cho **local/demo để giảm bước setup**. Production vẫn phải dùng application login tối thiểu quyền theo `docs/database/SQLSERVER_RUNBOOK.md`.
 
@@ -264,9 +270,9 @@ GO
 #### 2.3. Flyway migration và cấu hình secret qua môi trường
 Production dùng Flyway làm schema owner và `ddl-auto=validate`, vì vậy Hibernate **không tự tạo hoặc sửa schema**.
 
-Với database mới, DBA chỉ tạo database rỗng và cấu hình quyền/secret. Khi application khởi động bằng profile `sqlserver`, Flyway tự tạo `flyway_schema_history`, áp dụng `V1__baseline_schema.sql`, `V2__reference_roles.sql` rồi `V3__restore_jdbc_session_state.sql`; Hibernate `validate` chạy sau migration.
+Với database mới, DBA chỉ tạo database rỗng và cấu hình quyền/secret. Khi application khởi động bằng profile `sqlserver`, Flyway tự tạo `flyway_schema_history`, áp dụng tuần tự V1–V5; Hibernate `validate` chạy sau migration.
 
-Với database legacy đã có đúng baseline 16 bảng nhưng chưa có Flyway history, phải backup + pre-check trước. Production mặc định giữ `baseline-on-migrate=false`; chỉ trong lần adoption có chủ đích mới đặt `SPRING_FLYWAY_BASELINE_ON_MIGRATE=true` để Flyway ghi baseline version 1 rồi chạy các migration sau V1 (hiện là V2 và V3). Sau khi `flyway_schema_history` được tạo, bỏ opt-in này. Không baseline schema dở dang hoặc không rõ nguồn gốc.
+Với database legacy đã có đúng baseline 16 bảng nhưng chưa có Flyway history, phải backup + pre-check trước. Production mặc định giữ `baseline-on-migrate=false`; chỉ trong lần adoption có chủ đích mới đặt `SPRING_FLYWAY_BASELINE_ON_MIGRATE=true` để Flyway ghi baseline version 1 rồi chạy V2–V5. Sau khi history được tạo, bỏ opt-in này. Không baseline schema dở dang hoặc không rõ nguồn gốc.
 
 Các file `docs/database/SQLSERVER_BASELINE_SCHEMA_2026-09-19.sql` và `SQLSERVER_REFERENCE_DATA_2026-09-19.sql` vẫn được giữ làm bản review/audit; test tự động bảo đảm chúng đồng bộ với Flyway V1/V2; V3 khôi phục trạng thái JDBC session (`NOCOUNT OFF`) sau reference-data migration.
 
@@ -317,9 +323,9 @@ Console H2 Database (nếu chạy profile dev H2):
 
 ---
 
-## 🔑 Hướng Dẫn Sử Dụng & Tài Khoản Mẫu (chỉ profile `dev`)
+## 🔑 Hướng Dẫn Sử Dụng & Tài Khoản Mẫu (profile `dev` và `demo`)
 
-Khi khởi chạy với profile `dev`, hệ thống sẽ tự động nạp (seed) dữ liệu mẫu bao gồm:
+Khi khởi chạy với profile `dev` hoặc `demo`, hệ thống sẽ tự động nạp dữ liệu mẫu bao gồm:
 - **6 Bác sĩ chuyên khoa hàng đầu** (Tim mạch, Răng hàm mặt, Da liễu, Nhi, Tai mũi họng, Cơ xương khớp).
 - **14 ngày ca trực tự động** (Ca sáng 08:00-12:00, Ca chiều 13:30-17:30, mỗi ca 8 khung giờ 30 phút).
 - **15 mặt hàng dược phẩm thiết yếu** có sẵn số lượng tồn kho và đơn giá niêm yết.
@@ -335,18 +341,18 @@ Bảng tài khoản mẫu cho 4 vai trò:
 
 > Production hiện tại dùng `sqlserver` và không seed các tài khoản này. Profile `mysql` được giữ cho roadmap tương lai. Xem [quy trình provisioning admin](docs/database/PRODUCTION_ADMIN_PROVISIONING.md) trước khi triển khai.
 
-> 💡 **Khách vãng lai (Guest):** Có thể tự đăng ký tài khoản bệnh nhân mới tại trang `/register`.
+> 💡 **Tài khoản bệnh nhân mới:** Đăng ký tại `/register`, sau đó xác thực email trước khi đăng nhập. Với Compose, mở Mailpit tại `http://localhost:8025` để lấy mã. Tài khoản seed ở bảng trên được cấu hình `otpBypass=true` chỉ cho dev/demo.
 
-### Quy trình nghiệp vụ mẫu (End-to-End Workflow)
+### Kịch bản demo web mẫu
 ```
-1. [Bệnh nhân] Đăng nhập -> Vào "Đặt lịch khám" -> Chọn BS & Ngày -> Chọn Slot -> Xác nhận
-   └──> Nhận mã cuộc hẹn MED-xxxx và mã QR Base64.
-2. [Lễ tân] Vào "Tiếp nhận" -> Tìm mã đặt lịch -> Bấm "Check-in"
-   └──> Hệ thống cấp số thứ tự STT-01, chuyển trạng thái sang "Chờ khám".
-3. [Bác sĩ] Đăng nhập -> Vào "Bàn khám" -> Chọn bệnh nhân STT-01 -> Điền chẩn đoán & Toa thuốc -> "Lưu kết quả"
-   └──> Hệ thống tự động trừ kho thuốc trong SQL Server và sinh hóa đơn viện phí.
-4. [Lễ tân] Vào "Thu viện phí" -> Xem hóa đơn -> Bấm "Xác nhận thanh toán" -> In hóa đơn PDF.
+1. [Patient] Login/session -> Form đặt lịch -> AJAX tải slot -> POST xác nhận -> QR.
+2. [Staff] Search/filter lịch hẹn -> POST check-in + CSRF -> WebSocket cập nhật hàng chờ.
+3. [Doctor] Form khám Thymeleaf -> JavaScript thêm dòng thuốc -> validation -> submit kết quả.
+4. [Staff] View hóa đơn -> xác nhận thanh toán -> xem/tải PDF trên trình duyệt.
+5. [Admin] Dashboard/Chart.js -> bảng responsive -> drawer mobile ở viewport 390 px.
 ```
+
+Kịch bản 10–15 phút theo đúng trọng tâm môn Lập trình Web nằm tại [Defense / Demo Package](docs/16_DEFENSE_DEMO_PACKAGE_2026-09-23.md).
 
 ---
 
@@ -359,7 +365,9 @@ Dự án được tích hợp bộ kiểm thử tự động với JUnit 5, Mock
 mvn verify
 ```
 
-Baseline kiểm chứng ngày 20/09/2026: **128 test case / 55 test class; 120 executed PASS, 8 environment-gated skipped, 0 failure, 0 error**. JaCoCo đạt **78.52% line / 64.22% branch**; build sẽ fail nếu xuống dưới **70% line / 50% branch**. Các SQL Server integration test chỉ chạy khi chủ động bật environment guard.
+Kết quả local ngày 23/09/2026 trên branch `feature/frontend-design-system`: `mvn verify` mặc định có **139 test case / 59 test class; 131 PASS, 8 SQL Server environment-gated skipped**. Chạy lại `mvn verify` với `RUN_SQLSERVER_IT=true` trên SQL Server 2022 có **139/139 PASS, 0 skipped, 0 failure, 0 error**. JaCoCo đạt **82,12% line / 64,62% branch**; build fail nếu xuống dưới **70% line / 50% branch**. Chưa quan sát GitHub Actions cho HEAD này.
+
+Để chạy các test SQL Server trên database thử nghiệm riêng, cấu hình các biến môi trường theo [SQL Server runbook](docs/database/SQLSERVER_RUNBOOK.md), đặt `RUN_SQLSERVER_IT=true`, rồi chạy `mvn verify`. Không bật guard trên database chứa dữ liệu cần giữ; một số test migration dùng database disposable.
 
 ### CI và quality gate
 - GitHub Actions chạy `mvn verify` trên **JDK 21 / Windows hosted runner** cho mọi push/PR vào `main`.
@@ -383,7 +391,7 @@ medclinic-system/
 ├── docker/sqlserver/init-db.sh            # Tạo DB + safety guard; Flyway quản lý schema
 ├── docs/                                 # Tài liệu chuẩn kỹ thuật + ảnh portfolio
 ├── Dockerfile                            # Multi-stage build, runtime non-root
-├── compose.yml                           # App + SQL Server 2022 + init job
+├── compose.yml                           # App + SQL Server 2022 + Mailpit + init job
 ├── .env.example                          # Mẫu biến môi trường local/demo, không chứa secret thật
 ├── src/
 │   ├── main/
@@ -391,17 +399,17 @@ medclinic-system/
 │   │   │   ├── config/                   # SecurityConfig, DataInitializer
 │   │   │   ├── controller/               # AdminController, DoctorDeskController, StaffReceptionController...
 │   │   │   ├── dto/                      # Data Transfer Objects (Form, Slot, Prescription)
-│   │   │   ├── entity/                   # 16 JPA Entities chuẩn 3NF (tương thích SQL Server)
-│   │   │   ├── enums/                    # 7 Enums (Status, Role, Shift, Payment...)
+│   │   │   ├── entity/                   # JPA entities tương thích SQL Server
+│   │   │   ├── enums/                    # Status, Role, Shift, Payment...
 │   │   │   ├── exception/                # Bộ xử lý ngoại lệ nghiệp vụ tập trung
-│   │   │   ├── repository/               # 15 Spring Data JPA Repositories
+│   │   │   ├── repository/               # Spring Data JPA repositories
 │   │   │   ├── security/                 # CustomUserDetails, CustomUserDetailsService
-│   │   │   ├── service/                  # 12 service contract + các implementation/coordinator hỗ trợ
+│   │   │   ├── service/                  # Service contracts và implementations
 │   │   │   └── util/                     # Tiện ích QrCodeUtil (ZXing)
 │   │   └── resources/
 │   │       ├── templates/                # Thymeleaf HTML Templates
 │   │       ├── static/                   # File tĩnh (CSS, JS, Images)
-│   │       ├── db/migration/sqlserver/   # Flyway V1 baseline + V2 reference roles
+│   │       ├── db/migration/sqlserver/   # Flyway V1–V5
 │   │       └── application.yml           # Profiles dev H2 / sqlserver / mysql-roadmap; nhận secret qua env
 │   └── test/java/com/medclinic/          # Bộ bài kiểm thử tự động JUnit 5 & Mockito
 ├── pom.xml                               # Maven, mssql-jdbc, Flyway SQL Server, JaCoCo...

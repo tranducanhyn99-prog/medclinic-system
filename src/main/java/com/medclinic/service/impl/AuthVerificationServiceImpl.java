@@ -28,6 +28,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class AuthVerificationServiceImpl implements AuthVerificationService {
     private static final int MAX_ATTEMPTS = 5;
+    private static final int MAX_CHALLENGES_PER_WINDOW = 3;
     private static final SecureRandom RANDOM = new SecureRandom();
 
     private final AuthVerificationChallengeRepository challengeRepository;
@@ -59,6 +60,11 @@ public class AuthVerificationServiceImpl implements AuthVerificationService {
                 .orElseThrow(() -> new BusinessLogicException("Phiên xác thực không tồn tại."));
         if (current.getConsumedAt() != null) {
             throw new BusinessLogicException("Phiên xác thực này đã được sử dụng.");
+        }
+        long recentChallenges = challengeRepository.countByUserIdAndTypeAndCreatedAtAfter(
+                current.getUser().getId(), current.getType(), LocalDateTime.now().minusSeconds(validitySeconds));
+        if (recentChallenges >= MAX_CHALLENGES_PER_WINDOW) {
+            throw new BusinessLogicException("Bạn đã gửi lại OTP quá nhiều lần. Vui lòng thử lại sau.");
         }
         current.setConsumedAt(LocalDateTime.now());
         challengeRepository.save(current);

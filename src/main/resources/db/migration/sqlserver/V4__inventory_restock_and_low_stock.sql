@@ -5,6 +5,8 @@ alter table medicines
     add reorder_level int not null
         constraint DF_medicines_reorder_level default 50;
 
+GO
+
 alter table medicines
     add constraint CK_medicines_reorder_level_nonnegative
         check (reorder_level >= 0);
@@ -24,6 +26,8 @@ create table inventory_transactions (
     created_at datetime2(6) not null,
     primary key (id)
 );
+
+GO
 
 alter table inventory_transactions
     add constraint CK_inventory_tx_type

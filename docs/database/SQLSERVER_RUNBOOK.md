@@ -9,7 +9,10 @@ SQL Server là database chính của MedClinic ở phạm vi hiện tại. H2 ch
   - `V1__baseline_schema.sql`: baseline 16 bảng và các constraint/index.
   - `V2__reference_roles.sql`: seed idempotent 4 role hệ thống.
   - `V3__restore_jdbc_session_state.sql`: khôi phục `NOCOUNT OFF` để connection pool/JDBC generated keys ổn định sau migration.
+  - `V4__inventory_restock_and_low_stock.sql`: ngưỡng tồn kho và lịch sử nhập/xuất thuốc.
+  - `V5__email_otp_and_profile_security.sql`: trạng thái xác thực email và OTP challenge.
 - V1/V2 được contract-test để luôn đồng bộ với các SQL đã review trong `docs/database/`; V3 là migration vận hành độc lập để chuẩn hóa session state.
+- V4/V5 dùng `GO` tách các batch SQL Server sau khi tạo cột/bảng, trước khi khai báo constraint tham chiếu các đối tượng vừa tạo. Nếu môi trường đã áp dụng phiên bản V4/V5 cũ, phải đối chiếu Flyway checksum và lịch sử triển khai trước khi nâng cấp; không chạy `repair` hoặc sửa history một cách tự động.
 - Production mặc định giữ `baseline-on-migrate=false`. Chỉ bật `SPRING_FLYWAY_BASELINE_ON_MIGRATE=true` cho lần adoption đầu tiên của database legacy đã được backup/pre-check và có đúng baseline 16 bảng.
 - Không baseline schema dở dang/không rõ nguồn gốc. Luôn backup và chạy pre-check trước production.
 
@@ -21,7 +24,7 @@ DBA chỉ cần tạo database rỗng và cấp quyền migration cho applicatio
 sqlcmd -S localhost -E -C -Q "CREATE DATABASE [medclinic_db];"
 ```
 
-Khi app khởi động với profile `sqlserver`, Flyway tự tạo `flyway_schema_history`, chạy V1, V2 rồi V3; sau đó Hibernate `validate` mapping entity. Startup phải fail nếu migration hoặc schema validation không đạt.
+Khi app khởi động với profile `sqlserver`, Flyway tự tạo `flyway_schema_history`, chạy V1–V5; sau đó Hibernate `validate` mapping entity. Startup phải fail nếu migration hoặc schema validation không đạt.
 
 Sau lần migrate đầu, có thể giảm quyền DDL của runtime principal theo chính sách môi trường nếu tổ chức tách deployment principal và application principal.
 
@@ -33,9 +36,9 @@ Trước khi bật Flyway cho database đã tồn tại:
 2. Xác nhận schema thực tế tương ứng baseline đã review và có đúng 16 bảng ứng dụng.
 3. Xác nhận chưa có `flyway_schema_history` hoặc xử lý theo runbook migration đã được DBA phê duyệt.
 4. Đặt `SPRING_FLYWAY_BASELINE_ON_MIGRATE=true` cho lần adoption đầu tiên rồi khởi động release với profile `sqlserver`.
-5. Sau khi xác nhận `flyway_schema_history` đã có baseline version 1 cùng V2/V3 thành công, bỏ biến opt-in cho các lần deploy sau.
+5. Sau khi xác nhận `flyway_schema_history` đã có baseline version 1 cùng V2–V5 thành công, bỏ biến opt-in cho các lần deploy sau.
 
-Với schema legacy hợp lệ, Flyway sẽ tạo history bằng **BASELINE version 1**, bỏ qua V1 và áp dụng V2, V3 trở đi. Hibernate `validate` chạy sau migration để chặn schema lệch entity.
+Với schema legacy hợp lệ, Flyway sẽ tạo history bằng **BASELINE version 1**, bỏ qua V1 và áp dụng V2–V5 trở đi. Hibernate `validate` chạy sau migration để chặn schema lệch entity.
 
 Docker init job chỉ áp dụng guard `0`/`16` khi chưa có `flyway_schema_history`; nếu history đã tồn tại thì không hard-code số bảng để tránh chặn migration tương lai. Compose local/demo bật legacy baseline opt-in rõ ràng sau guard; production standalone vẫn mặc định tắt.
 
@@ -75,7 +78,7 @@ WHERE object_id = OBJECT_ID('appointments')
   AND name = 'uk_appointment_date_queue_sequence';
 ```
 
-Kỳ vọng: 16 bảng ứng dụng; fresh DB có V1/V2/V3 kiểu `SQL`, còn legacy adoption có version 1 kiểu `BASELINE` và V2/V3 kiểu `SQL`; tất cả row history phải `success=1`.
+Kỳ vọng: 18 bảng ứng dụng; fresh DB có V1–V5 kiểu `SQL`, còn legacy adoption có version 1 kiểu `BASELINE` và V2–V5 kiểu `SQL`; tất cả row history phải `success=1`.
 
 ## 6. SQL Server integration tests
 
@@ -89,12 +92,12 @@ mvn "-Dtest=SqlServer*" test
 
 Các kiểm chứng trọng yếu gồm:
 
-- Fresh Flyway migration V1 → V2 → V3 + Hibernate validate.
-- Legacy 16-table adoption: BASELINE v1 → V2 → V3 + Hibernate validate.
+- Fresh Flyway migration V1 → V5 + Hibernate validate.
+- Legacy 16-table adoption: BASELINE v1 → V2–V5 + Hibernate validate.
 - Concurrent booking, medicine stock locking, invoice-code reservation và rollback.
 - Release acceptance E2E Patient → Staff → Doctor → Billing/PDF.
 
-Máy QA local hiện là SQL Server 17.0; Flyway 10.10.0 cảnh báo server này mới hơn mức hỗ trợ đã công bố (16.0). Test local vẫn PASS, nhưng deployment target của project vẫn là SQL Server 2019/2022.
+Lần nghiệm thu 23/09/2026 dùng container SQL Server 2022 (engine 16.0). Kiểm tra lại phiên bản engine và kết quả test ở từng môi trường triển khai.
 
 ## 7. Production handoff
 

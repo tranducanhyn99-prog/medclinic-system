@@ -49,7 +49,6 @@ public class AvatarStorageServiceImpl implements AvatarStorageService {
             String filename = UUID.randomUUID() + extension;
             Path target = safeResolve(filename);
             Files.copy(file.getInputStream(), target, StandardCopyOption.REPLACE_EXISTING);
-            deletePreviousAvatar(currentAvatarUrl);
             return "/user-content/avatars/" + filename;
         } catch (IOException exception) {
             throw new BusinessLogicException("Không thể lưu ảnh đại diện. Vui lòng thử lại.");
@@ -83,7 +82,8 @@ public class AvatarStorageServiceImpl implements AvatarStorageService {
         return resolved;
     }
 
-    private void deletePreviousAvatar(String currentAvatarUrl) {
+    @Override
+    public void deleteAvatar(String currentAvatarUrl) {
         if (currentAvatarUrl == null || !currentAvatarUrl.startsWith("/user-content/avatars/")) {
             return;
         }

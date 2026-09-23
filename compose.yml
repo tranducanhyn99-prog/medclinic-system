@@ -36,6 +36,13 @@ services:
     entrypoint: ["/bin/bash", "/docker/init-db.sh"]
     restart: "no"
 
+  mailpit:
+    image: axllent/mailpit:v1.31.1
+    container_name: medclinic-mailpit
+    ports:
+      - "127.0.0.1:8025:8025"
+    restart: unless-stopped
+
   app:
     build:
       context: .
@@ -45,6 +52,8 @@ services:
     depends_on:
       sqlserver-init:
         condition: service_completed_successfully
+      mailpit:
+        condition: service_started
     environment:
       SPRING_PROFILES_ACTIVE: sqlserver,demo
       SPRING_FLYWAY_BASELINE_ON_MIGRATE: "true"
@@ -58,8 +67,15 @@ services:
       AUTH_RATE_LIMIT_WINDOW_SECONDS: ${AUTH_RATE_LIMIT_WINDOW_SECONDS:-300}
       MAIL_USERNAME: ${MAIL_USERNAME:-}
       MAIL_PASSWORD: ${MAIL_PASSWORD:-}
+      SPRING_MAIL_HOST: mailpit
+      SPRING_MAIL_PORT: "1025"
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH: "false"
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE: "false"
+      AVATAR_STORAGE_DIR: /app/uploads/avatars
     ports:
       - "8080:8080"
+    volumes:
+      - medclinic-uploads:/app/uploads
     healthcheck:
       test:
         - CMD-SHELL
@@ -73,3 +89,4 @@ services:
 
 volumes:
   medclinic-sqlserver-data:
+  medclinic-uploads:

@@ -11,7 +11,7 @@ import java.time.LocalDate;
 /** Keeps H2/dev and integration tests offline while exercising after-commit events. */
 @Service
 @Primary
-@Profile({"dev", "demo"})
+@Profile("dev")
 @Slf4j
 public class DevelopmentEmailService implements EmailService {
     @Override
@@ -32,7 +32,6 @@ public class DevelopmentEmailService implements EmailService {
     @Override
     public void sendAuthenticationOtpEmail(String toEmail, String userName, String otpCode,
                                            String confirmationUrl, long validMinutes, String purpose) {
-        log.info("DEV OTP email suppressed: purpose={} to={} otp={} confirmUrl={} validMinutes={}",
-                purpose, toEmail, otpCode, confirmationUrl, validMinutes);
+        log.info("DEV OTP email suppressed: purpose={} to={}", purpose, toEmail);
     }
 }

@@ -22,6 +22,8 @@ create table auth_verification_challenges (
     primary key (id)
 );
 
+GO
+
 alter table auth_verification_challenges
     add constraint CK_auth_challenge_type
         check (type in ('REGISTRATION','LOGIN'));
