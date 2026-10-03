@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/main}">
+<head>
+    <title>Xác Thực OTP - MedClinic</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="container">
+        <section class="mc-auth-section" aria-labelledby="otpTitle">
+            <div class="mc-auth-single" style="max-width:620px;margin-inline:auto">
+                <div class="mc-auth-icon"><i class="bi bi-shield-check"></i></div>
+                <div class="mc-auth-eyebrow">Xác thực email</div>
+                <h1 class="mc-auth-title" id="otpTitle">Nhập mã OTP</h1>
+                <p class="mc-auth-subtitle">
+                    Chúng tôi đã gửi mã 6 số và nút xác nhận đến
+                    <strong th:text="${challenge.maskedEmail}">a***@example.com</strong>.
+                </p>
+
+                <form th:action="@{/auth/otp}" method="post" class="mc-auth-form">
+                    <input type="hidden" name="challengeId" th:value="${challenge.challengeId}">
+                    <div class="mb-3">
+                        <label for="otpCode" class="form-label">Mã OTP</label>
+                        <input id="otpCode" name="code" type="text" inputmode="numeric"
+                               pattern="[0-9]{6}" maxlength="6" autocomplete="one-time-code"
+                               class="form-control text-center fw-bold fs-3" style="letter-spacing:.5rem"
+                               placeholder="000000" required autofocus>
+                    </div>
+                    <div class="alert alert-light border d-flex justify-content-between align-items-center">
+                        <span><i class="bi bi-clock me-2"></i>Mã hết hạn sau</span>
+                        <strong id="otpCountdown" th:attr="data-seconds=${secondsRemaining}">05:00</strong>
+                    </div>
+                    <p id="otpExpired" role="alert" class="text-danger small" th:hidden="${secondsRemaining > 0}">Mã đã hết hạn. Chọn “Gửi lại OTP” bên dưới để nhận mã mới.</p>
+                    <button id="otpSubmit" th:disabled="${secondsRemaining <= 0}" type="submit" class="btn btn-med-primary mc-auth-submit">
+                        <i class="bi bi-check2-circle me-2"></i>Xác nhận OTP
+                    </button>
+                </form>
+
+                <div class="text-center mt-3">
+                    <p class="small text-muted mb-2">Không nhận được email?</p>
+                    <form th:action="@{/auth/otp/resend}" method="post" class="d-inline">
+                        <input type="hidden" name="challengeId" th:value="${challenge.challengeId}">
+                        <button type="submit" class="btn btn-outline-secondary btn-sm">
+                            <i class="bi bi-arrow-clockwise me-1"></i>Gửi lại OTP
+                        </button>
+                    </form>
+                </div>
+                <div class="mc-auth-links mt-3">
+                    Hoặc mở email và bấm <strong>“Xác nhận và đăng nhập”</strong> để quay lại MedClinic tự động.
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+
+<div layout:fragment="scripts">
+<script th:src="@{/js/otp-countdown.js}"></script>
+</div>
+</body>
+</html>

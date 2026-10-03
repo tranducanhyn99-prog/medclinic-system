@@ -1,17 +1,21 @@
 # CODEX HANDOFF — Công việc hoàn thành sau khi Codex hết weekly limit
 
 **Dự án:** MedClinic - Phòng Khám Tư Nhân
-**Ngày cập nhật:** 20/09/2026
+**Ngày tạo:** 20/09/2026
+**Cập nhật gần nhất:** 23/09/2026
 **Mục đích:** Đây là file handoff cho Codex. Hãy đọc file này trước khi tiếp tục bất kỳ task backend/database/security/Docker nào.
 
 ## 0. Source of truth hiện tại
 
 - Repository: `https://github.com/tranducanhyn99-prog/medclinic-system.git`
-- Branch chính: `main`
-- Functional baseline được handoff: `016b1e0d17f8b54dce07802a9070139ece2d5aae`. Commit thêm chính tài liệu này có thể là commit kế tiếp trên `main`.
-- Working tree tại thời điểm handoff: clean.
+- Branch chính trên remote vẫn là `main`, hiện ở `9cf7520` (commit tạo file handoff này).
+- Branch assistant tiếp tục làm việc sau handoff: `feature/frontend-design-system`.
+- HEAD hiện tại của branch tiếp tục: `085464fca801929394fdd4f139a0bc33a30a93a2`; `origin/feature/frontend-design-system` cùng commit.
+- Functional baseline ban đầu được handoff: `016b1e0d17f8b54dce07802a9070139ece2d5aae`.
+- Working tree trước khi cập nhật tài liệu này: clean; sau lần sửa này chỉ file handoff này được modified nếu chưa commit.
 - Mốc trước khi assistant tiếp quản trực tiếp từ Codex: `2f38cef feat: bổ sung hàng chờ bác sĩ realtime bằng WebSocket`.
 - Không merge `local/batch3` vào `main`.
+- Các thay đổi sau `9cf7520` chưa nằm trên `origin/main`; không được giả định `main` đã có frontend/inventory/OTP nếu chưa merge hoặc PR.
 
 Các commit hoàn thành sau khi Codex chạm weekly limit:
 
@@ -243,7 +247,7 @@ Không được tuyên bố GitHub Actions xanh nếu chưa trực tiếp quan s
 
 1. Giữ **SQL Server** là database chính; không chuyển project sang MySQL ở giai đoạn hiện tại.
 2. H2 chỉ dùng dev/test; MySQL là future roadmap.
-3. Không sửa nội dung migration đã phát hành `V1`, `V2`, `V3`; migration mới phải tạo version tiếp theo.
+3. Không sửa nội dung migration đã phát hành `V1`, `V2`, `V3`, `V4`, `V5`; migration mới phải tạo version tiếp theo.
 4. Không bật `baseline-on-migrate=true` mặc định cho production. Chỉ one-time opt-in với legacy schema đã backup/pre-check.
 5. Không disable CSRF hoặc nới RBAC để "fix nhanh" test/UI.
 6. Không expose thêm Actuator endpoint nhạy cảm (`env`, `configprops`, v.v.) nếu không có yêu cầu rõ ràng.
@@ -302,4 +306,146 @@ SQL Server integration tests được environment-gated; xem `docs/11_DOCKER_RUN
 
 Tiếp tục **Task 4 — Defense / Demo Package**: chuẩn bị luồng demo, dữ liệu/tài khoản demo, checklist trình bày, bằng chứng architecture/security/database/Docker, và kịch bản fallback nếu môi trường demo gặp sự cố.
 
-Trước khi bắt đầu Task 4, hãy kiểm tra HEAD vẫn là `016b1e0` hoặc commit hậu nhiệm có chứa toàn bộ nội dung handoff này.
+Trước khi bắt đầu Task 4, hãy kiểm tra đang ở `feature/frontend-design-system` và HEAD chứa `085464f` (hoặc commit hậu nhiệm đã merge đầy đủ các thay đổi này).
+
+## 11. Cập nhật bổ sung sau khi file handoff được tạo
+
+Mốc tạo file handoff: `9cf7520` (`20/09/2026 15:26 +07:00`). Từ mốc này đến HEAD hiện tại `085464f`, assistant đã tiếp tục dự án trực tiếp bằng Desktop Commander trên branch `feature/frontend-design-system`.
+
+### 11.1. Frontend / Design System — DONE
+
+Chuỗi commit:
+
+- `6b766a4 feat: chuẩn hóa design system và giao diện frontend`
+- `a15538a feat: tinh gọn bảng quản trị và responsive`
+- `a4bc9f7 feat: redesign auth and profile experience`
+- `9872820 feat: refine doctor and staff operational ui`
+- `ab50925 feat: polish patient ui and mobile responsiveness`
+
+Đã hoàn thành:
+
+- Tạo và áp dụng `medclinic-design-system.css` làm design system dùng chung.
+- Đồng bộ layout public/dashboard, trang chủ, danh sách bác sĩ, đặt lịch và dashboard Admin.
+- Tinh gọn bảng quản trị người dùng, bác sĩ, chuyên khoa và thuốc; cải thiện responsive.
+- Redesign login/register/forgot-password/reset-password/profile.
+- Cải thiện UI nghiệp vụ Doctor: desk, examination, schedule.
+- Cải thiện UI nghiệp vụ Staff: reception, walk-in, billing.
+- Hoàn thiện các màn Patient: danh sách/chi tiết lịch hẹn, bệnh sử, doctor detail và mobile responsiveness.
+
+### 11.2. Regression fix sau frontend — DONE
+
+- `9d8975c`: sửa regression ở trang đặt lịch để việc chọn bác sĩ/khung giờ hoạt động lại đúng.
+- `7b974fd`: bổ sung `doctor.specialty` và `timeSlot` vào `AppointmentRepository` entity graph; thêm integration assertion để trang khám render đầy đủ form khám, bảng thuốc và nút thao tác.
+- `0152d59`: bổ sung `appointment.doctor.specialty` vào các `InvoiceRepository` entity graph; thêm regression test bảo đảm màn billing render đầy đủ dòng hóa đơn, chuyên khoa, trạng thái và nút thu tiền mà không dính lazy-loading.
+
+### 11.3. Quản lý kho thuốc: cảnh báo tồn thấp + nhập bổ sung — DONE
+
+Commit: `97c359e feat: add low-stock alerts and medicine restocking`
+
+Đã bổ sung:
+
+- `Medicine.reorderLevel` với ngưỡng nhập lại riêng cho từng thuốc; mặc định nghiệp vụ là 50.
+- Phân loại tồn kho: hết hàng, sắp hết/cần nhập, bình thường.
+- Dashboard Admin hiển thị cảnh báo thuốc tồn thấp.
+- Admin không chỉnh trực tiếp `stockQuantity` như field thông thường; dùng luồng **Nhập thêm**.
+- Thêm `InventoryTransaction` và `InventoryTransactionType` để audit biến động kho.
+- `RESTOCK`: lưu tồn trước/sau, số lượng nhập, giá nhập tùy chọn, ghi chú và người thực hiện.
+- `DISPENSE`: phát sinh khi bác sĩ hoàn tất đơn thuốc; transaction kho rollback cùng bệnh án/hóa đơn nếu nghiệp vụ thất bại.
+- Giữ pessimistic locking/chống oversell khi nhiều giao dịch cùng trừ tồn.
+- Flyway mới: `V4__inventory_restock_and_low_stock.sql`.
+- Tài liệu mới: `docs/13_INVENTORY_RESTOCK_WORKFLOW_2026-09-22.md`.
+- SRS/UML/Database Design/RTM đã đồng bộ theo nghiệp vụ kho mới.
+
+### 11.4. Email OTP / Magic Link + Profile editable — DONE
+
+Commit: `085464f feat: add email OTP authentication and editable profiles`
+
+Luồng xác thực mới:
+
+- Đăng ký tài khoản Patient mới không active ngay; phải xác thực email trước.
+- Đăng nhập tài khoản thường: đúng username/password mới phát hành challenge OTP, chưa tạo authenticated session ngay.
+- OTP là mã 6 số, mặc định hiệu lực 300 giây (5 phút).
+- OTP được lưu dạng BCrypt hash; magic token lưu SHA-256 hash.
+- Mỗi challenge chỉ dùng một lần; resend sẽ consume challenge cũ và tạo challenge mới.
+- Giới hạn 5 lần nhập OTP sai trước khi bắt buộc gửi mã mới.
+- Email chứa cả OTP và magic-link `/auth/verify-email?token=...`; bấm link hợp lệ sẽ xác thực và đăng nhập.
+- URL gốc của link lấy từ `APP_WEBSITE`; SMTP dùng `MAIL_USERNAME` / `MAIL_PASSWORD`, không hard-code secret.
+- Tài khoản seed/test có `otpBypass=true` để phục vụ demo/test mà không chặn luồng phát triển.
+- Rate limiting đã được nối với endpoint login/OTP nhạy cảm và regression test đã cập nhật.
+
+Profile:
+
+- Cho phép sửa họ tên, số điện thoại, giới tính, ngày sinh và địa chỉ.
+- Cho phép upload/thay avatar; file runtime nằm trong `uploads/` và đã được `.gitignore`.
+- Username/email vẫn là định danh không sửa trực tiếp trong form profile.
+- Có luồng đổi mật khẩu hiện hữu và giữ kiểm tra mật khẩu cũ/xác nhận mật khẩu mới.
+- Flyway mới: `V5__email_otp_and_profile_security.sql`.
+- Thêm `auth_verification_challenges`, `users.email_verified`, `users.otp_bypass`.
+- SRS/UML/Database Design/RTM đã đồng bộ.
+
+### 11.5. Migration history hiện tại
+
+Không sửa migration đã phát hành:
+
+```text
+V1  baseline schema
+V2  reference roles
+V3  restore JDBC session state
+V4  inventory restock and low-stock
+V5  email OTP and profile security
+```
+
+SQL Server migration integration hiện kiểm tra **18 application tables** và cả hai schema mới `inventory_transactions`, `auth_verification_challenges`.
+
+### 11.6. Verification mới nhất sau toàn bộ phần tiếp tục
+
+Kết quả từ report hiện có sau `mvn verify` cuối:
+
+```text
+58 test classes
+136 test cases
+128 executed
+8 environment-gated skipped
+0 failures
+0 errors
+JaCoCo: 81.39% line / 63.65% branch
+```
+
+Ngoài ra:
+
+- Targeted OTP/Profile regression: PASS.
+- Email OTP content test: PASS (kiểm tra OTP, thời hạn và magic-link trong email).
+- Rate-limit regression: PASS.
+- `git diff --check`: PASS trước checkpoint `085464f`.
+- Audit UTF-8/control characters: sạch.
+- Không có `MAIL_USERNAME`, `MAIL_PASSWORD` hoặc credential mail thật bị hard-code.
+- Checkpoint `085464f` đã push lên `origin/feature/frontend-design-system`.
+
+### 11.7. Trạng thái Git cần Codex biết
+
+Tại thời điểm cập nhật tài liệu này:
+
+```text
+current branch: feature/frontend-design-system
+HEAD:           085464fca801929394fdd4f139a0bc33a30a93a2
+origin/feature/frontend-design-system: 085464fca801929394fdd4f139a0bc33a30a93a2
+origin/main:    9cf75200942c0c498a91bb914b42a518890dbcea
+```
+
+Như vậy các thay đổi frontend + inventory + OTP/profile **đã push lên feature branch nhưng chưa nằm trên `origin/main`**. Không được giả định `main` đã chứa các thay đổi này nếu chưa merge/PR.
+
+## 12. Roadmap tiếp theo sau bản cập nhật này
+
+```text
+DONE  Task 1 — Release Acceptance / SQL Server E2E
+DONE  Task 2 — Flyway / Database Production Readiness
+DONE  Task 3 — Security + Observability
+DONE  Docker runtime acceptance
+DONE  Frontend design system + responsive refinement
+DONE  Regression fixes cho booking / examination / billing
+DONE  Inventory restock + low-stock alerts (Flyway V4)
+DONE  Email OTP / Magic Link + editable profile (Flyway V5)
+NEXT  Task 4 — Defense / Demo Package
+```
+
+Nếu Codex tiếp tục từ đây, hãy checkout/pull `feature/frontend-design-system`, xác nhận HEAD chứa `085464f`, đọc lại SRS/RTM cùng `docs/13_INVENTORY_RESTOCK_WORKFLOW_2026-09-22.md`, rồi mới lập task mới. Không quay lại sửa V1-V5 hoặc làm lại các phần DONE nếu không có regression/yêu cầu mới.

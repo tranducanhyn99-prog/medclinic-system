@@ -4,6 +4,7 @@ import com.medclinic.dto.UserRegisterDto;
 import com.medclinic.entity.Role;
 import com.medclinic.entity.User;
 import com.medclinic.enums.RoleType;
+import com.medclinic.enums.Gender;
 import com.medclinic.exception.BusinessLogicException;
 import com.medclinic.exception.ResourceNotFoundException;
 import com.medclinic.repository.RoleRepository;
@@ -15,6 +16,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -28,6 +30,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public User registerPatient(UserRegisterDto registerDto) {
+        com.medclinic.util.PasswordPolicy.requireValid(registerDto.getPassword());
         if (!registerDto.getPassword().equals(registerDto.getConfirmPassword())) {
             throw new BusinessLogicException("Mật khẩu xác nhận không khớp!");
         }
@@ -51,7 +54,9 @@ public class UserServiceImpl implements UserService {
                 .dateOfBirth(registerDto.getDateOfBirth())
                 .address(registerDto.getAddress())
                 .role(patientRole)
-                .isActive(true)
+                .emailVerified(false)
+                .otpBypass(false)
+                .isActive(false)
                 .build();
 
         return userRepository.save(user);
@@ -96,7 +101,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     @PreAuthorize("#userId == principal.id or hasRole('ADMIN')")
-    public User updateUserProfile(Long userId, String fullName, String phone, String address) {
+    public User updateUserProfile(Long userId, String fullName, String phone, Gender gender, LocalDate dateOfBirth, String address) {
         requireText(fullName, "Họ tên");
         User user = findById(userId);
         String normalizedPhone = normalizeOptional(phone);
@@ -108,6 +113,8 @@ public class UserServiceImpl implements UserService {
         }
         user.setFullName(fullName.trim());
         user.setPhone(normalizedPhone);
+        user.setGender(gender);
+        user.setDateOfBirth(dateOfBirth);
         user.setAddress(normalizeOptional(address));
         return userRepository.save(user);
     }
@@ -115,10 +122,17 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     @PreAuthorize("#userId == principal.id or hasRole('ADMIN')")
+    public User updateAvatar(Long userId, String avatarUrl) {
+        User user = findById(userId);
+        user.setAvatarUrl(normalizeOptional(avatarUrl));
+        return userRepository.save(user);
+    }
+
+    @Override
+    @Transactional
+    @PreAuthorize("#userId == principal.id or hasRole('ADMIN')")
     public void changePassword(Long userId, String oldPassword, String newPassword) {
-        if (newPassword == null || newPassword.length() < 8) {
-            throw new BusinessLogicException("Mật khẩu mới phải có ít nhất 8 ký tự.");
-        }
+        com.medclinic.util.PasswordPolicy.requireValid(newPassword);
         User user = findById(userId);
         if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
             throw new BusinessLogicException("Mật khẩu hiện tại không chính xác!");
@@ -134,6 +148,9 @@ public class UserServiceImpl implements UserService {
         User user = findById(userId);
         user.setIsActive(!user.getIsActive());
         userRepository.save(user);
+        if (!Boolean.TRUE.equals(user.getIsActive())) {
+            userRepository.invalidateAuthChallenges(userId, java.time.LocalDateTime.now());
+        }
     }
 
     private void requireText(String value, String label) {

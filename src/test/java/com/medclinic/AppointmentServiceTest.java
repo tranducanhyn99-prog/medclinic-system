@@ -74,6 +74,7 @@ class AppointmentServiceTest {
         User doctorUser = User.builder().id(2L).username("doctor1").fullName("Bác sĩ A").build();
         doctor = DoctorProfile.builder()
                 .id(1L)
+                .specialty(Specialty.builder().isActive(true).build())
                 .title("BS.CKI")
                 .user(doctorUser)
                 .build();

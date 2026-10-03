@@ -49,6 +49,14 @@ public class User {
     @Column(length = 255)
     private String avatarUrl;
 
+    @Builder.Default
+    @Column(nullable = false)
+    private Boolean emailVerified = true;
+
+    @Builder.Default
+    @Column(nullable = false)
+    private Boolean otpBypass = false;
+
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "role_id", nullable = false)
     private Role role;

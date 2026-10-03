@@ -25,7 +25,6 @@ import java.util.UUID;
 public class PasswordResetServiceImpl implements PasswordResetService {
 
     private static final int TOKEN_VALIDITY_HOURS = 24;
-    private static final int MIN_PASSWORD_LENGTH = 6;
 
     private final UserRepository userRepository;
     private final PasswordResetTokenRepository passwordResetTokenRepository;
@@ -59,9 +58,7 @@ public class PasswordResetServiceImpl implements PasswordResetService {
     @Override
     @Transactional
     public void resetPassword(String rawToken, String newPassword, String confirmPassword) {
-        if (newPassword == null || newPassword.length() < MIN_PASSWORD_LENGTH) {
-            throw new BusinessLogicException("Mật khẩu mới phải có ít nhất 6 ký tự.");
-        }
+        com.medclinic.util.PasswordPolicy.requireValid(newPassword);
         if (!newPassword.equals(confirmPassword)) {
             throw new BusinessLogicException("Mật khẩu xác nhận không khớp.");
         }
@@ -69,7 +66,7 @@ public class PasswordResetServiceImpl implements PasswordResetService {
             throw new BusinessLogicException("Liên kết khôi phục mật khẩu không hợp lệ.");
         }
 
-        PasswordResetToken token = passwordResetTokenRepository.findByTokenHash(hashToken(rawToken))
+        PasswordResetToken token = passwordResetTokenRepository.findByTokenHashForUpdate(hashToken(rawToken))
                 .orElseThrow(() -> new BusinessLogicException("Liên kết khôi phục mật khẩu không hợp lệ hoặc đã hết hạn."));
         if (token.getUsedAt() != null || token.getExpiresAt().isBefore(LocalDateTime.now())) {
             throw new BusinessLogicException("Liên kết khôi phục mật khẩu không hợp lệ hoặc đã hết hạn.");

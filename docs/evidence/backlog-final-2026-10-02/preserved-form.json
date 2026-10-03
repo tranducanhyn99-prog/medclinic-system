@@ -1,0 +1,77 @@
+[
+  {
+    "maxlength": null,
+    "name": "_csrf",
+    "value": "<redacted>"
+  },
+  {
+    "maxlength": "5000",
+    "name": "symptoms",
+    "value": "DEMO giữ nguyên triệu chứng khi đơn thuốc lỗi"
+  },
+  {
+    "maxlength": "5000",
+    "name": "diagnosis",
+    "value": "DEMO kiểm tra binding đơn thuốc"
+  },
+  {
+    "maxlength": null,
+    "name": "medicineIds",
+    "value": "1"
+  },
+  {
+    "maxlength": null,
+    "name": "quantities",
+    "value": "2147483647"
+  },
+  {
+    "maxlength": "100",
+    "name": "dosages",
+    "value": "DEMO 1 viên, sau ăn"
+  },
+  {
+    "maxlength": "100",
+    "name": "frequencies",
+    "value": "DEMO sáng, tối"
+  },
+  {
+    "maxlength": null,
+    "name": "instructions",
+    "value": ""
+  },
+  {
+    "maxlength": null,
+    "name": "medicineIds",
+    "value": "1"
+  },
+  {
+    "maxlength": null,
+    "name": "quantities",
+    "value": "1"
+  },
+  {
+    "maxlength": "100",
+    "name": "dosages",
+    "value": "DEMO 1 viên, với nước"
+  },
+  {
+    "maxlength": "100",
+    "name": "frequencies",
+    "value": "DEMO trưa, tối"
+  },
+  {
+    "maxlength": null,
+    "name": "instructions",
+    "value": ""
+  },
+  {
+    "maxlength": "10000",
+    "name": "doctorNotes",
+    "value": "DEMO giữ nguyên lời dặn"
+  },
+  {
+    "maxlength": null,
+    "name": "reExamDate",
+    "value": ""
+  }
+]

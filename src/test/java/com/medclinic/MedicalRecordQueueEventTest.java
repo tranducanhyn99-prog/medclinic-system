@@ -8,6 +8,7 @@ import com.medclinic.enums.AppointmentStatus;
 import com.medclinic.event.DoctorQueueChangedEvent;
 import com.medclinic.repository.AppointmentRepository;
 import com.medclinic.repository.MedicalRecordRepository;
+import com.medclinic.repository.InventoryTransactionRepository;
 import com.medclinic.repository.MedicineRepository;
 import com.medclinic.service.InvoiceService;
 import com.medclinic.service.impl.MedicalRecordServiceImpl;
@@ -64,10 +65,11 @@ class MedicalRecordQueueEventTest {
         MedicalRecordRepository medicalRecordRepository = mock(MedicalRecordRepository.class);
         AppointmentRepository appointmentRepository = mock(AppointmentRepository.class);
         MedicineRepository medicineRepository = mock(MedicineRepository.class);
+        InventoryTransactionRepository inventoryTransactionRepository = mock(InventoryTransactionRepository.class);
         InvoiceService invoiceService = mock(InvoiceService.class);
         ApplicationEventPublisher eventPublisher = mock(ApplicationEventPublisher.class);
         MedicalRecordServiceImpl service = new MedicalRecordServiceImpl(
-                medicalRecordRepository, appointmentRepository, medicineRepository, invoiceService, eventPublisher);
+                medicalRecordRepository, appointmentRepository, medicineRepository, inventoryTransactionRepository, invoiceService, eventPublisher);
 
         User doctorUser = User.builder().id(10L).username("doctor1").build();
         DoctorProfile doctor = DoctorProfile.builder().id(20L).user(doctorUser).build();

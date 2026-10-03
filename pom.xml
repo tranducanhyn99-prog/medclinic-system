@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.3.5</version>
+        <version>4.1.1</version>
         <relativePath/>
     </parent>
 
@@ -19,6 +19,9 @@
 
     <properties>
         <java.version>21</java.version>
+        <!-- Security fixes published after the Spring Boot 4.1.1 BOM. -->
+        <tomcat.version>11.0.26</tomcat.version>
+        <jackson-bom.version>3.1.7</jackson-bom.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <modelmapper.version>3.2.1</modelmapper.version>
         <thymeleaf-layout-dialect.version>3.3.0</thymeleaf-layout-dialect.version>
@@ -31,7 +34,7 @@
         <!-- Spring Boot Starters -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
+            <artifactId>spring-boot-starter-webmvc</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -94,9 +97,16 @@
             <artifactId>flyway-core</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-flyway</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-h2console</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-sqlserver</artifactId>
-            <version>${flyway.version}</version>
         </dependency>
 
         <!-- PDF Export (OpenPDF) -->
@@ -143,8 +153,13 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.springframework.security</groupId>
-            <artifactId>spring-security-test</artifactId>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-webmvc-test</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>

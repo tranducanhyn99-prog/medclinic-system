@@ -17,6 +17,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.WebDataBinder;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -24,6 +27,8 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Arrays;
+import java.beans.PropertyEditorSupport;
 
 @Controller
 @RequestMapping("/doctor")
@@ -35,6 +40,19 @@ public class DoctorDeskController {
     private final MedicalRecordService medicalRecordService;
     private final MedicineService medicineService;
     private final ScheduleService scheduleService;
+
+    @InitBinder("examinationForm")
+    void bindPrescriptionText(WebDataBinder binder) {
+        // Each repeated form parameter is one row, even when its text contains commas.
+        for (String field : List.of("dosages", "frequencies", "instructions")) {
+            binder.registerCustomEditor(List.class, field, new PropertyEditorSupport() {
+                @Override public void setAsText(String text) { setValue(List.of(text)); }
+                @Override public void setValue(Object value) {
+                    super.setValue(value instanceof String[] texts ? Arrays.asList(texts) : value);
+                }
+            });
+        }
+    }
 
     @GetMapping("/desk")
     public String doctorDesk(@AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
@@ -51,10 +69,14 @@ public class DoctorDeskController {
                                       @AuthenticationPrincipal CustomUserDetails userDetails,
                                       Model model) {
         Appointment appointment = medicalRecordService.getAppointmentForExamination(appointmentId, userDetails.getId());
+        if (appointment.getStatus() == AppointmentStatus.COMPLETED) {
+            return "redirect:/doctor/desk?closed=true";
+        }
 
         model.addAttribute("appointment", appointment);
         model.addAttribute("patientHistory", medicalRecordService.getPatientMedicalHistory(appointment.getPatient().getId()));
         model.addAttribute("activeMedicines", medicineService.findAllActive());
+        if (!model.containsAttribute("examinationForm")) model.addAttribute("examinationForm", new ExaminationFormDto());
         return "doctor/examine";
     }
 
@@ -73,10 +95,16 @@ public class DoctorDeskController {
 
     @PostMapping("/examine/{appointmentId}")
     public String processExaminationForm(@PathVariable Long appointmentId,
-                                         @ModelAttribute ExaminationFormDto formDto,
+                                         @Valid @ModelAttribute("examinationForm") ExaminationFormDto formDto,
+                                         BindingResult bindingResult,
                                          @AuthenticationPrincipal CustomUserDetails userDetails,
+                                         Model model,
                                          RedirectAttributes redirectAttributes) {
-        DoctorProfile doctorProfile = doctorService.findByUserId(userDetails.getId());
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("errorMessage", bindingResult.getAllErrors().stream()
+                    .map(error -> error.getDefaultMessage()).distinct().collect(java.util.stream.Collectors.joining(" ")));
+            return showExaminationForm(appointmentId, userDetails, model);
+        }
         
         List<PrescriptionItemDto> prescriptionItems = new ArrayList<>();
         if (formDto.getMedicineIds() != null && !formDto.getMedicineIds().isEmpty()) {
@@ -87,13 +115,15 @@ public class DoctorDeskController {
                             .quantity(formDto.getQuantities().get(i))
                             .dosage(formDto.getDosages().get(i))
                             .frequency(formDto.getFrequencies().get(i))
-                            .instructions(formDto.getInstructions().get(i))
+                            .instructions(formDto.getInstructions() != null && i < formDto.getInstructions().size()
+                                    ? formDto.getInstructions().get(i) : "")
                             .build());
                 }
             }
         }
         
-        com.medclinic.entity.MedicalRecord record = medicalRecordService.saveMedicalRecordAndPrescription(
+        try {
+            medicalRecordService.saveMedicalRecordAndPrescription(
                 appointmentId, 
                 userDetails.getId(),
                 formDto.getSymptoms(), 
@@ -101,7 +131,11 @@ public class DoctorDeskController {
                 formDto.getDoctorNotes(), 
                 formDto.getReExamDate(), 
                 prescriptionItems
-        );
+            );
+        } catch (BusinessLogicException ex) {
+            model.addAttribute("errorMessage", ex.getMessage());
+            return showExaminationForm(appointmentId, userDetails, model);
+        }
         
         redirectAttributes.addFlashAttribute("successMessage", "Đã lưu kết quả khám thành công");
         return "redirect:/doctor/desk";

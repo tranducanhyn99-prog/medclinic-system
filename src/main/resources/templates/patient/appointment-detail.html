@@ -5,20 +5,6 @@
 <head>
     <title>Chi Tiết Cuộc Hẹn & Mã QR Check-in - MedClinic</title>
     <style>
-        .ticket-cut {
-            border-top: 2px dashed #cbd5e1;
-            position: relative;
-            margin: 1.25rem 0;
-        }
-        .qr-frame {
-            background-color: #ffffff;
-            padding: 12px;
-            border-radius: 0.75rem;
-            border: 2px solid #e2e8f0;
-            display: inline-block;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
-        }
-
         /* PRINT STYLING: Only print the ticket box, exactly 1 page, hide all alerts/navs/footers */
         @media print {
             /* Hide entire page structure */
@@ -94,14 +80,14 @@
             <div class="col-lg-8">
 
                 <!-- Ticket Card (Only this section is printed) -->
-                <div class="card card-custom p-4 p-md-5 card-ticket shadow-sm" id="printTicketSection">
+                <div class="mc-record-card p-4 p-md-5 card-ticket" id="printTicketSection">
 
                     <!-- Header -->
                     <div class="d-flex flex-wrap align-items-center justify-content-between pb-3 border-bottom">
                         <div class="d-flex align-items-center gap-2">
                             <i class="bi bi-hospital-fill text-primary fs-2"></i>
                             <div>
-                                <h5 class="fw-bold text-dark mb-0">PHIẾU ĐẶT LỊCH KHÁM BỆNH</h5>
+                                <h1 class="h5 fw-bold text-dark mb-0">PHIẾU ĐẶT LỊCH KHÁM BỆNH</h1>
                                 <span class="text-muted small">Phòng khám Đa khoa MedClinic</span>
                             </div>
                         </div>
@@ -126,8 +112,7 @@
                             <!-- Corrected QR src without double data prefix -->
                             <img th:src="${qrCode}"
                                  alt="Mã QR Check-in"
-                                 class="img-fluid"
-                                 style="width: 170px; height: 170px; display: block; margin: 0 auto; image-rendering: pixelated;">
+                                 class="img-fluid mc-qr-image">
                         </div>
                         <div class="fw-bold fs-5 text-primary mb-1" th:text="${appointment.bookingCode}">MED-260916-0001</div>
                         <p class="text-muted small mb-0">
@@ -138,7 +123,7 @@
                     <!-- Queue Number if Checked In -->
                     <div th:if="${appointment.queueNumber != null}" class="alert alert-success d-flex align-items-center justify-content-between p-3 rounded-3 mb-3">
                         <div>
-                            <h6 class="fw-bold mb-0 text-success"><i class="bi bi-check-circle-fill me-2"></i> Đã tiếp nhận tại quầy</h6>
+                            <h2 class="h6 fw-bold mb-0 text-success"><i class="bi bi-check-circle-fill me-2"></i> Đã tiếp nhận tại quầy</h2>
                             <small class="text-secondary">Vui lòng ngồi tại sảnh chờ chuyên khoa, bác sĩ sẽ gọi tên theo STT</small>
                         </div>
                         <div class="text-end">
@@ -183,8 +168,8 @@
 
                     <!-- Notice & Rules -->
                     <div class="alert alert-light border small text-secondary mb-3 p-2.5">
-                        <h6 class="fw-bold text-dark mb-1 small"><i class="bi bi-info-circle text-primary me-1"></i> Hướng Dẫn Dành Cho Bệnh Nhân:</h6>
-                        <ul class="mb-0 ps-3" style="font-size: 0.8rem;">
+                        <h2 class="h6 fw-bold text-dark mb-1 small"><i class="bi bi-info-circle text-primary me-1"></i> Hướng Dẫn Dành Cho Bệnh Nhân:</h2>
+                        <ul class="mc-guide-list">
                             <li>Vui lòng có mặt trước giờ khám từ 10 - 15 phút để hoàn tất thủ tục đo huyết áp/tiếp đón.</li>
                             <li>Nếu có kết quả xét nghiệm hoặc đơn thuốc cũ trong vòng 3 tháng, vui lòng mang theo.</li>
                             <li>Nếu cần hủy hoặc đổi lịch hẹn, vui lòng thực hiện trước giờ khám ít nhất 2 tiếng.</li>
@@ -192,7 +177,7 @@
                     </div>
 
                     <!-- Actions (Hidden when printing) -->
-                    <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center no-print pt-2">
+                    <div class="mc-operational-actions justify-content-between no-print pt-2">
                         <button type="button" class="btn btn-outline-secondary" id="printAppointmentBtn">
                             <i class="bi bi-printer me-1"></i> In Phiếu Khám
                         </button>

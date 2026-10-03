@@ -1,0 +1,79 @@
+{
+  "headSha": "a83db0221c141c329e312daa54b304bce35e0fea",
+  "status": "completed",
+  "conclusion": "success",
+  "url": "https://github.com/tranducanhyn99-prog/medclinic-system/actions/runs/37093057483",
+  "createdAt": "2026-10-03T03:23:50Z",
+  "updatedAt": "2026-10-03T03:27:28Z",
+  "tests": {
+    "tests": 214,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 25,
+    "passed": 189
+  },
+  "suites": 71,
+  "coveragePercent": {
+    "BRANCH": 65.75,
+    "LINE": 81.01
+  },
+  "steps": [
+    {
+      "name": "Set up job",
+      "conclusion": "success"
+    },
+    {
+      "name": "Checkout source",
+      "conclusion": "success"
+    },
+    {
+      "name": "Set up JDK 21",
+      "conclusion": "success"
+    },
+    {
+      "name": "Verify project and coverage gates",
+      "conclusion": "success"
+    },
+    {
+      "name": "Set up Node.js",
+      "conclusion": "success"
+    },
+    {
+      "name": "Verify frontend regressions",
+      "conclusion": "success"
+    },
+    {
+      "name": "Verify documentation links",
+      "conclusion": "success"
+    },
+    {
+      "name": "Upload test diagnostics",
+      "conclusion": "success"
+    },
+    {
+      "name": "Upload JaCoCo report",
+      "conclusion": "success"
+    },
+    {
+      "name": "Upload application package",
+      "conclusion": "success"
+    },
+    {
+      "name": "Post Set up Node.js",
+      "conclusion": "success"
+    },
+    {
+      "name": "Post Set up JDK 21",
+      "conclusion": "success"
+    },
+    {
+      "name": "Post Checkout source",
+      "conclusion": "success"
+    },
+    {
+      "name": "Complete job",
+      "conclusion": "success"
+    }
+  ],
+  "scope": "GitHub windows-latest/JDK 21; SQL Server IT intentionally guarded off. Full SQL results are in the local clean verification summary."
+}

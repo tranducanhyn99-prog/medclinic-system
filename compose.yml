@@ -7,9 +7,10 @@ services:
       MSSQL_PID: "Developer"
       MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD:?Hãy cấu hình MSSQL_SA_PASSWORD trong file .env}
     ports:
-      - "${SQLSERVER_HOST_PORT:-14333}:1433"
+      - "127.0.0.1:${SQLSERVER_HOST_PORT:-14333}:1433"
     volumes:
       - medclinic-sqlserver-data:/var/opt/mssql
+      - ./docker/sqlserver:/docker:ro
     healthcheck:
       test:
         - CMD-SHELL
@@ -32,9 +33,16 @@ services:
     environment:
       MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD:?Hãy cấu hình MSSQL_SA_PASSWORD trong file .env}
     volumes:
-      - ./docker/sqlserver/init-db.sh:/docker/init-db.sh:ro
+      - ./docker/sqlserver:/docker:ro
     entrypoint: ["/bin/bash", "/docker/init-db.sh"]
     restart: "no"
+
+  mailpit:
+    image: axllent/mailpit:v1.31.1
+    container_name: medclinic-mailpit
+    ports:
+      - "127.0.0.1:8025:8025"
+    restart: unless-stopped
 
   app:
     build:
@@ -45,8 +53,11 @@ services:
     depends_on:
       sqlserver-init:
         condition: service_completed_successfully
+      mailpit:
+        condition: service_started
     environment:
       SPRING_PROFILES_ACTIVE: sqlserver,demo
+      TZ: Asia/Ho_Chi_Minh
       SPRING_FLYWAY_BASELINE_ON_MIGRATE: "true"
       DB_URL: jdbc:sqlserver://sqlserver:1433;databaseName=medclinic_db;encrypt=true;trustServerCertificate=true;sendStringParametersAsUnicode=true
       DB_USERNAME: sa
@@ -55,11 +66,30 @@ services:
       SESSION_COOKIE_SECURE: ${SESSION_COOKIE_SECURE:-false}
       LOGIN_RATE_LIMIT_MAX: ${LOGIN_RATE_LIMIT_MAX:-20}
       PASSWORD_RESET_RATE_LIMIT_MAX: ${PASSWORD_RESET_RATE_LIMIT_MAX:-5}
+      PAYMENT_CALLBACK_RATE_LIMIT_MAX: ${PAYMENT_CALLBACK_RATE_LIMIT_MAX:-60}
       AUTH_RATE_LIMIT_WINDOW_SECONDS: ${AUTH_RATE_LIMIT_WINDOW_SECONDS:-300}
+      AUTH_RATE_LIMIT_STORE: ${AUTH_RATE_LIMIT_STORE:-jdbc}
+      EMAIL_MAX_ATTEMPTS: ${EMAIL_MAX_ATTEMPTS:-3}
+      EMAIL_RETRY_BACKOFF_MS: ${EMAIL_RETRY_BACKOFF_MS:-250}
+      BANK_PAYMENT_ENABLED: ${BANK_PAYMENT_ENABLED:-false}
+      BANK_PAYMENT_BANK_ID: ${BANK_PAYMENT_BANK_ID:-970422}
+      BANK_PAYMENT_BANK_NAME: ${BANK_PAYMENT_BANK_NAME:-MB Bank}
+      BANK_PAYMENT_ACCOUNT_NO: ${BANK_PAYMENT_ACCOUNT_NO:-}
+      BANK_PAYMENT_ACCOUNT_NAME: ${BANK_PAYMENT_ACCOUNT_NAME:-}
+      BANK_PAYMENT_QR_TEMPLATE: ${BANK_PAYMENT_QR_TEMPLATE:-compact2}
+      BANK_PAYMENT_CALLBACK_SECRET: ${BANK_PAYMENT_CALLBACK_SECRET:-}
+      BANK_PAYMENT_EXPIRY_MINUTES: ${BANK_PAYMENT_EXPIRY_MINUTES:-30}
       MAIL_USERNAME: ${MAIL_USERNAME:-}
       MAIL_PASSWORD: ${MAIL_PASSWORD:-}
+      SPRING_MAIL_HOST: mailpit
+      SPRING_MAIL_PORT: "1025"
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH: "false"
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE: "false"
+      AVATAR_STORAGE_DIR: /app/uploads/avatars
     ports:
-      - "8080:8080"
+      - "127.0.0.1:8080:8080"
+    volumes:
+      - medclinic-uploads:/app/uploads
     healthcheck:
       test:
         - CMD-SHELL
@@ -73,3 +103,4 @@ services:
 
 volumes:
   medclinic-sqlserver-data:
+  medclinic-uploads:

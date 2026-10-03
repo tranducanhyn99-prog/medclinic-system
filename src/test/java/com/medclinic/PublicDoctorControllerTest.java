@@ -54,7 +54,9 @@ class PublicDoctorControllerTest {
 
     @Test
     void displaysDoctorProfile() {
-        DoctorProfile doctor = DoctorProfile.builder().id(10L).build();
+        DoctorProfile doctor = DoctorProfile.builder().id(10L)
+                .user(User.builder().isActive(true).build())
+                .specialty(Specialty.builder().isActive(true).build()).build();
         ExtendedModelMap model = new ExtendedModelMap();
         when(doctorService.findById(10L)).thenReturn(doctor);
 

@@ -32,7 +32,8 @@ class SqlServerSchemaGenerationTest {
                     MedicalRecord.class, Prescription.class, PrescriptionItem.class,
                     Medicine.class, Invoice.class, DailyQueueCounter.class,
                     InvoiceCodeReservation.class, PasswordResetToken.class,
-                    Notification.class)) {
+                    Notification.class, BankTransferPayment.class,
+                    BusinessAuditEvent.class, SecurityRateLimitBucket.class)) {
                 sources.addAnnotatedClass(entity);
             }
 
@@ -52,6 +53,9 @@ class SqlServerSchemaGenerationTest {
             assertTrue(lower.contains("create table notifications"));
 
             assertTrue(lower.contains("invoice_code_reservations"));
+            assertTrue(lower.contains("bank_transfer_payments"));
+            assertTrue(lower.contains("business_audit_events"));
+            assertTrue(lower.contains("security_rate_limit_buckets"));
             assertTrue(lower.contains("time_slot_id"));
             assertTrue(lower.contains("queue_sequence"));
             assertTrue(lower.contains("unit_price_at_time"));

@@ -16,4 +16,5 @@ public class AdminMedicineDto {
     @NotNull(message = "Đơn giá không được để trống") @DecimalMin(value = "0", message = "Đơn giá không hợp lệ") private BigDecimal unitPrice;
     private String usageGuide;
     @NotNull(message = "Tồn kho không được để trống") @Min(value = 0, message = "Tồn kho không hợp lệ") private Integer stockQuantity;
+    @NotNull(message = "Ngưỡng cảnh báo không được để trống") @Min(value = 0, message = "Ngưỡng cảnh báo không hợp lệ") private Integer reorderLevel = 50;
 }

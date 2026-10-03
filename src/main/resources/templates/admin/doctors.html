@@ -9,7 +9,7 @@
 <div layout:fragment="content">
 
     <!-- Top Header -->
-    <div class="d-flex flex-wrap align-items-center justify-content-between mb-4 pb-2 border-bottom">
+    <div class="mc-page-header align-items-end border-bottom pb-3">
         <div>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-1 small">
@@ -17,9 +17,8 @@
                     <li class="breadcrumb-item active" aria-current="page">Bác sĩ</li>
                 </ol>
             </nav>
-            <h3 class="fw-bold text-dark mb-0">
-                <i class="bi bi-person-badge-fill text-success me-2"></i>Quản Lý Đội Ngũ Bác Sĩ
-            </h3>
+            <h1 class="mc-page-title">Đội ngũ bác sĩ</h1>
+            <p class="mc-page-subtitle">Quản lý hồ sơ chuyên môn, chuyên khoa và phí tư vấn.</p>
         </div>
         <div>
             <button type="button" class="btn btn-med-primary" data-bs-toggle="modal" data-bs-target="#addDoctorModal">
@@ -29,10 +28,13 @@
     </div>
 
     <!-- Doctors Table Card -->
-    <div class="card card-portal shadow-sm">
+    <div class="mc-data-card">
         <div class="card-body p-0">
+            <div class="mc-mobile-scroll-hint d-md-none">
+                <i class="bi bi-arrow-left-right me-1"></i> Vuốt ngang để xem đầy đủ bảng
+            </div>
             <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0 small">
+                <table class="table mc-data-table align-middle mb-0">
                     <thead class="table-light text-uppercase">
                         <tr>
                             <th style="width: 60px;" class="text-center">STT</th>
@@ -49,12 +51,16 @@
                             <td class="text-center text-muted fw-semibold" th:text="${stat.count}">1</td>
                             <td>
                                 <div class="d-flex align-items-center gap-2">
-                                    <div class="rounded-circle bg-primary bg-opacity-10 text-primary p-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
-                                        <i class="bi bi-person-fill fs-5"></i>
+                                    <div class="mc-table-avatar overflow-hidden">
+                                        <img th:if="${doc.user.avatarUrl != null and !doc.user.avatarUrl.isBlank()}"
+                                             th:src="${doc.user.avatarUrl}" th:alt="${doc.user.fullName}"
+                                             class="w-100 h-100 object-fit-cover rounded-circle">
+                                        <i th:unless="${doc.user.avatarUrl != null and !doc.user.avatarUrl.isBlank()}"
+                                           class="bi bi-person-fill fs-5"></i>
                                     </div>
                                     <div>
-                                        <strong class="text-dark fs-6" th:text="${doc.title + ' ' + doc.user.fullName}">BS. Nguyễn Văn A</strong>
-                                        <div class="text-secondary" style="font-size: 0.75rem;" th:text="${'Email: ' + doc.user.email}">email@medclinic.com</div>
+                                        <strong class="mc-cell-title" th:text="${doc.title + ' ' + doc.user.fullName}">BS. Nguyễn Văn A</strong>
+                                        <div class="mc-cell-meta" th:text="${'Email: ' + doc.user.email}">email@medclinic.com</div>
                                     </div>
                                 </div>
                             </td>
@@ -66,14 +72,14 @@
                                 <span class="fw-semibold text-dark" th:text="${doc.experienceYears + ' năm'}">10 năm</span>
                             </td>
                             <td class="text-end fw-bold text-primary"
-                                th:text="${#numbers.formatDecimal(doc.consultationFee, 0, 'COMMA', 0, 'POINT') + ' đ'}">
+                                th:text="${@money.vnd(doc.consultationFee)}">
                                 150,000 đ
                             </td>
                             <td>
-                                <span class="text-secondary text-truncate d-inline-block" style="max-width: 250px;"
+                                <span class="mc-table-truncate text-secondary"
                                       th:text="${doc.bio != null ? doc.bio : '--'}">Chuyên gia đầu ngành...</span>
                             </td>
-                            <td class="text-end pe-3"><button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal"
+                            <td class="text-end pe-3"><button type="button" class="btn btn-sm btn-outline-primary mc-action-btn" data-bs-toggle="modal"
                                     th:data-bs-target="${'#editDoctorModal-' + doc.id}">Sửa</button></td>
                         </tr>
                     </tbody>
@@ -88,46 +94,46 @@
             <div class="modal-content">
                 <form th:action="@{/admin/doctors}" th:object="${doctorForm}" method="post">
                     <div class="modal-header">
-                        <h6 class="modal-title fw-bold text-dark" id="addDoctorModalTitle">
+                        <h2 class="modal-title fw-bold text-dark" id="addDoctorModalTitle">
                             <i class="bi bi-person-plus-fill text-primary me-2"></i>Thêm Hồ Sơ Bác Sĩ Mới
-                        </h6>
-                        <button type="button" class="btn-close" aria-label="Close" data-bs-dismiss="modal"></button>
+                        </h2>
+                        <button type="button" class="btn-close" aria-label="Đóng hộp thoại" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body">
-                        <div class="alert alert-danger py-2" th:if="${#fields.hasGlobalErrors()}" th:errors="*{global}"></div>
+                        <div class="alert alert-danger py-2" th:if="${#fields.hasGlobalErrors()}" data-form-error role="alert" th:errors="*{global}"></div>
                         <div class="row g-3">
-                            <div class="col-md-6"><label for="doctorUsername" class="form-label fw-semibold small">Tên đăng nhập *</label><input id="doctorUsername" class="form-control" th:field="*{username}" required><div class="text-danger small" th:errors="*{username}"></div></div>
-                            <div class="col-md-6"><label for="doctorPassword" class="form-label fw-semibold small">Mật khẩu *</label><input id="doctorPassword" class="form-control" type="password" th:field="*{password}" required><div class="text-danger small" th:errors="*{password}"></div></div>
-                            <div class="col-md-6"><label for="doctorFullName" class="form-label fw-semibold small">Họ tên *</label><input id="doctorFullName" class="form-control" th:field="*{fullName}" required><div class="text-danger small" th:errors="*{fullName}"></div></div>
-                            <div class="col-md-6"><label for="doctorEmail" class="form-label fw-semibold small">Email *</label><input id="doctorEmail" class="form-control" type="email" th:field="*{email}" required><div class="text-danger small" th:errors="*{email}"></div></div>
-                            <div class="col-md-6"><label for="doctorPhone" class="form-label fw-semibold small">Số điện thoại *</label><input id="doctorPhone" class="form-control" th:field="*{phone}" required><div class="text-danger small" th:errors="*{phone}"></div></div>
-                            <div class="col-md-6"><label for="doctorLicense" class="form-label fw-semibold small">Số giấy phép hành nghề *</label><input id="doctorLicense" class="form-control" th:field="*{licenseNumber}" required><div class="text-danger small" th:errors="*{licenseNumber}"></div></div>
+                            <div class="col-md-6"><label for="username" class="form-label fw-semibold small">Tên đăng nhập *</label><input id="username" class="form-control" th:field="*{username}" th:errorclass="is-invalid" required><div class="text-danger small" data-field-error th:errors="*{username}"></div></div>
+                            <div class="col-md-6"><label for="password" class="form-label fw-semibold small">Mật khẩu *</label><input id="password" class="form-control" type="password" th:field="*{password}" th:errorclass="is-invalid" minlength="8" maxlength="72" aria-describedby="doctorPasswordHelp" required><div id="doctorPasswordHelp" class="form-text">Ít nhất 8 ký tự, tối đa 72 byte UTF-8. Ký tự có dấu và emoji có thể chiếm nhiều byte.</div><div class="text-danger small" data-field-error th:errors="*{password}"></div></div>
+                            <div class="col-md-6"><label for="fullName" class="form-label fw-semibold small">Họ tên *</label><input id="fullName" class="form-control" th:field="*{fullName}" th:errorclass="is-invalid" required><div class="text-danger small" data-field-error th:errors="*{fullName}"></div></div>
+                            <div class="col-md-6"><label for="email" class="form-label fw-semibold small">Email *</label><input id="email" class="form-control" type="email" th:field="*{email}" th:errorclass="is-invalid" required><div class="text-danger small" data-field-error th:errors="*{email}"></div></div>
+                            <div class="col-md-6"><label for="phone" class="form-label fw-semibold small">Số điện thoại *</label><input id="phone" class="form-control" th:field="*{phone}" th:errorclass="is-invalid" required><div class="text-danger small" data-field-error th:errors="*{phone}"></div></div>
+                            <div class="col-md-6"><label for="licenseNumber" class="form-label fw-semibold small">Số giấy phép hành nghề *</label><input id="licenseNumber" class="form-control" th:field="*{licenseNumber}" th:errorclass="is-invalid" required><div class="text-danger small" data-field-error th:errors="*{licenseNumber}"></div></div>
                             <div class="col-md-6">
                                 <label for="specialtyId" class="form-label fw-semibold small">Chuyên khoa phụ trách <span class="text-danger">*</span></label>
-                                <select class="form-select" id="specialtyId" th:field="*{specialtyId}" required>
+                                <select class="form-select" id="specialtyId" th:field="*{specialtyId}" th:errorclass="is-invalid" required>
                                     <option value="">-- Chọn chuyên khoa --</option>
                                     <option th:each="spec : ${specialties}" th:value="${spec.id}" th:text="${spec.name}">Nội tổng quát</option>
                                 </select>
-                                <div class="text-danger small" th:errors="*{specialtyId}"></div>
+                                <div class="text-danger small" data-field-error th:errors="*{specialtyId}"></div>
                             </div>
                             <div class="col-md-4">
                                 <label for="title" class="form-label fw-semibold small">Học hàm / Học vị <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="title" th:field="*{title}" placeholder="BS.CKI, ThS.BS, PGS.TS..." required>
-                                <div class="text-danger small" th:errors="*{title}"></div>
+                                <input type="text" class="form-control" id="title" th:field="*{title}" th:errorclass="is-invalid" placeholder="BS.CKI, ThS.BS, PGS.TS..." required>
+                                <div class="text-danger small" data-field-error th:errors="*{title}"></div>
                             </div>
                             <div class="col-md-4">
                                 <label for="experienceYears" class="form-label fw-semibold small">Số năm kinh nghiệm <span class="text-danger">*</span></label>
-                                <input type="number" class="form-control" id="experienceYears" th:field="*{experienceYears}" min="0" required>
-                                <div class="text-danger small" th:errors="*{experienceYears}"></div>
+                                <input type="number" class="form-control" id="experienceYears" th:field="*{experienceYears}" th:errorclass="is-invalid" min="0" required>
+                                <div class="text-danger small" data-field-error th:errors="*{experienceYears}"></div>
                             </div>
                             <div class="col-md-4">
                                 <label for="consultationFee" class="form-label fw-semibold small">Giá khám (VNĐ) <span class="text-danger">*</span></label>
-                                <input type="number" class="form-control" id="consultationFee" th:field="*{consultationFee}" min="0" step="10000" required>
-                                <div class="text-danger small" th:errors="*{consultationFee}"></div>
+                                <input type="number" class="form-control" id="consultationFee" th:field="*{consultationFee}" th:errorclass="is-invalid" min="0" step="10000" required>
+                                <div class="text-danger small" data-field-error th:errors="*{consultationFee}"></div>
                             </div>
                             <div class="col-12">
                                 <label for="bio" class="form-label fw-semibold small">Tiểu sử & Quá trình công tác</label>
-                                <textarea class="form-control" id="bio" th:field="*{bio}" rows="3" placeholder="Tóm tắt kinh nghiệm làm việc, nơi từng công tác..."></textarea>
+                                <textarea class="form-control" id="bio" th:field="*{bio}" th:errorclass="is-invalid" rows="3" placeholder="Tóm tắt kinh nghiệm làm việc, nơi từng công tác..."></textarea>
                             </div>
                         </div>
                     </div>
@@ -143,7 +149,7 @@
     <div th:each="doc : ${doctors}" class="modal fade" th:id="${'editDoctorModal-' + doc.id}" tabindex="-1" th:attr="aria-labelledby=${'editDoctorModalTitle-' + doc.id}">
         <div class="modal-dialog modal-dialog-centered modal-lg"><div class="modal-content">
             <form th:action="@{/admin/doctors/{id}(id=${doc.id})}" method="post">
-                <div class="modal-header"><h6 class="modal-title" th:id="${'editDoctorModalTitle-' + doc.id}">Sửa hồ sơ bác sĩ</h6><button type="button" class="btn-close" aria-label="Close" data-bs-dismiss="modal"></button></div>
+                <div class="modal-header"><h2 class="modal-title" th:id="${'editDoctorModalTitle-' + doc.id}">Sửa hồ sơ bác sĩ</h2><button type="button" class="btn-close" aria-label="Đóng hộp thoại" data-bs-dismiss="modal"></button></div>
                 <div class="modal-body row g-3">
                     <div class="col-md-6"><label class="form-label" th:for="${'editDoctorSpecialty-' + doc.id}">Chuyên khoa</label><select th:id="${'editDoctorSpecialty-' + doc.id}" class="form-select" name="specialtyId" required><option th:each="spec : ${specialties}" th:value="${spec.id}" th:selected="${spec.id == doc.specialty.id}" th:text="${spec.name}"></option></select></div>
                     <div class="col-md-6"><label class="form-label" th:for="${'editDoctorTitle-' + doc.id}">Học vị</label><input th:id="${'editDoctorTitle-' + doc.id}" class="form-control" name="title" required th:value="${doc.title}"></div>

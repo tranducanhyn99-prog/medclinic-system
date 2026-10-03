@@ -1,0 +1,22 @@
+{
+  "tests": 186.0,
+  "classes": 67,
+  "failures": 0.0,
+  "errors": 0.0,
+  "skipped": 0.0,
+  "coverage": [
+    {
+      "type": "BRANCH",
+      "covered": 635,
+      "missed": 344,
+      "percent": 64.86
+    },
+    {
+      "type": "LINE",
+      "covered": 2009,
+      "missed": 386,
+      "percent": 83.88
+    }
+  ],
+  "invoiceSha256": "9E26CC6A341A1992C58AB0B2C54590D03CA924D2CC0980D127A0CAA0212200DF"
+}

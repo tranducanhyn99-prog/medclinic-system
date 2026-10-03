@@ -1,37 +1,142 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/main}">
-<head><title>Tìm Bác Sĩ - MedClinic</title></head>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/main}">
+<head>
+    <title>Tìm Bác Sĩ - MedClinic</title>
+</head>
 <body>
 <div layout:fragment="content">
-    <div class="container py-4">
-        <div class="d-flex flex-wrap align-items-end justify-content-between gap-3 mb-4">
+    <div class="container mc-public-shell">
+        <header class="mc-page-header align-items-end">
             <div>
-                <nav aria-label="breadcrumb"><ol class="breadcrumb small mb-2"><li class="breadcrumb-item"><a th:href="@{/}" class="text-decoration-none">Trang chủ</a></li><li class="breadcrumb-item active">Tìm bác sĩ</li></ol></nav>
-                <h1 class="h3 fw-bold mb-1">Tìm bác sĩ phù hợp</h1>
-                <p class="text-muted mb-0">Tra cứu chuyên khoa, kinh nghiệm và chi phí trước khi đặt lịch.</p>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb small mb-2">
+                        <li class="breadcrumb-item"><a th:href="@{/}" class="text-decoration-none">Trang chủ</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Tìm bác sĩ</li>
+                    </ol>
+                </nav>
+                <div class="mc-section-kicker">Đội ngũ chuyên môn</div>
+                <h1 class="mc-page-title">Tìm bác sĩ phù hợp</h1>
+                <p class="mc-page-subtitle">Tra cứu theo chuyên khoa, tên bác sĩ và mức phí trước khi quyết định đặt lịch.</p>
             </div>
-            <a th:href="@{/patient/booking}" class="btn btn-med-primary"><i class="bi bi-calendar-plus"></i> Đặt lịch khám</a>
-        </div>
-        <form th:action="@{/doctors}" method="get" class="card card-custom p-3 p-md-4 mb-4">
+            <a th:href="@{/patient/booking}" class="btn btn-med-primary flex-shrink-0">
+                <i class="bi bi-calendar-plus"></i> Đặt lịch khám
+            </a>
+        </header>
+
+        <form th:action="@{/doctors}" method="get" class="mc-filter-panel mb-4" aria-label="Bộ lọc bác sĩ">
             <div class="row g-3 align-items-end">
-                <div class="col-lg-4"><label for="keyword" class="form-label fw-semibold small">Tên hoặc chức danh</label><input id="keyword" name="keyword" type="search" class="form-control" th:value="${keyword}" placeholder="Ví dụ: Nguyễn Văn A, BS.CKI"></div>
-                <div class="col-lg-3"><label for="specialtyId" class="form-label fw-semibold small">Chuyên khoa</label><select id="specialtyId" name="specialtyId" class="form-select"><option value="">Tất cả chuyên khoa</option><option th:each="specialty : ${specialties}" th:value="${specialty.id}" th:selected="${specialty.id == selectedSpecialtyId}" th:text="${specialty.name}">Nội tổng quát</option></select></div>
-                <div class="col-lg-3"><label for="maxFee" class="form-label fw-semibold small">Chi phí tối đa (đ)</label><input id="maxFee" name="maxFee" type="number" min="0" step="1000" class="form-control" th:value="${maxFee}" placeholder="Ví dụ: 300000"></div>
-                <div class="col-lg-2 d-grid"><button type="submit" class="btn btn-med-primary justify-content-center"><i class="bi bi-search"></i> Tìm kiếm</button></div>
+                <div class="col-lg-4">
+                    <label for="keyword" class="form-label">Tên hoặc chức danh</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+                        <input id="keyword" name="keyword" type="search" class="form-control border-start-0"
+                               th:value="${keyword}" placeholder="Ví dụ: Nguyễn Văn A, BS.CKI">
+                    </div>
+                </div>
+                <div class="col-lg-3">
+                    <label for="specialtyId" class="form-label">Chuyên khoa</label>
+                    <select id="specialtyId" name="specialtyId" class="form-select">
+                        <option value="">Tất cả chuyên khoa</option>
+                        <option th:each="specialty : ${specialties}"
+                                th:value="${specialty.id}"
+                                th:selected="${specialty.id == selectedSpecialtyId}"
+                                th:text="${specialty.name}">Nội tổng quát</option>
+                    </select>
+                </div>
+                <div class="col-lg-3">
+                    <label for="maxFee" class="form-label">Chi phí tối đa</label>
+                    <div class="input-group">
+                        <input id="maxFee" name="maxFee" type="number" min="0" step="1000" class="form-control"
+                               th:value="${maxFee}" placeholder="Ví dụ: 300000">
+                        <span class="input-group-text">đ</span>
+                    </div>
+                </div>
+                <div class="col-lg-2 d-grid">
+                    <button type="submit" class="btn btn-med-primary justify-content-center">
+                        <i class="bi bi-funnel"></i> Lọc bác sĩ
+                    </button>
+                </div>
             </div>
         </form>
-        <div class="d-flex justify-content-between align-items-center mb-3"><h2 class="h5 fw-bold mb-0">Danh sách bác sĩ</h2><span class="text-muted small" th:text="${#lists.size(doctors) + ' kết quả'}">0 kết quả</span></div>
+        <div class="d-flex justify-content-between align-items-center gap-3 mb-3">
+            <div>
+                <h2 class="h5 fw-bold mb-1">Danh sách bác sĩ</h2>
+                <p class="small text-muted mb-0">Xem hồ sơ trước khi chọn bác sĩ cho lịch hẹn.</p>
+            </div>
+            <span class="mc-result-count" th:text="${#lists.size(doctors) + ' kết quả'}">0 kết quả</span>
+        </div>
+
         <div class="row g-4" th:if="${!#lists.isEmpty(doctors)}">
             <div class="col-md-6 col-xl-4" th:each="doctor : ${doctors}">
-                <article class="card card-custom card-hover h-100 p-4">
-                    <div class="d-flex align-items-start gap-3 mb-3"><div class="rounded-circle bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center flex-shrink-0" style="width: 52px; height: 52px;"><i class="bi bi-person-badge fs-4"></i></div><div><h3 class="h5 fw-bold mb-1" th:text="${doctor.title + ' ' + doctor.user.fullName}">BS. Nguyễn Văn A</h3><span class="badge bg-info-subtle text-info-emphasis" th:text="${doctor.specialty.name}">Nội khoa</span></div></div>
-                    <dl class="row small mb-3"><dt class="col-6 text-muted fw-normal">Kinh nghiệm</dt><dd class="col-6 text-end fw-semibold" th:text="${doctor.experienceYears + ' năm'}">5 năm</dd><dt class="col-6 text-muted fw-normal">Phí tư vấn</dt><dd class="col-6 text-end fw-bold text-primary" th:text="${#numbers.formatDecimal(doctor.consultationFee, 0, 'COMMA', 0, 'POINT') + ' đ'}">300.000 đ</dd></dl>
-                    <p class="text-muted small mb-4" style="min-height: 3rem;" th:text="${doctor.bio != null && !doctor.bio.isBlank() ? doctor.bio : 'Bác sĩ giàu kinh nghiệm, sẵn sàng tư vấn và điều trị.'}">Giới thiệu bác sĩ</p>
-                    <a th:href="@{/doctors/{id}(id=${doctor.id})}" class="btn btn-med-outline mt-auto">Xem hồ sơ <i class="bi bi-arrow-right ms-1"></i></a>
+                <article class="mc-doctor-card d-flex flex-column">
+                    <div class="d-flex align-items-start gap-3">
+                        <div class="mc-doctor-avatar mc-doctor-avatar--list">
+                            <img th:if="${doctor.user.avatarUrl != null and !doctor.user.avatarUrl.isBlank()}"
+                                 th:src="@{/api/public/doctors/{id}/avatar(id=${doctor.id},size=128)}"
+                                     th:srcset="@{/api/public/doctors/{id}/avatar(id=${doctor.id},size=128)} + ' 128w, ' + @{/api/public/doctors/{id}/avatar(id=${doctor.id},size=256)} + ' 256w, ' + @{/api/public/doctors/{id}/avatar(id=${doctor.id},size=512)} + ' 512w'"
+                                     sizes="(max-width: 575px) 64px, 128px" width="128" height="128" data-doctor-avatar th:alt="${'Ảnh bác sĩ ' + doctor.user.fullName}" loading="lazy">
+                            <span data-avatar-fallback th:hidden="${doctor.user.avatarUrl != null and !doctor.user.avatarUrl.isBlank()}"
+                                  th:text="${#strings.substring(doctor.user.fullName, 0, 1)}" aria-hidden="true">B</span>
+                        </div>
+                        <div class="min-w-0">
+                            <span class="badge bg-info-subtle text-info-emphasis mb-2" th:text="${doctor.specialty.name}">Nội khoa</span>
+                            <h3 class="h5 fw-bold mb-0" th:text="${doctor.title + ' ' + doctor.user.fullName}">BS. Nguyễn Văn A</h3>
+                        </div>
+                    </div>
+
+                    <div class="mc-doctor-meta">
+                        <div>
+                            <span class="mc-meta-label">Kinh nghiệm</span>
+                            <span class="mc-meta-value" th:text="${doctor.experienceYears + ' năm'}">5 năm</span>
+                        </div>
+                        <div>
+                            <span class="mc-meta-label">Phí khám</span>
+                            <span class="mc-meta-value text-primary"
+                                  th:text="${@money.vnd(doctor.consultationFee)}">300.000 đ</span>
+                        </div>
+                    </div>
+
+                    <p class="text-muted small mb-3 flex-grow-1"
+                       th:text="${doctor.bio != null && !doctor.bio.isBlank() ? doctor.bio : 'Bác sĩ giàu kinh nghiệm, sẵn sàng tư vấn và điều trị.'}">
+                        Giới thiệu bác sĩ
+                    </p>
+
+                    <div class="mc-doctor-contact-list pt-2 pb-3 mb-3 border-top border-light-subtle">
+                        <div class="d-flex align-items-center gap-2 text-muted small mb-1">
+                            <i class="bi bi-telephone text-primary"></i>
+                            <a th:href="${'tel:' + doctor.user.phone}" class="text-decoration-none text-dark fw-medium"
+                               th:text="${doctor.user.phone != null ? doctor.user.phone : '1900 6868'}">0911 000 001</a>
+                        </div>
+                        <div class="d-flex align-items-center gap-2 text-muted small mb-1">
+                            <i class="bi bi-envelope text-primary"></i>
+                            <span class="text-truncate" th:text="${doctor.user.email}">doctor@medclinic.vn</span>
+                        </div>
+                        <div class="d-flex align-items-center gap-2 text-muted small">
+                            <i class="bi bi-geo-alt text-primary"></i>
+                            <span th:text="${'Phòng khám ' + (100 + doctor.id) + ' • Tầng 2, Khu B'}">Phòng khám 101 • Tầng 2, Khu B</span>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <a th:href="@{/doctors/{id}(id=${doctor.id})}" class="btn btn-med-outline flex-fill justify-content-center">
+                            Xem hồ sơ <i class="bi bi-arrow-right ms-1"></i>
+                        </a>
+                        <a th:href="@{/patient/booking(doctorId=${doctor.id})}" class="btn btn-med-primary flex-fill justify-content-center">
+                            <i class="bi bi-calendar-plus"></i> Đặt khám
+                        </a>
+                    </div>
                 </article>
             </div>
         </div>
-        <div class="card card-custom p-5 text-center" th:if="${#lists.isEmpty(doctors)}"><i class="bi bi-search fs-1 text-primary"></i><h2 class="h5 fw-bold mt-3">Chưa tìm thấy bác sĩ phù hợp</h2><p class="text-muted mb-3">Hãy thử đổi từ khóa hoặc bỏ bớt điều kiện lọc.</p><a th:href="@{/doctors}" class="btn btn-med-outline">Xóa bộ lọc</a></div>
+
+        <div class="card card-custom p-5 text-center" th:if="${#lists.isEmpty(doctors)}">
+            <div class="mc-icon-tile mx-auto mb-3"><i class="bi bi-search"></i></div>
+            <h2 class="h5 fw-bold">Chưa tìm thấy bác sĩ phù hợp</h2>
+            <p class="text-muted mb-3">Hãy thử đổi từ khóa hoặc bỏ bớt điều kiện lọc.</p>
+            <a th:href="@{/doctors}" class="btn btn-med-outline">Xóa bộ lọc</a>
+        </div>
     </div>
 </div>
 </body>

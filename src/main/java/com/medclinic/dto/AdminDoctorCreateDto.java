@@ -16,7 +16,7 @@ public class AdminDoctorCreateDto {
     @Size(min = 3, max = 30, message = "Tên đăng nhập từ 3 đến 30 ký tự")
     private String username;
     @NotBlank(message = "Mật khẩu không được để trống")
-    @Size(min = 8, message = "Mật khẩu tối thiểu 8 ký tự")
+    @com.medclinic.validation.ValidPassword
     private String password;
     @NotBlank(message = "Họ tên không được để trống")
     private String fullName;

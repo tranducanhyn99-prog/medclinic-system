@@ -18,7 +18,7 @@ import jakarta.persistence.LockModeType;
 public interface AppointmentRepository extends JpaRepository<Appointment, Long> {
 
     @Override
-    @EntityGraph(attributePaths = {"patient", "doctor", "doctor.user", "medicalRecord", "medicalRecord.prescription", "medicalRecord.prescription.items", "medicalRecord.prescription.items.medicine"})
+    @EntityGraph(attributePaths = {"patient", "doctor", "doctor.user", "doctor.specialty", "timeSlot", "medicalRecord", "medicalRecord.prescription", "medicalRecord.prescription.items", "medicalRecord.prescription.items.medicine"})
     Optional<Appointment> findById(Long id);
 
     Optional<Appointment> findByBookingCode(String bookingCode);

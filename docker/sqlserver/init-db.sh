@@ -23,6 +23,15 @@ done
 "$SQLCMD" -S "$SERVER" -U "$SA_USER" -P "$MSSQL_SA_PASSWORD" -C -b \
   -Q "IF DB_ID(N'$DB_NAME') IS NULL CREATE DATABASE [$DB_NAME];"
 
+# SQL Server can accept connections while an existing user database is still
+# recovering after Docker Desktop restarts. Wait for this database explicitly
+# so the schema checks below do not fail during that short recovery window.
+until "$SQLCMD" -S "$SERVER" -U "$SA_USER" -P "$MSSQL_SA_PASSWORD" -C -b \
+  -d "$DB_NAME" -Q "SELECT 1" >/dev/null 2>&1; do
+  echo "Đang chờ database $DB_NAME hoàn tất recovery..."
+  sleep 2
+done
+
 APP_TABLE_COUNT=$("$SQLCMD" -S "$SERVER" -U "$SA_USER" -P "$MSSQL_SA_PASSWORD" -C -b \
   -d "$DB_NAME" -h -1 -W -Q "SET NOCOUNT ON; SELECT COUNT(*) FROM sys.tables WHERE name <> 'flyway_schema_history';" | tr -d '[:space:]')
 HISTORY_TABLE_COUNT=$("$SQLCMD" -S "$SERVER" -U "$SA_USER" -P "$MSSQL_SA_PASSWORD" -C -b \

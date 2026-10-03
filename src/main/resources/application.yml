@@ -63,19 +63,45 @@ management:
   health:
     mail:
       enabled: false
+  metrics:
+    tags:
+      application: ${spring.application.name}
 
 app:
   name: MedClinic - Phòng Khám Đa Khoa Tư Nhân
   address: 123 Đường Nguyễn Trãi, Quận 5, TP. Hồ Chí Minh
   hotline: 1900 6868
   email: support@medclinic.vn
-  website: http://localhost:8080
+  website: ${APP_WEBSITE:http://localhost:8080}
+  auth:
+    otp-validity-seconds: ${AUTH_OTP_VALIDITY_SECONDS:300}
+  mail-delivery:
+    max-attempts: ${EMAIL_MAX_ATTEMPTS:3}
+    retry-backoff-ms: ${EMAIL_RETRY_BACKOFF_MS:250}
+  payment:
+    bank:
+      enabled: ${BANK_PAYMENT_ENABLED:false}
+      bank-id: ${BANK_PAYMENT_BANK_ID:970422}
+      bank-name: ${BANK_PAYMENT_BANK_NAME:MB Bank}
+      account-no: ${BANK_PAYMENT_ACCOUNT_NO:}
+      account-name: ${BANK_PAYMENT_ACCOUNT_NAME:}
+      qr-template: ${BANK_PAYMENT_QR_TEMPLATE:compact2}
+      callback-secret: ${BANK_PAYMENT_CALLBACK_SECRET:}
+      expiry-minutes: ${BANK_PAYMENT_EXPIRY_MINUTES:30}
+  storage:
+    avatar-dir: ${AVATAR_STORAGE_DIR:uploads/avatars}
+  retention:
+    auth-token-days: ${AUTH_TOKEN_RETENTION_DAYS:7}
+    audit-days: ${BUSINESS_AUDIT_RETENTION_DAYS:1825}
+    cleanup-cron: ${DATA_RETENTION_CLEANUP_CRON:0 30 2 * * *}
   security:
     # Production profiles must supply this via REMEMBER_ME_KEY or an external config source.
     remember-me-key: ${REMEMBER_ME_KEY}
     rate-limit:
+      store: ${AUTH_RATE_LIMIT_STORE:memory}
       login-max-requests: ${LOGIN_RATE_LIMIT_MAX:20}
       password-reset-max-requests: ${PASSWORD_RESET_RATE_LIMIT_MAX:5}
+      payment-callback-max-requests: ${PAYMENT_CALLBACK_RATE_LIMIT_MAX:60}
       window-seconds: ${AUTH_RATE_LIMIT_WINDOW_SECONDS:300}
 
 ---
@@ -157,8 +183,39 @@ spring:
       hibernate:
         use_nationalized_character_data: true
 
+app:
+  security:
+    rate-limit:
+      store: ${AUTH_RATE_LIMIT_STORE:jdbc}
+
 server:
+  forward-headers-strategy: framework
   servlet:
     session:
       cookie:
         secure: ${SESSION_COOKIE_SECURE:true}
+
+---
+# Production hardening is activated together with the database profile: sqlserver,prod.
+spring:
+  config:
+    activate:
+      on-profile: prod
+  thymeleaf:
+    cache: true
+  h2:
+    console:
+      enabled: false
+
+server:
+  shutdown: graceful
+  servlet:
+    session:
+      cookie:
+        secure: true
+
+management:
+  endpoint:
+    health:
+      probes:
+        enabled: true

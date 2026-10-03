@@ -81,12 +81,12 @@ class UserServiceExtendedTest {
         when(userRepository.findByPhone("0902")).thenReturn(Optional.empty());
         when(userRepository.save(any(User.class))).thenAnswer(i -> i.getArgument(0));
 
-        User updated = service.updateUserProfile(1L, "  Nguyễn An  ", " 0902 ", "  HCM  ");
+        User updated = service.updateUserProfile(1L, "  Nguyễn An  ", " 0902 ", null, null, "  HCM  ");
         assertEquals("Nguyễn An", updated.getFullName());
         assertEquals("0902", updated.getPhone());
         assertEquals("HCM", updated.getAddress());
 
-        User noOptional = service.updateUserProfile(1L, "Nguyễn An", " ", null);        assertNull(noOptional.getPhone());
+        User noOptional = service.updateUserProfile(1L, "Nguyễn An", " ", null, null, null);        assertNull(noOptional.getPhone());
         assertNull(noOptional.getAddress());
     }
 
@@ -95,12 +95,12 @@ class UserServiceExtendedTest {
         User u = user(1L);
         when(userRepository.findById(1L)).thenReturn(Optional.of(u));
         assertThrows(BusinessLogicException.class,
-                () -> service.updateUserProfile(1L, " ", null, null));
+                () -> service.updateUserProfile(1L, " ", null, null, null, null));
 
         User owner = user(2L);
         when(userRepository.findByPhone("0909")).thenReturn(Optional.of(owner));
         assertThrows(BusinessLogicException.class,
-                () -> service.updateUserProfile(1L, "Valid", "0909", null));
+                () -> service.updateUserProfile(1L, "Valid", "0909", null, null, null));
     }
 
     @Test
@@ -110,7 +110,7 @@ class UserServiceExtendedTest {
         when(userRepository.findByPhone("0901")).thenReturn(Optional.of(u));
         when(userRepository.save(any(User.class))).thenAnswer(i -> i.getArgument(0));
 
-        assertEquals("0901", service.updateUserProfile(1L, "Valid", "0901", null).getPhone());
+        assertEquals("0901", service.updateUserProfile(1L, "Valid", "0901", null, null, null).getPhone());
     }
 
     @Test

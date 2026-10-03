@@ -2,6 +2,7 @@ package com.medclinic.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import com.medclinic.util.PrescriptionValidation;
 
 import java.math.BigDecimal;
 
@@ -32,13 +33,13 @@ public class PrescriptionItem {
     @Column(nullable = false, precision = 12, scale = 2)
     private BigDecimal unitPriceAtTime;
 
-    @Column(nullable = false, length = 100)
+    @Column(nullable = false, length = PrescriptionValidation.DOSAGE_LENGTH)
     private String dosage; // e.g. 1 viên / lần
 
-    @Column(nullable = false, length = 100)
+    @Column(nullable = false, length = PrescriptionValidation.FREQUENCY_LENGTH)
     private String frequency; // e.g. 2 lần / ngày (Sáng, Tối)
 
-    @Column(length = 255)
+    @Column(length = PrescriptionValidation.INSTRUCTIONS_LENGTH)
     private String instructions; // e.g. Uống sau khi ăn no 30 phút
 
     public BigDecimal calculateSubtotal() {

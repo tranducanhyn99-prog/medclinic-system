@@ -1,0 +1,13 @@
+PHÒNG KHÁM MEDCLINIC
+
+HÓA ĐƠN THANH TOÁN
+
+Mã hóa đơn: INV-20261002-21F4935BB8624CEB
+Họ tên bệnh nhân: NGHIỆM THU DEMO
+Ngày thanh toán: 2026-10-02T07:43:07.442397
+Hình thức thanh toán: Tiền mặt tại quầy
+
+Khoản phí Thành tiền (VND)
+Phí khám 350000.00
+Phí thuốc 3000.00
+Tổng tiền 353000.00

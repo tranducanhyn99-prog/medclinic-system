@@ -1,15 +1,33 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<div th:fragment="alerts">
-    <div th:if="${successMessage != null or successMsg != null}" class="alert alert-success alert-dismissible fade show shadow-sm d-flex align-items-center" role="alert">
-        <i class="bi bi-check-circle-fill fs-5 me-2 flex-shrink-0"></i>
-        <div th:text="${successMessage != null ? successMessage : successMsg}">Thao tác thành công!</div>
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+<div th:fragment="alerts" class="mc-flash-alerts-container">
+    <div th:if="${successMessage != null or successMsg != null}"
+         class="mc-alert mc-alert--success alert alert-dismissible fade show d-flex align-items-center"
+         role="alert">
+        <div class="mc-alert-icon-box flex-shrink-0 me-3">
+            <i class="bi bi-check-lg" aria-hidden="true"></i>
+        </div>
+        <div class="mc-alert-content flex-grow-1">
+            <div class="mc-alert-title">Thành công</div>
+            <div class="mc-alert-message" th:text="${successMessage != null ? successMessage : successMsg}">Thao tác thành công!</div>
+        </div>
+        <button type="button" class="btn-close mc-alert-close" data-bs-dismiss="alert" aria-label="Đóng thông báo"></button>
+
     </div>
-    <div th:if="${errorMessage != null or errorMsg != null}" class="alert alert-danger alert-dismissible fade show shadow-sm d-flex align-items-center" role="alert">
-        <i class="bi bi-exclamation-triangle-fill fs-5 me-2 flex-shrink-0"></i>
-        <div th:text="${errorMessage != null ? errorMessage : errorMsg}">Đã xảy ra lỗi!</div>
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+
+    <div th:if="${errorMessage != null or errorMsg != null}"
+         class="mc-alert mc-alert--danger alert alert-dismissible fade show d-flex align-items-center"
+         role="alert">
+        <div class="mc-alert-icon-box flex-shrink-0 me-3">
+            <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
+        </div>
+        <div class="mc-alert-content flex-grow-1">
+            <div class="mc-alert-title">Thông báo</div>
+            <div class="mc-alert-message" th:text="${errorMessage != null ? errorMessage : errorMsg}">Đã xảy ra lỗi!</div>
+        </div>
+        <button type="button" class="btn-close mc-alert-close" data-bs-dismiss="alert" aria-label="Đóng thông báo"></button>
+
     </div>
+
 </div>
 </html>

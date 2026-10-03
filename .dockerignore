@@ -8,5 +8,11 @@ target/
 *.tmp
 ~$*.docx
 .env
+.env.*
+.codex/
+.impeccable/
+output/
+uploads/
+backups/
 MedClinic.eapx
 docs/

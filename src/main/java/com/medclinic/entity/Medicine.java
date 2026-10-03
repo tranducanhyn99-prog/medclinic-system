@@ -22,7 +22,7 @@ public class Medicine {
     private String name;
 
     @Column(nullable = false, length = 30)
-    private String unit; // Viên, Vỉ, Chai, Gói, Hộp
+    private String unit;
 
     @Column(nullable = false, precision = 12, scale = 2)
     private BigDecimal unitPrice;
@@ -36,9 +36,12 @@ public class Medicine {
 
     @Builder.Default
     @Column(nullable = false)
+    private Integer reorderLevel = 50;
+
+    @Builder.Default
+    @Column(nullable = false)
     private Boolean isActive = true;
 
     @Version
     private Long version;
 }
-

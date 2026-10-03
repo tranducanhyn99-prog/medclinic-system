@@ -52,3 +52,22 @@ Mau_Thiet_Ke_Du_Lieu/
 
 ### Local Docker secrets ###
 .env
+
+# Runtime user-uploaded content
+/uploads/
+/backups/
+.env.*
+!.env.example
+!.env.production.example
+
+# Local agent hooks, detector output and generated acceptance previews
+/.codex/
+/.impeccable/
+/output/
+# Private raw evidence stays local; curated public summaries are committed.
+/docs/evidence/private/
+/docs/evidence/backend-2026-10-01/camera-scan-result.png
+/docs/evidence/backend-2026-10-01/camera-check-in.png
+/docs/evidence/backend-2026-10-01/mailpit-otp.png
+/docs/evidence/backend-2026-10-01/smtp-magic-login.png
+/docs/evidence/backend-2026-10-01/smtp-otp-success.png

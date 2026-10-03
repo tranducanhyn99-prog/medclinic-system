@@ -2,17 +2,18 @@
 **Dự án:** MedClinic - Phòng Khám Tư Nhân  
 **Mục đích:** Đảm bảo 100% yêu cầu chức năng (FR) trong SRS được ánh xạ tới Sơ đồ Use Case, Bảng CSDL, Lớp Service/Controller và Kế hoạch kiểm thử.  
 
-**Lưu ý kiểm chứng (20/09/2026):** Cột `Test Case ID` là định danh kế hoạch, không tự khẳng định test tự động đã tồn tại. Full `mvn verify` hiện tại có **128 test case trên 55 test class: 120 executed PASS, 0 failure, 0 error và 8 environment-gated case được skip**. JaCoCo đạt **78,52% line / 64,22% branch**, vượt quality gate 70% line / 50% branch. Coverage bao gồm service/controller/security, WebSocket/STOMP hàng chờ `AFTER_COMMIT`, rollback suppression, SockJS endpoint security, public/authenticated render, concurrent booking/stock, email after-commit, PDF Unicode, SQL Server integration, acceptance E2E (`SqlServerReleaseAcceptanceEndToEndIntegrationTest`), rate limiting/audit/Actuator (`SecurityHardeningIntegrationTest`) và accessibility contracts.
+**Lưu ý kiểm chứng (23/09/2026):** Cột `Test Case ID` là định danh kế hoạch, không tự khẳng định test tự động đã tồn tại. Full `mvn verify` có **139 test case trên 59 test class: 131 PASS, 8 SQL Server environment-gated skipped** ở cấu hình mặc định; bật `RUN_SQLSERVER_IT=true` trên DB local riêng có **139/139 PASS, 0 skipped/failure/error**. JaCoCo đạt **82,12% line / 64,62% branch**, vượt quality gate 70% line / 50% branch. Coverage gồm service/controller/security, WebSocket/STOMP hàng chờ `AFTER_COMMIT`, rollback suppression, SockJS endpoint security, public/authenticated render, concurrent booking/stock, email after-commit, PDF Unicode, SQL Server integration, acceptance E2E (`SqlServerReleaseAcceptanceEndToEndIntegrationTest`), rate limiting/audit/Actuator (`SecurityHardeningIntegrationTest`) và accessibility contracts. Biên bản runtime: [15_P0_RUNTIME_ACCEPTANCE_2026-09-23.md](15_P0_RUNTIME_ACCEPTANCE_2026-09-23.md).
 
 ---
 
 | Mã Yêu Cầu (SRS) | Mô Tả Yêu Cầu Chức Năng | Use Case | Bảng CSDL Ánh Xạ | Lớp Xử Lý Chính | Test Case ID |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **FR-AUTH-01** | Đăng ký tài khoản Bệnh nhân | UC1 | `users`, `roles` | `UserService.registerPatient()`, `AuthController` | `TC-AUTH-01` |
-| **FR-AUTH-02** | Đăng nhập & RBAC Security | UC1 | `users`, `roles` | `CustomUserDetailsService`, `SecurityConfig` | `TC-AUTH-02` |
-| **FR-AUTH-03** | Quản lý Profile & Đổi mật khẩu | UC1 | `users` | `UserService.updateUserProfile()`, `AuthController` | `TC-AUTH-03` |
+| **FR-AUTH-01** | Đăng ký bệnh nhân ở trạng thái chờ xác thực email | UC1 | `users`, `roles`, `auth_verification_challenges` | `UserService.registerPatient()`, `AuthVerificationService`, `AuthController` | `OtpAuthenticationIntegrationTest` |
+| **FR-AUTH-02** | Mật khẩu + OTP trước khi tạo session; test account bypass OTP | UC1 | `users`, `roles`, `auth_verification_challenges` | `AuthenticationManager`, `AuthVerificationService`, `AuthController`, `SecurityConfig` | `OtpAuthenticationIntegrationTest`, `SecurityHardeningIntegrationTest` |
+| **FR-AUTH-03** | Chỉnh Profile, giới tính/ngày sinh, avatar và đổi mật khẩu | UC1 | `users` | `UserService`, `AvatarStorageService`, `AuthController` | `ProfileManagementIntegrationTest`, `AvatarStorageServiceImplTest`, `UserServiceExtendedTest` |
 | **FR-AUTH-04** | Quản trị viên Khóa / Mở tài khoản | UC16 | `users` | `UserService.toggleUserStatus()`, `AdminController` | `TC-AUTH-04` |
 | **FR-AUTH-05** | Khôi phục mật khẩu an toàn | UC1 | `users`, `password_reset_tokens` | `PasswordResetServiceImpl`, `AuthController` | `PasswordResetServiceTest` |
+| **FR-AUTH-06** | OTP 6 số + magic link 5 phút; resend gắn với session, giới hạn theo tài khoản và vô hiệu mã cũ | UC1 | `auth_verification_challenges`, `users` | `AuthVerificationServiceImpl`, `EmailServiceImpl`, `AuthController` | `OtpAuthenticationIntegrationTest` |
 | **FR-SPEC-01** | Quản lý Chuyên khoa (CRUD) | UC13 | `specialties` | `SpecialtyService`, `AdminController` | `TC-SPEC-01` |
 | **FR-DOC-01** | Quản lý Hồ sơ Bác sĩ | UC14 | `doctor_profiles` | `DoctorService`, `AdminController` | `TC-DOC-01` |
 | **FR-DOC-02** | Tìm kiếm & Lọc Bác sĩ | UC2 | `doctor_profiles`, `specialties` | `DoctorService.filterDoctors()`, `PublicDoctorController` | `TC-DOC-02` |
@@ -32,11 +33,14 @@
 | **FR-EXAM-04** | Xuất Đơn thuốc ra file PDF | UC5 | `medical_records`, `prescriptions` | `PdfExportService.exportPrescriptionPdf()` | `TC-PDF-01` |
 | **FR-EXAM-05** | Hàng chờ bác sĩ realtime sau commit | UC10 | `appointments` | `DoctorQueueChangedEvent`, `DoctorQueueWebSocketListener`, `WebSocketConfig`, Doctor Desk STOMP client | `DoctorQueueWebSocketListenerTest`, `DoctorQueueWebSocketAfterCommitIntegrationTest`, `MedicalRecordQueueEventTest` |
 | **FR-BILL-01** | Tự động sinh Hóa đơn viện phí | UC9 | `invoices` | `InvoiceService.createInvoiceForAppointment()` | `TC-BILL-01` |
-| **FR-BILL-02** | Thu viện phí tiền mặt; VNPAY enum dành cho roadmap và hiện bị từ chối | UC9 | `invoices` | `InvoiceService.processPayment()` | `TC-BILL-02` |
+| **FR-BILL-02** | Thu tiền mặt hoặc tạo VietQR chuyển khoản theo đúng số tiền/nội dung hóa đơn | UC9 | `invoices`, `bank_transfer_payments` | `InvoiceService`, `BankTransferPaymentService`, Staff billing controllers | `InvoiceServiceTest`, `BankTransferPaymentServiceTest` |
 | **FR-BILL-03** | Xuất Hóa đơn ra file PDF | UC9 | `invoices` | `PdfExportService.exportInvoicePdf()` | `TC-PDF-02` |
+| **FR-BILL-04** | Callback HMAC/idempotency hoặc đối soát thủ công có mã giao dịch; chỉ khi khớp mới cập nhật `PAID` | UC9 | `bank_transfer_payments`, `business_audit_events`, `invoices` | `BankPaymentCallbackController`, `BankTransferPaymentServiceImpl`, `BusinessAuditService` | `BankTransferPaymentServiceTest` |
 | **FR-ADMIN-01**| Dashboard thống kê KPI & Doanh thu| UC17 | `invoices`, `appointments` | `DashboardService.getDashboardStatistics()` | `TC-STAT-01` |
 | **FR-ADMIN-02**| Biểu đồ phân bổ ca khám & tỷ lệ trạng thái | UC17 | `appointments`, `invoices` | `DashboardService`, `AdminController` | `TC-STAT-02` |
-| **FR-ADMIN-03**| Quản lý Kho thuốc & Dược phẩm | UC15 | `medicines` | `MedicineService`, `AdminController` | `TC-MED-01` |
+| **FR-ADMIN-03**| Quản lý danh mục thuốc, giá bán và ngưỡng nhập lại | UC15 | `medicines` | `MedicineService.updateCatalog()`, `AdminController` | `MedicineServiceTest`, `AuthenticatedPortalRenderIntegrationTest` |
+| **FR-ADMIN-04**| Cảnh báo thuốc sắp hết/hết hàng theo `reorder_level` | UC15 | `medicines.reorder_level`, `medicines.stock_quantity` | `MedicineRepository.countLowStock()`, `AdminController` | `MedicineServiceTest`, portal render contract |
+| **FR-ADMIN-05**| Nhập bổ sung và audit mọi biến động kho | UC15, UC12 | `inventory_transactions`, `medicines` | `MedicineService.restock()`, `MedicalRecordServiceImpl` | `MedicineServiceTest`, `MedicineStockConcurrencyIntegrationTest` |
 
 
 ## Truy vết NFR Security & Observability
@@ -44,5 +48,6 @@
 | Mã NFR | Mục tiêu | Implementation chính | Kiểm thử / bằng chứng |
 | :--- | :--- | :--- | :--- |
 | **NFR-SEC-06** | Session/cookie và response hardening | `SecurityConfig`, `application.yml` | `SecurityHardeningIntegrationTest`, `SecurityObservabilityConfigurationTest` |
-| **NFR-SEC-07** | Rate limiting + security audit | `SensitiveEndpointRateLimitFilter`, `SecurityAuditService`, `SecurityConfig` | `SensitiveEndpointRateLimitFilterTest`, `SecurityAuditServiceTest`, `SecurityHardeningIntegrationTest` |
-| **NFR-OPS-01** | Health/metrics có kiểm soát truy cập | Spring Boot Actuator, Micrometer, `SecurityConfig`, `application.yml` | `SecurityHardeningIntegrationTest`, runtime smoke `/actuator/health` |
+| **NFR-SEC-07** | Shared rate limiting + security audit không lưu IP/principal thô | `SensitiveEndpointRateLimitFilter`, `JdbcSqlServerRateLimitStore`, `SecurityAuditService` | `SensitiveEndpointRateLimitFilterTest`, `SecurityAuditServiceTest`, SQL runtime acceptance |
+| **NFR-SEC-08** | Callback thanh toán ký HMAC, idempotent, exact amount/reference | `BankPaymentCallbackController`, `HmacSignatureVerifier`, `BankTransferPaymentServiceImpl` | `BankTransferPaymentServiceTest` |
+| **NFR-OPS-01/02** | Health/metrics, email retry, backup/restore và retention | Actuator, `EmailDeliveryMonitor`, `SecurityDataRetentionJob`, `ops/*.ps1` | `EmailServiceImplTest`, restore drill, runtime smoke `/actuator/health` |

@@ -55,6 +55,24 @@ class GlobalExceptionHandlerTest {
 
         assertEquals("error/error", view);
         assertEquals("500 - Lỗi Hệ Thống", model.getAttribute("errorCode"));
-        assertEquals("Boom", model.getAttribute("errorMessage"));
+        assertEquals("Không thể xử lý yêu cầu. Vui lòng thử lại sau.", model.getAttribute("errorMessage"));
+    }
+
+    @Test
+    void rejectsExternalAndEncodedRedirects() {
+        for (String referer : new String[]{"https://example.test/x", "//example.test/x", "/%2fexample.test", "javascript:alert(1)", "/\\example.test"}) {
+            MockHttpServletRequest request = new MockHttpServletRequest();
+            request.addHeader("Referer", referer);
+            assertEquals("redirect:/", handler.handleBusinessLogic(new BusinessLogicException("Conflict"),
+                    request, new RedirectAttributesModelMap()));
+        }
+    }
+
+    @Test
+    void convertsSameOriginRefererToInternalPath() {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.addHeader("Referer", "http://localhost/patient/booking?doctorId=1");
+        assertEquals("redirect:/patient/booking?doctorId=1", handler.handleBusinessLogic(
+                new BusinessLogicException("Conflict"), request, new RedirectAttributesModelMap()));
     }
 }

@@ -38,6 +38,9 @@ public class PublicDoctorController {
     @GetMapping("/{id}")
     public String doctorDetail(@PathVariable Long id, Model model) {
         DoctorProfile doctor = doctorService.findById(id);
+        if (!com.medclinic.util.DoctorAvailability.acceptsBookings(doctor)) {
+            throw new com.medclinic.exception.ResourceNotFoundException("Bác sĩ hiện không nhận lịch khám.");
+        }
         model.addAttribute("doctor", doctor);
         return "doctors/detail";
     }

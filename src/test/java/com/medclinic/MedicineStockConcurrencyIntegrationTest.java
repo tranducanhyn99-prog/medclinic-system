@@ -35,6 +35,7 @@ class MedicineStockConcurrencyIntegrationTest {
     @Autowired private AppointmentRepository appointments;
     @Autowired private MedicalRecordRepository records;
     @Autowired private MedicineRepository medicines;
+    @Autowired private InventoryTransactionRepository inventoryTransactions;
     @Autowired private UserRepository users;
 
     @Test
@@ -71,6 +72,9 @@ class MedicineStockConcurrencyIntegrationTest {
         assertEquals(1, successes.get());
         assertEquals(1, businessFailures.get());
         assertEquals(0, medicines.findById(medicine.getId()).orElseThrow().getStockQuantity());
+        assertEquals(1, inventoryTransactions.findAll().stream()
+                .filter(tx -> tx.getMedicine().getId().equals(medicine.getId()) && tx.getType() == InventoryTransactionType.DISPENSE)
+                .count());
         long recordCount = List.of(first, second).stream().filter(a -> records.findByAppointmentId(a.getId()).isPresent()).count();
         assertEquals(1, recordCount);
         long completedCount = List.of(first, second).stream()

@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -20,6 +21,7 @@ import org.springframework.security.web.authentication.AuthenticationFailureHand
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
+import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.header.writers.StaticHeadersWriter;
 
 @Configuration
@@ -40,13 +42,28 @@ public class SecurityConfig {
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
+        PasswordEncoder bcrypt = new BCryptPasswordEncoder();
+        return new PasswordEncoder() {
+            @Override
+            public String encode(CharSequence rawPassword) {
+                if (!com.medclinic.util.PasswordPolicy.fitsBcrypt(rawPassword)) {
+                    throw new IllegalArgumentException(com.medclinic.util.PasswordPolicy.MESSAGE);
+                }
+                return bcrypt.encode(rawPassword);
+            }
+            @Override
+            public boolean matches(CharSequence rawPassword, String encodedPassword) {
+                // Keep existing BCrypt hashes and short demo passwords compatible, never truncate input.
+                return com.medclinic.util.PasswordPolicy.fitsBcrypt(rawPassword)
+                        && bcrypt.matches(rawPassword, encodedPassword);
+            }
+            @Override public boolean upgradeEncoding(String encodedPassword) { return bcrypt.upgradeEncoding(encodedPassword); }
+        };
     }
 
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-        authProvider.setUserDetailsService(userDetailsService);
+        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider(userDetailsService);
         authProvider.setPasswordEncoder(passwordEncoder());
         return authProvider;
     }
@@ -105,11 +122,14 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .authorizeHttpRequests(auth -> auth
+                .requestMatchers(HttpMethod.GET, "/patient/booking").permitAll()
                 .requestMatchers(
                     "/", "/home", "/about", "/specialties/**", "/doctors/**",
-                    "/login", "/register", "/forgot-password", "/reset-password", "/css/**", "/js/**", "/images/**",
-                    "/webjars/**", "/h2-console/**", "/error/**", "/api/public/**"
+                    "/login", "/register", "/auth/**", "/forgot-password", "/reset-password", "/css/**", "/js/**", "/images/**",
+                    "/manifest.json", "/sw.js", "/offline.html", "/favicon.ico",
+                    "/webjars/**", "/h2-console/**", "/error", "/error/**", "/api/public/**"
                 ).permitAll()
+                .requestMatchers("/api/payments/bank/callback").permitAll()
                 .requestMatchers("/actuator/health").permitAll()
                 .requestMatchers("/actuator/**").hasRole("ADMIN")
                 .requestMatchers("/ws/**").authenticated()
@@ -119,29 +139,31 @@ public class SecurityConfig {
                 .requestMatchers("/admin/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
             )
-            .formLogin(form -> form
-                .loginPage("/login")
-                .loginProcessingUrl("/login")
-                .successHandler(customAuthenticationSuccessHandler())
-                .failureHandler(customAuthenticationFailureHandler())
-                .permitAll()
+            .exceptionHandling(exceptions -> exceptions
+                .authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/login"))
+                .accessDeniedHandler((request, response, accessDeniedException) -> {
+                    response.setStatus(403);
+                    String path = request.getRequestURI().substring(request.getContextPath().length());
+                    String accept = request.getHeader("Accept");
+                    if (path.startsWith("/api/") || path.startsWith("/actuator/") || (accept != null && accept.contains("json"))) {
+                        response.setContentType("application/json");
+                        response.setCharacterEncoding("UTF-8");
+                        response.getWriter().write("{\"code\":\"FORBIDDEN\",\"message\":\"Bạn không có quyền thực hiện yêu cầu.\"}");
+                    } else {
+                        request.getRequestDispatcher("/error/403").forward(request, response);
+                    }
+                })
             )
             .logout(logout -> logout
                 .logoutUrl("/logout")
                 .logoutSuccessHandler(customLogoutSuccessHandler())
                 .invalidateHttpSession(true)
-                .deleteCookies("JSESSIONID")
+                .deleteCookies("JSESSIONID", "remember-me")
                 .permitAll()
-            )
-            .rememberMe(remember -> remember
-                .key(rememberMeKey)
-                .tokenValiditySeconds(86400 * 14) // 14 days
-                .useSecureCookie(secureCookie)
-                .userDetailsService(userDetailsService)
             )
             .csrf(csrf -> csrf
                 // Browser API requests use the same session cookie and must retain CSRF protection.
-                .ignoringRequestMatchers("/h2-console/**", "/ws/**")
+                .ignoringRequestMatchers("/h2-console/**", "/ws/**", "/api/payments/bank/callback")
             )
             .sessionManagement(session -> session
                 .sessionFixation(fixation -> fixation.migrateSession())
@@ -150,8 +172,9 @@ public class SecurityConfig {
                 .frameOptions(frame -> frame.sameOrigin()) // Allow H2 Console iframe
                 .addHeaderWriter(new StaticHeadersWriter(
                         "Referrer-Policy", "strict-origin-when-cross-origin"))
-                .addHeaderWriter(new StaticHeadersWriter(
-                        "Permissions-Policy", "camera=(), microphone=(), geolocation=()"))
+                .addHeaderWriter((request, response) -> response.setHeader("Permissions-Policy",
+                        "camera=" + (request.getRequestURI().equals(request.getContextPath() + "/staff/reception")
+                                ? "(self)" : "()") + ", microphone=(), geolocation=()"))
             )
             .addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class);
 

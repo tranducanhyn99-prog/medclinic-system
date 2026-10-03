@@ -1,0 +1,265 @@
+{
+  "inspection": [
+    {
+      "brokenImages": [],
+      "brokenRefs": [],
+      "duplicateIds": [],
+      "failures": [
+        {
+          "bg": [
+            248,
+            215,
+            218
+          ],
+          "classes": "",
+          "fg": "rgb(14, 116, 144)",
+          "font": "16px",
+          "ratio": 4.01,
+          "tag": "A",
+          "text": "Kiểm tra triệu chứng",
+          "weight": "400"
+        },
+        {
+          "bg": [
+            248,
+            215,
+            218
+          ],
+          "classes": "",
+          "fg": "rgb(14, 116, 144)",
+          "font": "16px",
+          "ratio": 4.01,
+          "tag": "A",
+          "text": "Kiểm tra chẩn đoán",
+          "weight": "400"
+        }
+      ],
+      "gradients": 4,
+      "overflow": false,
+      "path": "/examination-errors.html",
+      "tested": 65,
+      "theme": "light",
+      "unlabeled": [],
+      "width": 1440
+    },
+    {
+      "brokenImages": [],
+      "brokenRefs": [],
+      "duplicateIds": [],
+      "failures": [],
+      "gradients": 1,
+      "overflow": false,
+      "path": "/examination-errors.html",
+      "tested": 72,
+      "theme": "dark",
+      "unlabeled": [],
+      "width": 390
+    },
+    {
+      "brokenImages": [],
+      "brokenRefs": [],
+      "duplicateIds": [],
+      "failures": [],
+      "gradients": 4,
+      "overflow": false,
+      "path": "/bank-pending.html",
+      "tested": 41,
+      "theme": "dark",
+      "unlabeled": [],
+      "width": 1440
+    },
+    {
+      "brokenImages": [],
+      "brokenRefs": [],
+      "duplicateIds": [],
+      "failures": [
+        {
+          "bg": [
+            255,
+            255,
+            255
+          ],
+          "classes": "btn btn-outline-success w-100",
+          "fg": "rgb(110, 231, 183)",
+          "font": "16px",
+          "ratio": 1.52,
+          "tag": "BUTTON",
+          "text": "Xác nhận đã đối soát",
+          "weight": "600"
+        }
+      ],
+      "gradients": 0,
+      "overflow": false,
+      "path": "/bank-pending.html",
+      "tested": 33,
+      "theme": "light",
+      "unlabeled": [],
+      "width": 390
+    },
+    {
+      "brokenImages": [],
+      "brokenRefs": [],
+      "duplicateIds": [],
+      "failures": [],
+      "gradients": 0,
+      "overflow": false,
+      "path": "/bank-expired.html",
+      "tested": 29,
+      "theme": "light",
+      "unlabeled": [],
+      "width": 390
+    },
+    {
+      "brokenImages": [],
+      "brokenRefs": [],
+      "duplicateIds": [],
+      "failures": [
+        {
+          "bg": [
+            15,
+            23,
+            42
+          ],
+          "classes": "btn btn-outline-success w-100",
+          "fg": "rgb(4, 120, 87)",
+          "font": "16px",
+          "ratio": 3.26,
+          "tag": "BUTTON",
+          "text": "Xác nhận đã đối soát",
+          "weight": "600"
+        }
+      ],
+      "gradients": 4,
+      "overflow": false,
+      "path": "/bank-expired.html",
+      "tested": 37,
+      "theme": "dark",
+      "unlabeled": [],
+      "width": 1440
+    },
+    {
+      "brokenImages": [],
+      "brokenRefs": [],
+      "duplicateIds": [],
+      "failures": [],
+      "gradients": 0,
+      "overflow": false,
+      "path": "/bank-confirmed.html",
+      "tested": 25,
+      "theme": "dark",
+      "unlabeled": [],
+      "width": 390
+    },
+    {
+      "brokenImages": [],
+      "brokenRefs": [],
+      "duplicateIds": [],
+      "failures": [],
+      "gradients": 4,
+      "overflow": false,
+      "path": "/bank-confirmed.html",
+      "tested": 33,
+      "theme": "light",
+      "unlabeled": [],
+      "width": 1440
+    },
+    {
+      "brokenImages": [],
+      "brokenRefs": [],
+      "duplicateIds": [],
+      "failures": [],
+      "gradients": 0,
+      "overflow": false,
+      "path": "/bank-rejected.html",
+      "tested": 25,
+      "theme": "light",
+      "unlabeled": [],
+      "width": 390
+    },
+    {
+      "brokenImages": [],
+      "brokenRefs": [],
+      "duplicateIds": [],
+      "failures": [],
+      "gradients": 4,
+      "overflow": false,
+      "path": "/bank-rejected.html",
+      "tested": 33,
+      "theme": "dark",
+      "unlabeled": [],
+      "width": 1440
+    },
+    {
+      "brokenImages": [],
+      "brokenRefs": [],
+      "duplicateIds": [],
+      "failures": [],
+      "gradients": 117,
+      "overflow": false,
+      "path": "/",
+      "tested": 34,
+      "theme": "light",
+      "unlabeled": [],
+      "width": 1440
+    }
+  ],
+  "confirmation": [
+    {
+      "brokenImages": [],
+      "brokenRefs": [],
+      "duplicateIds": [],
+      "failures": [],
+      "gradients": 116,
+      "overflow": false,
+      "path": "/",
+      "tested": 33,
+      "theme": "light",
+      "unlabeled": [],
+      "width": 1440
+    },
+    {
+      "brokenImages": [],
+      "brokenRefs": [],
+      "duplicateIds": [],
+      "failures": [],
+      "gradients": 4,
+      "overflow": false,
+      "path": "/bank-expired.html",
+      "tested": 37,
+      "theme": "dark",
+      "unlabeled": [],
+      "width": 1440
+    },
+    {
+      "brokenImages": [],
+      "brokenRefs": [],
+      "duplicateIds": [],
+      "failures": [],
+      "gradients": 4,
+      "overflow": false,
+      "path": "/examination-errors.html",
+      "tested": 65,
+      "theme": "light",
+      "unlabeled": [],
+      "width": 1440
+    },
+    {
+      "brokenImages": [],
+      "brokenRefs": [],
+      "duplicateIds": [],
+      "failures": [],
+      "gradients": 1,
+      "overflow": false,
+      "path": "/examination-errors.html",
+      "tested": 57,
+      "theme": "dark",
+      "unlabeled": [],
+      "width": 390
+    }
+  ],
+  "notes": [
+    "Theme-transition intermediate captures are preserved as observations, not stable contrast failures.",
+    "Samples are rendered from isolated H2 tests; no live transfer or clinical save performed.",
+    "User responded Đã ổn to zoom/screen-reader/reduced-motion/touch guidance; no device or browser version supplied."
+  ]
+}

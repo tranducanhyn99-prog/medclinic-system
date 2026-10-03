@@ -76,7 +76,7 @@ class PasswordResetServiceTest {
                 .tokenHash(hash(rawToken))
                 .expiresAt(LocalDateTime.now().plusHours(1))
                 .build();
-        when(passwordResetTokenRepository.findByTokenHash(hash(rawToken))).thenReturn(Optional.of(token));
+        when(passwordResetTokenRepository.findByTokenHashForUpdate(hash(rawToken))).thenReturn(Optional.of(token));
         when(passwordEncoder.encode("newpassword")).thenReturn("encoded-password");
 
         passwordResetService.resetPassword(rawToken, "newpassword", "newpassword");
@@ -96,7 +96,7 @@ class PasswordResetServiceTest {
                 .tokenHash(hash(rawToken))
                 .expiresAt(LocalDateTime.now().minusMinutes(1))
                 .build();
-        when(passwordResetTokenRepository.findByTokenHash(hash(rawToken))).thenReturn(Optional.of(token));
+        when(passwordResetTokenRepository.findByTokenHashForUpdate(hash(rawToken))).thenReturn(Optional.of(token));
 
         BusinessLogicException exception = assertThrows(BusinessLogicException.class,
                 () -> passwordResetService.resetPassword(rawToken, "newpassword", "newpassword"));

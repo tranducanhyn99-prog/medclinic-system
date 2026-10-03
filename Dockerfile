@@ -8,9 +8,12 @@ COPY src ./src
 RUN mvn --batch-mode --no-transfer-progress -DskipTests package
 
 FROM eclipse-temurin:21-jre
+ENV TZ=Asia/Ho_Chi_Minh
 WORKDIR /app
 
-RUN useradd --system --uid 10001 medclinic
+RUN useradd --system --uid 10001 medclinic \
+    && mkdir -p /app/uploads/avatars \
+    && chown -R medclinic:medclinic /app/uploads
 COPY --from=build /workspace/target/medclinic-system-*.jar /app/medclinic.jar
 
 USER medclinic

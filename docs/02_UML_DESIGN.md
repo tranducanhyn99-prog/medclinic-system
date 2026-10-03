@@ -12,7 +12,7 @@
 ```mermaid
 graph TD
     subgraph MedClinic System
-        UC1[Đăng ký, Đăng nhập & Khôi phục mật khẩu]
+        UC1[Đăng ký, Đăng nhập, OTP email & Khôi phục mật khẩu]
         UC2[Tra cứu Bác sĩ & Chuyên khoa]
         UC3[Đặt lịch khám theo Khung giờ]
         UC4[Quản lý Lịch hẹn & Hủy lịch]
@@ -62,6 +62,16 @@ graph TD
 ---
 
 ## 2. ĐẶC TẢ USE CASE CHI TIẾT (USE CASE SPECIFICATIONS)
+
+### 2.0. Đặc tả Use Case UC1: Đăng ký, Đăng nhập & Xác thực OTP email
+- **Actor:** Khách/Bệnh nhân và các tài khoản hệ thống.
+- **Main Flow - Đăng ký:** Người dùng nhập thông tin tài khoản; hệ thống tạo user `is_active=false`, `email_verified=false`, phát OTP 6 số và magic link qua email. Khi OTP/link hợp lệ, user được kích hoạt, tạo session và chuyển vào Patient Portal.
+- **Main Flow - Đăng nhập:** Hệ thống kiểm tra username/email + mật khẩu trước. Với tài khoản thường, chưa tạo SecurityContext mà phát challenge `LOGIN`; chỉ sau OTP/magic link hợp lệ mới tạo session. Seed/test account có `otp_bypass=true` được vào trực tiếp.
+- **OTP/Magic Link:** Cùng hạn 5 phút, dùng một lần; OTP lưu BCrypt hash, magic token lưu SHA-256 hash; tối đa 5 lần nhập sai. `Gửi lại OTP` vô hiệu challenge cũ và tạo challenge mới.
+- **Email CTA:** Nút `Xác nhận và đăng nhập` gọi `/auth/verify-email?token=...`; xác thực thành công tự chuyển về portal đúng role và hiện trạng thái đăng nhập thành công.
+- **Security:** Không dùng Remember-me cho luồng đăng nhập mới để tránh bỏ qua OTP. Challenge được ghi database và khóa pessimistic khi consume để hạn chế dùng đồng thời.
+
+---
 
 ### 2.1. Đặc tả Use Case UC3: Đặt lịch khám trực tuyến (Online Appointment Booking)
 - **Actor:** Bệnh nhân (`ROLE_PATIENT`)
@@ -119,6 +129,22 @@ graph TD
 - **Alternate Flows:**
   - *7a. Thuốc trong kho không đủ số lượng:* Hệ thống cảnh báo thông báo thuốc không đủ tồn kho để Bác sĩ điều chỉnh số lượng hoặc đổi thuốc khác.
 - **Post-conditions:** Hồ sơ bệnh án và đơn thuốc được lưu trữ, hóa đơn được tạo chờ thanh toán.
+
+---
+
+### 2.4. Đặc tả Use Case UC15: Quản lý Kho thuốc & Nhập bổ sung
+- **Actor:** Quản trị viên (`ROLE_ADMIN`)
+- **Pre-conditions:** Admin đã đăng nhập; thuốc đã tồn tại nếu thực hiện nhập bổ sung.
+- **Main Flow:**
+  1. Admin mở trang Kho thuốc và xem tồn hiện tại, ngưỡng nhập lại và trạng thái từng thuốc.
+  2. Hệ thống đánh dấu `Hết hàng` khi tồn bằng 0, `Sắp hết` khi tồn nhỏ hơn hoặc bằng `reorderLevel`, ngược lại là `Bình thường`.
+  3. Admin chọn `Nhập thêm`, nhập số lượng lớn hơn 0, giá nhập tùy chọn và ghi chú phiếu nhập.
+  4. Hệ thống khóa bản ghi thuốc, tăng tồn kho nguyên tử và lưu `InventoryTransaction` loại `RESTOCK` với tồn trước/sau và người thực hiện.
+  5. Lịch sử giao dịch kho hiển thị các lần nhập và các lần xuất theo đơn thuốc (`DISPENSE`).
+- **Alternate Flows:**
+  - *3a. Số lượng nhập <= 0 hoặc giá nhập âm:* từ chối giao dịch, tồn kho không thay đổi.
+  - *4a. Có cập nhật đồng thời:* thao tác sử dụng pessimistic lock để tránh lost update.
+- **Post-conditions:** Tồn kho và nhật ký giao dịch nhất quán trong cùng transaction; Dashboard phản ánh lại số thuốc dưới ngưỡng.
 
 ---
 

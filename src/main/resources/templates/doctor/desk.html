@@ -7,14 +7,17 @@
 </head>
 <body>
 <div layout:fragment="content">
+    <div th:if="${param.closed != null}" class="alert alert-info" role="status">
+        Ca khám đã hoàn tất và bệnh án đã được lưu. Bạn đã trở về bàn khám.
+    </div>
 
     <!-- Top Header -->
-    <div class="d-flex flex-wrap align-items-center justify-content-between mb-4 pb-2 border-bottom">
+    <div class="mc-page-header align-items-end border-bottom pb-3">
         <div>
-            <h1 class="h3 fw-bold text-dark mb-1">
+            <h1 class="mc-page-title">
                 <i class="bi bi-heart-pulse-fill text-danger me-2"></i>Bàn Khám Bác Sĩ & Hàng Chờ Hôm Nay
             </h1>
-            <div class="text-secondary small">
+            <div class="mc-page-subtitle">
                 Bác sĩ: <strong class="text-dark" th:text="${doctorProfile.title + ' ' + doctorProfile.user.fullName}">BS. Nguyễn Văn A</strong>
                 • Chuyên khoa: <span class="badge bg-primary-subtle text-primary" th:text="${doctorProfile.specialty.name}">Nội tổng quát</span>
             </div>
@@ -28,60 +31,60 @@
     </div>
 
     <!-- Metric Bar -->
-    <div class="row g-3 mb-4">
-        <div class="col-sm-6 col-lg-3">
-            <div class="card card-portal p-3 border-start border-4 border-primary">
+    <div class="row g-3 mb-4 mc-queue-stats">
+        <div class="col-6 col-lg-3">
+            <div class="mc-kpi-card">
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
                         <div class="text-muted small">Tổng Lượt Khám</div>
-                        <div class="h4 fw-bold mb-0 text-dark" th:text="${#lists.size(todayQueue)}">0</div>
+                        <div class="mc-kpi-value" th:text="${#lists.size(todayQueue)}">0</div>
                     </div>
-                    <div class="rounded-circle bg-primary bg-opacity-10 text-primary p-2">
+                    <div class="mc-kpi-icon">
                         <i class="bi bi-people fs-4"></i>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="col-sm-6 col-lg-3">
-            <div class="card card-portal p-3 border-start border-4 border-warning">
+        <div class="col-6 col-lg-3">
+            <div class="mc-kpi-card">
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
                         <div class="text-muted small">Đang Chờ Gọi Khám</div>
-                        <div class="h4 fw-bold mb-0 text-warning"
+                        <div class="mc-kpi-value"
                             th:text="${#lists.size(todayQueue.?[status.name() == 'CHECKED_IN'])}">0</div>
                     </div>
-                    <div class="rounded-circle bg-warning bg-opacity-10 text-warning p-2">
+                    <div class="mc-kpi-icon">
                         <i class="bi bi-hourglass-split fs-4"></i>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="col-sm-6 col-lg-3">
-            <div class="card card-portal p-3 border-start border-4 border-info">
+        <div class="col-6 col-lg-3">
+            <div class="mc-kpi-card">
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
                         <div class="text-muted small">Đang Thăm Khám</div>
-                        <div class="h4 fw-bold mb-0 text-info"
+                        <div class="mc-kpi-value"
                             th:text="${#lists.size(todayQueue.?[status.name() == 'IN_PROGRESS'])}">0</div>
                     </div>
-                    <div class="rounded-circle bg-info bg-opacity-10 text-info p-2">
+                    <div class="mc-kpi-icon">
                         <i class="bi bi-activity fs-4"></i>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="col-sm-6 col-lg-3">
-            <div class="card card-portal p-3 border-start border-4 border-success">
+        <div class="col-6 col-lg-3">
+            <div class="mc-kpi-card">
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
                         <div class="text-muted small">Đã Khám Xong</div>
-                        <div class="h4 fw-bold mb-0 text-success"
+                        <div class="mc-kpi-value"
                             th:text="${#lists.size(todayQueue.?[status.name() == 'COMPLETED'])}">0</div>
                     </div>
-                    <div class="rounded-circle bg-success bg-opacity-10 text-success p-2">
+                    <div class="mc-kpi-icon">
                         <i class="bi bi-check2-circle fs-4"></i>
                     </div>
                 </div>
@@ -90,20 +93,36 @@
     </div>
 
     <!-- Today Queue Table -->
-    <div class="card card-portal shadow-sm">
-        <div class="card-header bg-white py-3 border-bottom d-flex align-items-center justify-content-between">
-            <h2 class="h6 fw-bold text-dark mb-0">
+    <div class="mc-data-card">
+        <div class="mc-data-toolbar">
+            <h2 class="mc-data-title">
                 <i class="bi bi-list-ol text-primary me-2"></i>Hàng Chờ Khám Lâm Sàng Hôm Nay
             </h2>
             <div class="d-flex align-items-center gap-2">
                 <span id="doctorQueueRealtimeStatus" class="badge text-bg-light border" role="status" aria-live="polite">
-                    <i class="bi bi-broadcast-pin me-1"></i> Đang kết nối realtime
+                    <i class="bi bi-broadcast-pin me-1"></i> Đang kết nối cập nhật
                 </span>
-                <button class="btn btn-sm btn-light border" id="refreshDoctorQueueBtn" type="button" aria-label="L?m m?i h?ng ch? kh?m">
+                <button class="btn btn-sm btn-light border" id="refreshDoctorQueueBtn" type="button" aria-label="L&#224;m m&#7899;i h&#224;ng ch&#7901; kh&#225;m">
                     <i class="bi bi-arrow-clockwise me-1"></i> Làm mới danh sách
                 </button>
             </div>
         </div>
+
+        <div id="queueFilters" class="mc-queue-controls" hidden th:unless="${#lists.isEmpty(todayQueue)}">
+            <label class="visually-hidden" for="queuePatientSearch">Tìm trong hàng chờ</label>
+            <input id="queuePatientSearch" type="search" class="form-control" placeholder="Tìm tên bệnh nhân, mã hẹn hoặc số điện thoại" autocomplete="off">
+            <label class="visually-hidden" for="queueViewFilter">Danh sách bệnh nhân</label>
+            <select id="queueViewFilter" class="form-select">
+                <option value="active">Cần khám</option>
+                <option value="completed">Đã hoàn tất</option>
+                <option value="all">Tất cả hôm nay</option>
+            </select>
+        </div>
+        <div class="mc-queue-updated">
+            Dữ liệu lúc <time th:text="${#temporals.format(#temporals.createNow(), 'HH:mm:ss')}">08:00:00</time>
+            <span id="queueResultCount" role="status" aria-live="polite"></span>
+        </div>
+        <div id="queueFilteredEmpty" hidden class="p-4 text-center text-muted">Không có bệnh nhân phù hợp. Chọn “Tất cả hôm nay” hoặc xóa từ khóa để xem lại.</div>
 
         <div class="card-body p-0">
             <!-- Empty State -->
@@ -115,7 +134,7 @@
 
             <!-- Table -->
             <div th:unless="${#lists.isEmpty(todayQueue)}" class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
+                <table class="table mc-data-table align-middle mb-0">
                     <thead class="table-light small text-uppercase">
                         <tr>
                             <th style="width: 100px;" class="text-center">Số TT</th>
@@ -127,7 +146,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr th:each="apt : ${todayQueue}"
+                        <tr th:each="apt : ${todayQueue}" th:attr="data-queue-state=${apt.status.name()}"
                             th:classappend="${apt.status.name() == 'CHECKED_IN' ? 'table-warning bg-opacity-25' :
                                             (apt.status.name() == 'IN_PROGRESS' ? 'table-info bg-opacity-25' : '')}">
 
@@ -141,12 +160,12 @@
                             <!-- Time Slot -->
                             <td>
                                 <span class="fw-semibold text-dark" th:text="${apt.timeSlot.timeRangeFormatted}">08:00 - 08:30</span>
-                                <div class="text-muted" style="font-size: 0.75rem;" th:text="${apt.bookingCode}">MED-xxxx</div>
+                                <div class="mc-cell-meta" th:text="${apt.bookingCode}">MED-xxxx</div>
                             </td>
 
                             <!-- Patient Info -->
                             <td>
-                                <div class="fw-bold text-dark fs-6" th:text="${apt.patient.fullName}">Nguyễn Văn Bệnh Nhân</div>
+                                <div class="mc-cell-title" th:text="${apt.patient.fullName}">Nguyễn Văn Bệnh Nhân</div>
                                 <div class="small text-secondary">
                                     <span th:text="${apt.patient.gender != null ? apt.patient.gender.displayName : 'Chưa rõ'}">Nam</span> •
                                     <span th:text="${'SĐT: ' + (apt.patient.phone != null ? apt.patient.phone : 'Chưa có')}">0901234567</span>
@@ -187,8 +206,8 @@
                                     <span>Tiếp tục khám</span>
                                 </a>
 
-                                <span th:if="${apt.status.name() == 'COMPLETED'}" class="badge bg-success text-white py-1.5 px-2.5">
-                                    <i class="bi bi-check-all me-1"></i> Đã hoàn tất
+                                <span th:if="${apt.status.name() == 'COMPLETED'}" class="small text-muted">
+                                    Bệnh án đã lưu
                                 </span>
                             </td>
                         </tr>
@@ -201,6 +220,7 @@
 </div>
 
 <div layout:fragment="scripts">
+<script th:src="@{/js/doctor-queue.js(v=4.0)}"></script>
 <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.6.1/dist/sockjs.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.2.1/bundles/stomp.umd.min.js"></script>
 <script>
@@ -214,7 +234,7 @@ refreshDoctorQueueButton?.addEventListener('click', function() {
 
 function setDoctorQueueRealtimeStatus(text, active) {
     if (!doctorQueueRealtimeStatus) return;
-    doctorQueueRealtimeStatus.innerHTML = `<i class="bi ${active ? 'bi-broadcast-pin' : 'bi-wifi-off'} me-1"></i>${text}`;
+    doctorQueueRealtimeStatus.innerHTML = `<i class="bi ${active ? 'bi-broadcast-pin' : 'bi-wifi-off'} me-1" aria-hidden="true"></i>${text}`;
     doctorQueueRealtimeStatus.classList.toggle('text-bg-success', active);
     doctorQueueRealtimeStatus.classList.toggle('text-bg-light', !active);
 }
@@ -228,7 +248,7 @@ if (window.SockJS && window.StompJs) {
     });
 
     queueClient.onConnect = function() {
-        setDoctorQueueRealtimeStatus('Realtime đang hoạt động', true);
+        setDoctorQueueRealtimeStatus('Đang nhận cập nhật', true);
         queueClient.subscribe('/user/queue/doctor', function() {
             setDoctorQueueRealtimeStatus('Hàng chờ vừa thay đổi, đang cập nhật...', true);
             if (doctorQueueReloadTimer === null) {
@@ -238,15 +258,15 @@ if (window.SockJS && window.StompJs) {
     };
 
     queueClient.onWebSocketClose = function() {
-        setDoctorQueueRealtimeStatus('Đang kết nối lại realtime', false);
+        setDoctorQueueRealtimeStatus('Mất kết nối. Có thể làm mới danh sách.', false);
     };
     queueClient.onStompError = function() {
-        setDoctorQueueRealtimeStatus('Realtime tạm gián đoạn', false);
+        setDoctorQueueRealtimeStatus('Cập nhật tạm gián đoạn. Hãy làm mới.', false);
     };
     queueClient.activate();
     window.addEventListener('beforeunload', () => void queueClient.deactivate());
 } else {
-    setDoctorQueueRealtimeStatus('Không tải được realtime client', false);
+    setDoctorQueueRealtimeStatus('Chưa nhận được cập nhật. Hãy làm mới.', false);
 }
 </script>
 </div>

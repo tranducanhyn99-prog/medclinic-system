@@ -37,7 +37,7 @@ class WalkInSecurityIntegrationTest {
     @WithMockUser(roles = "STAFF")
     void newWalkInIsDisabledAndNeverUsesTheDefaultCredential() {
         DoctorProfile doctor = doctors.findAll().getFirst();
-        LocalDate date = LocalDate.now().plusDays(80);
+        LocalDate date = LocalDate.now().plusDays(14);
         DoctorSchedule schedule = schedules.save(DoctorSchedule.builder().doctor(doctor).workDate(date)
                 .shift(ShiftType.AFTERNOON).maxPatients(8).build());
         TimeSlot slot = slots.save(TimeSlot.builder().schedule(schedule).startTime(LocalTime.of(13, 0))

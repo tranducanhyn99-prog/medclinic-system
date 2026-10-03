@@ -30,6 +30,9 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class AppointmentServiceImpl implements AppointmentService {
+    private java.time.Clock businessClock = java.time.Clock.system(java.time.ZoneId.of("Asia/Ho_Chi_Minh"));
+    @org.springframework.beans.factory.annotation.Autowired
+    public void setBusinessClock(java.time.Clock clock) { this.businessClock = clock; }
 
     private final AppointmentRepository appointmentRepository;
     private final TimeSlotRepository timeSlotRepository;
@@ -44,10 +47,17 @@ public class AppointmentServiceImpl implements AppointmentService {
     @PreAuthorize("#patientId == principal.id or hasAnyRole('STAFF','ADMIN')")
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public Appointment bookAppointment(Long patientId, Long doctorId, LocalDate date, Long timeSlotId, String reason) {
+        LocalDate today = LocalDate.now(businessClock);
         User patient = userRepository.findById(patientId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy bệnh nhân"));
         DoctorProfile doctor = doctorProfileRepository.findById(doctorId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy bác sĩ"));
+        if (!com.medclinic.util.DoctorAvailability.acceptsBookings(doctor)) {
+            throw new BusinessLogicException("Bác sĩ hoặc chuyên khoa hiện không nhận lịch khám.");
+        }
+        if (date == null || date.isBefore(today) || date.isAfter(today.plusDays(14))) {
+            throw new BusinessLogicException("Ngày khám phải nằm trong 14 ngày kể từ hôm nay.");
+        }
         TimeSlot slot = timeSlotRepository.findByIdForUpdate(timeSlotId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy khung giờ"));
 
@@ -56,10 +66,7 @@ public class AppointmentServiceImpl implements AppointmentService {
                 || !slot.getSchedule().getWorkDate().equals(date)) {
             throw new BusinessLogicException("Khung giờ không thuộc bác sĩ hoặc ngày khám đã chọn.");
         }
-        if (date == null || date.isBefore(LocalDate.now())) {
-            throw new BusinessLogicException("Ngày khám không thể ở quá khứ.");
-        }
-        if (date.equals(LocalDate.now()) && !slot.getStartTime().isAfter(LocalTime.now())) {
+        if (date.equals(today) && !slot.getStartTime().isAfter(LocalTime.now(businessClock))) {
             throw new BusinessLogicException("Khung giờ đã bắt đầu hoặc đã qua, vui lòng chọn khung giờ khác.");
         }
         if (reason == null || reason.trim().isEmpty() || reason.trim().length() > 1000) {
