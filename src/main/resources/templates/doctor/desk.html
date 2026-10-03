@@ -7,6 +7,9 @@
 </head>
 <body>
 <div layout:fragment="content">
+    <div th:if="${param.closed != null}" class="alert alert-info" role="status">
+        Ca khám đã hoàn tất và bệnh án đã được lưu. Bạn đã trở về bàn khám.
+    </div>
 
     <!-- Top Header -->
     <div class="mc-page-header align-items-end border-bottom pb-3">
@@ -28,8 +31,8 @@
     </div>
 
     <!-- Metric Bar -->
-    <div class="row g-3 mb-4">
-        <div class="col-sm-6 col-lg-3">
+    <div class="row g-3 mb-4 mc-queue-stats">
+        <div class="col-6 col-lg-3">
             <div class="mc-kpi-card">
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
@@ -43,7 +46,7 @@
             </div>
         </div>
 
-        <div class="col-sm-6 col-lg-3">
+        <div class="col-6 col-lg-3">
             <div class="mc-kpi-card">
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
@@ -58,7 +61,7 @@
             </div>
         </div>
 
-        <div class="col-sm-6 col-lg-3">
+        <div class="col-6 col-lg-3">
             <div class="mc-kpi-card">
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
@@ -73,7 +76,7 @@
             </div>
         </div>
 
-        <div class="col-sm-6 col-lg-3">
+        <div class="col-6 col-lg-3">
             <div class="mc-kpi-card">
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
@@ -97,13 +100,29 @@
             </h2>
             <div class="d-flex align-items-center gap-2">
                 <span id="doctorQueueRealtimeStatus" class="badge text-bg-light border" role="status" aria-live="polite">
-                    <i class="bi bi-broadcast-pin me-1"></i> Đang kết nối realtime
+                    <i class="bi bi-broadcast-pin me-1"></i> Đang kết nối cập nhật
                 </span>
                 <button class="btn btn-sm btn-light border" id="refreshDoctorQueueBtn" type="button" aria-label="L&#224;m m&#7899;i h&#224;ng ch&#7901; kh&#225;m">
                     <i class="bi bi-arrow-clockwise me-1"></i> Làm mới danh sách
                 </button>
             </div>
         </div>
+
+        <div id="queueFilters" class="mc-queue-controls" hidden th:unless="${#lists.isEmpty(todayQueue)}">
+            <label class="visually-hidden" for="queuePatientSearch">Tìm trong hàng chờ</label>
+            <input id="queuePatientSearch" type="search" class="form-control" placeholder="Tìm tên bệnh nhân, mã hẹn hoặc số điện thoại" autocomplete="off">
+            <label class="visually-hidden" for="queueViewFilter">Danh sách bệnh nhân</label>
+            <select id="queueViewFilter" class="form-select">
+                <option value="active">Cần khám</option>
+                <option value="completed">Đã hoàn tất</option>
+                <option value="all">Tất cả hôm nay</option>
+            </select>
+        </div>
+        <div class="mc-queue-updated">
+            Dữ liệu lúc <time th:text="${#temporals.format(#temporals.createNow(), 'HH:mm:ss')}">08:00:00</time>
+            <span id="queueResultCount" role="status" aria-live="polite"></span>
+        </div>
+        <div id="queueFilteredEmpty" hidden class="p-4 text-center text-muted">Không có bệnh nhân phù hợp. Chọn “Tất cả hôm nay” hoặc xóa từ khóa để xem lại.</div>
 
         <div class="card-body p-0">
             <!-- Empty State -->
@@ -127,7 +146,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr th:each="apt : ${todayQueue}"
+                        <tr th:each="apt : ${todayQueue}" th:attr="data-queue-state=${apt.status.name()}"
                             th:classappend="${apt.status.name() == 'CHECKED_IN' ? 'table-warning bg-opacity-25' :
                                             (apt.status.name() == 'IN_PROGRESS' ? 'table-info bg-opacity-25' : '')}">
 
@@ -187,8 +206,8 @@
                                     <span>Tiếp tục khám</span>
                                 </a>
 
-                                <span th:if="${apt.status.name() == 'COMPLETED'}" class="badge bg-success text-white py-1.5 px-2.5">
-                                    <i class="bi bi-check-all me-1"></i> Đã hoàn tất
+                                <span th:if="${apt.status.name() == 'COMPLETED'}" class="small text-muted">
+                                    Bệnh án đã lưu
                                 </span>
                             </td>
                         </tr>
@@ -201,6 +220,7 @@
 </div>
 
 <div layout:fragment="scripts">
+<script th:src="@{/js/doctor-queue.js(v=4.0)}"></script>
 <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.6.1/dist/sockjs.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.2.1/bundles/stomp.umd.min.js"></script>
 <script>
@@ -214,7 +234,7 @@ refreshDoctorQueueButton?.addEventListener('click', function() {
 
 function setDoctorQueueRealtimeStatus(text, active) {
     if (!doctorQueueRealtimeStatus) return;
-    doctorQueueRealtimeStatus.innerHTML = `<i class="bi ${active ? 'bi-broadcast-pin' : 'bi-wifi-off'} me-1"></i>${text}`;
+    doctorQueueRealtimeStatus.innerHTML = `<i class="bi ${active ? 'bi-broadcast-pin' : 'bi-wifi-off'} me-1" aria-hidden="true"></i>${text}`;
     doctorQueueRealtimeStatus.classList.toggle('text-bg-success', active);
     doctorQueueRealtimeStatus.classList.toggle('text-bg-light', !active);
 }
@@ -228,7 +248,7 @@ if (window.SockJS && window.StompJs) {
     });
 
     queueClient.onConnect = function() {
-        setDoctorQueueRealtimeStatus('Realtime đang hoạt động', true);
+        setDoctorQueueRealtimeStatus('Đang nhận cập nhật', true);
         queueClient.subscribe('/user/queue/doctor', function() {
             setDoctorQueueRealtimeStatus('Hàng chờ vừa thay đổi, đang cập nhật...', true);
             if (doctorQueueReloadTimer === null) {
@@ -238,15 +258,15 @@ if (window.SockJS && window.StompJs) {
     };
 
     queueClient.onWebSocketClose = function() {
-        setDoctorQueueRealtimeStatus('Đang kết nối lại realtime', false);
+        setDoctorQueueRealtimeStatus('Mất kết nối. Có thể làm mới danh sách.', false);
     };
     queueClient.onStompError = function() {
-        setDoctorQueueRealtimeStatus('Realtime tạm gián đoạn', false);
+        setDoctorQueueRealtimeStatus('Cập nhật tạm gián đoạn. Hãy làm mới.', false);
     };
     queueClient.activate();
     window.addEventListener('beforeunload', () => void queueClient.deactivate());
 } else {
-    setDoctorQueueRealtimeStatus('Không tải được realtime client', false);
+    setDoctorQueueRealtimeStatus('Chưa nhận được cập nhật. Hãy làm mới.', false);
 }
 </script>
 </div>

@@ -7,7 +7,7 @@ services:
       MSSQL_PID: "Developer"
       MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD:?Hãy cấu hình MSSQL_SA_PASSWORD trong file .env}
     ports:
-      - "${SQLSERVER_HOST_PORT:-14333}:1433"
+      - "127.0.0.1:${SQLSERVER_HOST_PORT:-14333}:1433"
     volumes:
       - medclinic-sqlserver-data:/var/opt/mssql
       - ./docker/sqlserver:/docker:ro
@@ -57,6 +57,7 @@ services:
         condition: service_started
     environment:
       SPRING_PROFILES_ACTIVE: sqlserver,demo
+      TZ: Asia/Ho_Chi_Minh
       SPRING_FLYWAY_BASELINE_ON_MIGRATE: "true"
       DB_URL: jdbc:sqlserver://sqlserver:1433;databaseName=medclinic_db;encrypt=true;trustServerCertificate=true;sendStringParametersAsUnicode=true
       DB_USERNAME: sa
@@ -86,7 +87,7 @@ services:
       SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE: "false"
       AVATAR_STORAGE_DIR: /app/uploads/avatars
     ports:
-      - "8080:8080"
+      - "127.0.0.1:8080:8080"
     volumes:
       - medclinic-uploads:/app/uploads
     healthcheck:

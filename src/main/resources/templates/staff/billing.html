@@ -11,9 +11,9 @@
     <!-- Top Header -->
     <div class="mc-page-header align-items-end border-bottom pb-3">
         <div>
-            <h3 class="mc-page-title">
+            <h1 class="mc-page-title">
                 <i class="bi bi-credit-card-fill text-success me-2"></i>Quản Lý Viện Phí & Quầy Thu Ngân
-            </h3>
+            </h1>
             <p class="mc-page-subtitle">Thu tiền mặt hoặc tạo VietQR chuyển khoản ngân hàng; chỉ quyết toán khi giao dịch đã được đối soát.</p>
         </div>
         <div>
@@ -28,21 +28,21 @@
         <div class="col-sm-4">
             <div class="mc-kpi-card">
                 <div class="text-muted small">Tổng Hóa Đơn Khám</div>
-                <h4 class="mc-kpi-value" th:text="${#lists.size(invoices)}">0</h4>
+                <div class="h4 mc-kpi-value" th:text="${#lists.size(invoices)}">0</div>
             </div>
         </div>
         <div class="col-sm-4">
             <div class="mc-kpi-card">
                 <div class="text-muted small">Hóa Đơn Chờ Thanh Toán</div>
-                <h4 class="mc-kpi-value"
-                    th:text="${#lists.size(invoices.?[paymentStatus.name() == 'UNPAID'])}">0</h4>
+                <div class="h4 mc-kpi-value"
+                    th:text="${#lists.size(invoices.?[paymentStatus.name() == 'UNPAID'])}">0</div>
             </div>
         </div>
         <div class="col-sm-4">
             <div class="mc-kpi-card">
                 <div class="text-muted small">Hóa Đơn Đã Quyết Toán</div>
-                <h4 class="mc-kpi-value"
-                    th:text="${#lists.size(invoices.?[paymentStatus.name() == 'PAID'])}">0</h4>
+                <div class="h4 mc-kpi-value"
+                    th:text="${#lists.size(invoices.?[paymentStatus.name() == 'PAID'])}">0</div>
             </div>
         </div>
     </div>
@@ -50,9 +50,9 @@
     <!-- Invoices Table -->
     <div class="mc-data-card">
         <div class="mc-data-toolbar">
-            <h6 class="mc-data-title">
+            <h2 class="h6 mc-data-title">
                 <i class="bi bi-receipt text-primary me-2"></i>Danh Sách Hóa Đơn Viện Phí
-            </h6>
+            </h2>
             <button type="button" class="btn btn-sm btn-light border" id="refreshBillingBtn" aria-label="Làm mới danh sách hóa đơn">
                 <i class="bi bi-arrow-clockwise me-1"></i> Làm mới
             </button>
@@ -62,7 +62,7 @@
             <!-- Empty State -->
             <div th:if="${#lists.isEmpty(invoices)}" class="p-5 text-center text-muted">
                 <i class="bi bi-receipt-cutoff fs-1 text-secondary d-block mb-2"></i>
-                <h6 class="fw-bold text-dark">Chưa Có Hóa Đơn Nào</h6>
+                <h3 class="h6 fw-bold text-dark">Chưa Có Hóa Đơn Nào</h3>
                 <p class="small mb-0">Hóa đơn sẽ tự động sinh sau khi bác sĩ hoàn tất ca khám và kê đơn thuốc.</p>
             </div>
 
@@ -103,9 +103,9 @@
                             </td>
 
                             <!-- Fees -->
-                            <td class="text-end" th:text="${#numbers.formatDecimal(inv.consultationFee, 0, 'COMMA', 0, 'POINT') + ' đ'}">150,000 đ</td>
-                            <td class="text-end" th:text="${#numbers.formatDecimal(inv.medicineFee, 0, 'COMMA', 0, 'POINT') + ' đ'}">85,000 đ</td>
-                            <td class="text-end fw-bold text-primary fs-6" th:text="${#numbers.formatDecimal(inv.totalAmount, 0, 'COMMA', 0, 'POINT') + ' đ'}">235,000 đ</td>
+                            <td class="text-end" th:text="${@money.vnd(inv.consultationFee)}">150,000 đ</td>
+                            <td class="text-end" th:text="${@money.vnd(inv.medicineFee)}">85,000 đ</td>
+                            <td class="text-end fw-bold text-primary fs-6" th:text="${@money.vnd(inv.totalAmount)}">235,000 đ</td>
 
                             <!-- Status -->
                             <td class="text-center">
@@ -144,9 +144,9 @@
                                             <div class="modal-content">
                                                 <form th:action="@{/staff/billing/pay/{id}(id=${inv.id})}" method="post">
                                                     <div class="modal-header">
-                                                        <h6 class="modal-title fw-bold text-dark" th:id="${'payModalTitle-' + inv.id}">
+                                                        <h2 class="modal-title fw-bold text-dark" th:id="${'payModalTitle-' + inv.id}">
                                                             <i class="bi bi-cash-stack text-success me-2"></i>Xác Nhận Thanh Toán Viện Phí
-                                                        </h6>
+                                                        </h2>
                                                         <button type="button" class="btn-close" aria-label="Close" data-bs-target="${'#payModal' + inv.id}" data-bs-dismiss="modal"></button>
                                                     </div>
                                                     <div class="modal-body">
@@ -161,7 +161,7 @@
                                                             </div>
                                                             <div class="d-flex justify-content-between border-top pt-2 mt-2">
                                                                 <span class="fw-bold text-dark">Tổng số tiền cần thu:</span>
-                                                                <strong class="fs-5 text-primary" th:text="${#numbers.formatDecimal(inv.totalAmount, 0, 'COMMA', 0, 'POINT') + ' đ'}">235,000 đ</strong>
+                                                                <strong class="fs-5 text-primary" th:text="${@money.vnd(inv.totalAmount)}">235,000 đ</strong>
                                                             </div>
                                                         </div>
 

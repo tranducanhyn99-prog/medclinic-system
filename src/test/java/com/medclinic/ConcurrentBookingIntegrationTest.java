@@ -58,13 +58,13 @@ class ConcurrentBookingIntegrationTest {
         DoctorProfile doctor = doctorProfileRepository.findAll().getFirst();
         Role patientRole = roleRepository.findByName(RoleType.ROLE_PATIENT).orElseThrow();
         String token = String.valueOf(System.nanoTime());
-        LocalDate appointmentDate = LocalDate.now().plusDays(30);
-        DoctorSchedule schedule = doctorScheduleRepository.save(DoctorSchedule.builder()
+        LocalDate appointmentDate = LocalDate.now().plusDays(14);
+        DoctorSchedule schedule = doctorScheduleRepository.findByDoctorIdAndWorkDateAndShift(doctor.getId(), appointmentDate, ShiftType.MORNING).orElseGet(() -> doctorScheduleRepository.save(DoctorSchedule.builder()
                 .doctor(doctor)
                 .workDate(appointmentDate)
                 .shift(ShiftType.MORNING)
                 .maxPatients(8)
-                .build());
+                .build()));
 
         TimeSlot slot = timeSlotRepository.save(TimeSlot.builder()
                 .schedule(schedule)
@@ -117,13 +117,13 @@ class ConcurrentBookingIntegrationTest {
         DoctorProfile doctor = doctorProfileRepository.findAll().getFirst();
         Role patientRole = roleRepository.findByName(RoleType.ROLE_PATIENT).orElseThrow();
         String token = String.valueOf(System.nanoTime());
-        LocalDate appointmentDate = LocalDate.now().plusDays(31);
-        DoctorSchedule schedule = doctorScheduleRepository.save(DoctorSchedule.builder()
+        LocalDate appointmentDate = LocalDate.now().plusDays(14);
+        DoctorSchedule schedule = doctorScheduleRepository.findByDoctorIdAndWorkDateAndShift(doctor.getId(), appointmentDate, ShiftType.MORNING).orElseGet(() -> doctorScheduleRepository.save(DoctorSchedule.builder()
                 .doctor(doctor)
                 .workDate(appointmentDate)
                 .shift(ShiftType.MORNING)
                 .maxPatients(8)
-                .build());
+                .build()));
 
         TimeSlot slot1 = timeSlotRepository.save(TimeSlot.builder()
                 .schedule(schedule)

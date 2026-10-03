@@ -20,8 +20,13 @@
             <div class="col-lg-8">
                 <section class="mc-doctor-profile-card">
                     <div class="d-flex flex-column flex-sm-row gap-4 align-items-sm-center">
-                        <div class="mc-doctor-avatar">
-                            <span th:text="${#strings.substring(doctor.user.fullName, 0, 1)}">B</span>
+                        <div class="mc-doctor-avatar mc-doctor-avatar--profile">
+                            <img th:if="${doctor.user.avatarUrl != null and !doctor.user.avatarUrl.isBlank()}"
+                                 th:src="@{/api/public/doctors/{id}/avatar(id=${doctor.id},size=128)}"
+                                     th:srcset="@{/api/public/doctors/{id}/avatar(id=${doctor.id},size=128)} + ' 128w, ' + @{/api/public/doctors/{id}/avatar(id=${doctor.id},size=256)} + ' 256w, ' + @{/api/public/doctors/{id}/avatar(id=${doctor.id},size=512)} + ' 512w'"
+                                     sizes="(max-width: 575px) 96px, 128px" width="128" height="128" data-doctor-avatar th:alt="${'Ảnh bác sĩ ' + doctor.user.fullName}">
+                            <span data-avatar-fallback th:hidden="${doctor.user.avatarUrl != null and !doctor.user.avatarUrl.isBlank()}"
+                                  th:text="${#strings.substring(doctor.user.fullName, 0, 1)}" aria-hidden="true">B</span>
                         </div>
                         <div>
                             <div class="mc-auth-eyebrow mb-2" th:text="${doctor.specialty.name}">Nội khoa</div>
@@ -40,13 +45,60 @@
                             Thông tin giới thiệu
                         </p>
                     </div>
+
+                    <div class="mc-form-section mt-4 pt-4 border-top">
+                        <h2 class="mc-form-section-title d-flex align-items-center gap-2">
+                            <i class="bi bi-person-lines-fill text-primary"></i> Thông tin liên hệ & Phòng khám
+                        </h2>
+                        <div class="row g-3 mt-1">
+                            <div class="col-sm-6">
+                                <div class="p-3 rounded-3 bg-light border border-light-subtle h-100">
+                                    <div class="text-muted small mb-1"><i class="bi bi-telephone-fill text-primary me-2"></i>Điện thoại / Hotline bác sĩ</div>
+                                    <a th:href="${'tel:' + doctor.user.phone}" class="fw-bold text-dark text-decoration-none fs-6"
+                                       th:text="${doctor.user.phone != null ? doctor.user.phone : '1900 6868'}">0911 000 001</a>
+                                    <div class="text-muted small mt-1">Hỗ trợ tư vấn giờ làm việc</div>
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div class="p-3 rounded-3 bg-light border border-light-subtle h-100">
+                                    <div class="text-muted small mb-1"><i class="bi bi-envelope-fill text-primary me-2"></i>Email chuyên môn</div>
+                                    <a th:href="${'mailto:' + doctor.user.email}" class="fw-bold text-dark text-decoration-none fs-6 text-break"
+                                       th:text="${doctor.user.email}">doctor@medclinic.vn</a>
+                                    <div class="text-muted small mt-1">Phản hồi hồ sơ bệnh án</div>
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div class="p-3 rounded-3 bg-light border border-light-subtle h-100">
+                                    <div class="text-muted small mb-1"><i class="bi bi-geo-alt-fill text-primary me-2"></i>Phòng làm việc trực tiếp</div>
+                                    <div class="fw-bold text-dark fs-6" th:text="${'Phòng khám ' + (100 + doctor.id) + ' (Tầng 2, Khu B)'}">Phòng khám 101 (Tầng 2, Khu B)</div>
+                                    <div class="text-muted small mt-1">MedClinic 123 Nguyễn Trãi, Q.5, TP.HCM</div>
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div class="p-3 rounded-3 bg-light border border-light-subtle h-100">
+                                    <div class="text-muted small mb-1"><i class="bi bi-clock-fill text-primary me-2"></i>Khung giờ tiếp bệnh nhân</div>
+                                    <div class="fw-bold text-dark fs-6">08:00 - 12:00 | 13:30 - 17:30</div>
+                                    <div class="text-muted small mt-1">Từ Thứ Hai đến Thứ Bảy</div>
+                                </div>
+                            </div>
+                            <div class="col-12" th:if="${doctor.licenseNumber != null && !doctor.licenseNumber.isBlank()}">
+                                <div class="p-3 rounded-3 bg-info-subtle border border-info-subtle d-flex align-items-center gap-3">
+                                    <i class="bi bi-shield-check text-info fs-3"></i>
+                                    <div>
+                                        <div class="fw-bold text-info-emphasis">Giấy phép hành nghề y tế hợp lệ</div>
+                                        <div class="small text-muted" th:text="${'Mã chứng chỉ: ' + doctor.licenseNumber + ' • Cấp bởi Sở Y Tế'}">GPHN-01 • Sở Y Tế</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </section>
             </div>
 
             <aside class="col-lg-4">
                 <section class="mc-consult-card">
                     <div class="mc-auth-eyebrow">Thông tin đặt khám</div>
-                    <h2 class="h5 fw-bold mb-3">Tư vấn với bác sĩ</h2>
+                    <h2 class="h5 fw-bold mb-3">Đặt khám với bác sĩ</h2>
                     <div class="d-flex justify-content-between align-items-start gap-3 py-2 border-bottom">
                         <span class="text-muted small">Chuyên khoa</span>
                         <span class="fw-semibold text-end" th:text="${doctor.specialty.name}">Nội khoa</span>
@@ -55,13 +107,22 @@
                         <span class="text-muted small">Kinh nghiệm</span>
                         <span class="fw-semibold" th:text="${doctor.experienceYears + ' năm'}">5 năm</span>
                     </div>
+                    <div class="d-flex justify-content-between align-items-center gap-3 py-2 border-bottom">
+                        <span class="text-muted small">Phòng khám</span>
+                        <span class="fw-semibold text-end" th:text="${'Phòng ' + (100 + doctor.id)}">Phòng 101</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center gap-3 py-2 border-bottom">
+                        <span class="text-muted small">Hotline</span>
+                        <a th:href="${'tel:' + doctor.user.phone}" class="fw-semibold text-dark text-decoration-none"
+                           th:text="${doctor.user.phone != null ? doctor.user.phone : '1900 6868'}">0911 000 001</a>
+                    </div>
                     <div class="d-flex justify-content-between align-items-center gap-3 py-3">
                         <span class="text-muted small">Phí khám</span>
                         <span class="fw-bold text-primary fs-5"
-                              th:text="${#numbers.formatDecimal(doctor.consultationFee, 0, 'COMMA', 0, 'POINT') + ' đ'}">300.000 đ</span>
+                              th:text="${@money.vnd(doctor.consultationFee)}">300.000 đ</span>
                     </div>
 
-                    <a th:href="@{/patient/booking}" class="btn btn-med-primary w-100 justify-content-center">
+                    <a th:href="@{/patient/booking(doctorId=${doctor.id})}" class="btn btn-med-primary w-100 justify-content-center">
                         <i class="bi bi-calendar2-check"></i> Đặt lịch với bác sĩ
                     </a>
                     <a th:href="@{/doctors}" class="btn btn-link text-decoration-none w-100 mt-2">Quay lại danh sách</a>

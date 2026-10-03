@@ -9,7 +9,7 @@ import com.medclinic.security.CustomUserDetails;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -33,7 +33,7 @@ class AppointmentEmailIntegrationTest {
     @Autowired private TimeSlotRepository timeSlotRepository;
     @Autowired private RoleRepository roleRepository;
     @Autowired private UserRepository userRepository;
-    @MockBean private EmailService emailService;
+    @MockitoBean private EmailService emailService;
 
     @Test
     void bookingAndCancellationNotifyOnlyAfterCommittedTransactions() {
@@ -43,7 +43,7 @@ class AppointmentEmailIntegrationTest {
         User patient = userRepository.save(User.builder()
                 .username("email-" + suffix).password("encoded").fullName("Email Patient")
                 .email("email-" + suffix + "@example.test").role(role).isActive(true).build());
-        LocalDate date = LocalDate.now().plusDays(40);
+        LocalDate date = LocalDate.now().plusDays(14);
         DoctorSchedule schedule = doctorScheduleRepository.save(DoctorSchedule.builder()
                 .doctor(doctor).workDate(date).shift(ShiftType.AFTERNOON).maxPatients(8).build());
         TimeSlot slot = timeSlotRepository.save(TimeSlot.builder().schedule(schedule)

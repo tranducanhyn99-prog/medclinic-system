@@ -61,27 +61,33 @@ public class DataInitializer implements CommandLineRunner {
         // 4. Doctors
         DoctorProfile doc1 = initDoctor("doctor", "123456", "Nguyễn Văn Hùng", "hung.nguyen@medclinic.vn", "0911000001",
                 spTimMach, "PGS.TS", 18, new BigDecimal("350000"),
-                "Nguyên Trưởng khoa Tim mạch Bệnh viện Chợ Rẫy, hơn 18 năm kinh nghiệm điều trị tim mạch can thiệp và tăng huyết áp.");
+                "Nguyên Trưởng khoa Tim mạch Bệnh viện Chợ Rẫy, hơn 18 năm kinh nghiệm điều trị tim mạch can thiệp và tăng huyết áp.",
+                "/images/doctors/doctor_hung.jpg", Gender.MALE);
 
         DoctorProfile doc2 = initDoctor("doc_mai", "123456", "Trần Thị Mai", "mai.tran@medclinic.vn", "0911000002",
                 spRangHamMat, "ThS.BS", 12, new BigDecimal("250000"),
-                "Thạc sĩ Bác sĩ Đại học Y Dược TP.HCM, chuyên gia phục hình răng sứ thẩm mỹ và chỉnh nha chuyên sâu.");
+                "Thạc sĩ Bác sĩ Đại học Y Dược TP.HCM, chuyên gia phục hình răng sứ thẩm mỹ và chỉnh nha chuyên sâu.",
+                "/images/doctors/doctor_mai.jpg", Gender.FEMALE);
 
         DoctorProfile doc3 = initDoctor("doc_nam", "123456", "Lê Hoàng Nam", "nam.le@medclinic.vn", "0911000003",
                 spDaLieu, "BS.CKII", 15, new BigDecimal("300000"),
-                "Bác sĩ Chuyên khoa II Da liễu, nguyên Phó khoa Da liễu Bệnh viện Da liễu Trung ương.");
+                "Bác sĩ Chuyên khoa II Da liễu, nguyên Phó khoa Da liễu Bệnh viện Da liễu Trung ương.",
+                "/images/doctors/doctor_nam.jpg", Gender.MALE);
 
         DoctorProfile doc4 = initDoctor("doc_ha", "123456", "Phạm Thu Hà", "ha.pham@medclinic.vn", "0911000004",
                 spNhiKhoa, "ThS.BS", 10, new BigDecimal("200000"),
-                "Tốt nghiệp Thủ khoa Bác sĩ Nội trú Nhi khoa, tận tâm, giàu kinh nghiệm chăm sóc sức khỏe trẻ nhỏ.");
+                "Tốt nghiệp Thủ khoa Bác sĩ Nội trú Nhi khoa, tận tâm, giàu kinh nghiệm chăm sóc sức khỏe trẻ nhỏ.",
+                "/images/doctors/doctor_ha.jpg", Gender.FEMALE);
 
         DoctorProfile doc5 = initDoctor("doc_bao", "123456", "Vũ Quốc Bảo", "bao.vu@medclinic.vn", "0911000005",
                 spTaiMuiHong, "BS.CKI", 8, new BigDecimal("200000"),
-                "Chuyên gia nội soi tai mũi họng công nghệ cao, phẫu thuật polyp và điều trị viêm mũi xoang mạn tính.");
+                "Chuyên gia nội soi tai mũi họng công nghệ cao, phẫu thuật polyp và điều trị viêm mũi xoang mạn tính.",
+                "/images/doctors/doctor_bao.jpg", Gender.MALE);
 
         DoctorProfile doc6 = initDoctor("doc_tuan", "123456", "Đặng Minh Tuấn", "tuan.dang@medclinic.vn", "0911000006",
                 spXuongKhop, "TS.BS", 20, new BigDecimal("400000"),
-                "Tiến sĩ Y khoa, tu nghiệp tại CHLB Đức, chuyên gia đầu ngành về thoái hóa khớp và phẫu thuật nội soi khớp.");
+                "Tiến sĩ Y khoa, tu nghiệp tại CHLB Đức, chuyên gia đầu ngành về thoái hóa khớp và phẫu thuật nội soi khớp.",
+                "/images/doctors/doctor_tuan.jpg", Gender.MALE);
 
         markSeedAccountsOtpBypass();
 
@@ -152,18 +158,43 @@ public class DataInitializer implements CommandLineRunner {
     }
 
     private DoctorProfile initDoctor(String username, String rawPassword, String fullName, String email, String phone,
-                                     Specialty specialty, String title, int expYears, BigDecimal fee, String bio) {
+                                     Specialty specialty, String title, int expYears, BigDecimal fee, String bio,
+                                     String avatarUrl, Gender gender) {
         Role doctorRole = roleRepository.findByName(RoleType.ROLE_DOCTOR).orElseThrow();
-        User user = userRepository.findByUsername(username).orElseGet(() ->
+        User user = userRepository.findByUsername(username).map(existing -> {
+            boolean changed = false;
+            if (avatarUrl != null && !avatarUrl.equals(existing.getAvatarUrl())) {
+                existing.setAvatarUrl(avatarUrl);
+                changed = true;
+            }
+            if (gender != null && existing.getGender() != gender) {
+                existing.setGender(gender);
+                changed = true;
+            }
+            if (phone != null && !phone.equals(existing.getPhone())) {
+                existing.setPhone(phone);
+                changed = true;
+            }
+            if (email != null && !email.equals(existing.getEmail())) {
+                existing.setEmail(email);
+                changed = true;
+            }
+            if (fullName != null && !fullName.equals(existing.getFullName())) {
+                existing.setFullName(fullName);
+                changed = true;
+            }
+            return changed ? userRepository.save(existing) : existing;
+        }).orElseGet(() ->
                 userRepository.save(User.builder()
                         .username(username)
                         .password(passwordEncoder.encode(rawPassword))
                         .fullName(fullName)
                         .email(email)
                         .phone(phone)
-                        .gender(Gender.MALE)
+                        .gender(gender)
                         .dateOfBirth(LocalDate.of(1980, 5, 15))
                         .address("TP. Hồ Chí Minh")
+                        .avatarUrl(avatarUrl)
                         .role(doctorRole)
                         .emailVerified(true)
                         .otpBypass(true)

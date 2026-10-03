@@ -6,7 +6,8 @@
     <title>Thanh toán VietQR - MedClinic</title>
 </head>
 <body>
-<div layout:fragment="content">
+<div layout:fragment="content" data-bank-payment
+     th:attr="data-initial-status=${payment.status.name()},data-status-url=@{/staff/billing/bank/payment/{id}/status(id=${payment.paymentId})}">
     <div class="mc-page-header border-bottom pb-3">
         <div>
             <h1 class="mc-page-title"><i class="bi bi-qr-code text-primary me-2"></i>Thanh Toán Chuyển Khoản</h1>
@@ -17,10 +18,11 @@
 
     <div class="row g-4 justify-content-center">
         <div class="col-lg-5">
-            <section class="mc-workflow-card text-center h-100" aria-labelledby="qrTitle">
+            <section id="paymentQr" th:hidden="${payment.status.name() != 'PENDING'}" class="mc-workflow-card text-center h-100" aria-labelledby="qrTitle">
                 <h2 id="qrTitle" class="h5 fw-bold mb-3">Quét mã bằng ứng dụng ngân hàng</h2>
-                <img th:src="${payment.qrImageUrl}" alt="Mã VietQR thanh toán viện phí"
+                <img id="paymentQrImage" th:src="${payment.qrImageUrl}" alt="Mã VietQR thanh toán viện phí"
                      class="img-fluid rounded border" style="max-width:360px">
+                <p id="paymentQrError" class="alert alert-warning mt-3" hidden>Không tải được QR. Bạn có thể dùng số tài khoản, số tiền và nội dung giao dịch bên cạnh để chuyển khoản, hoặc tải lại trang.</p>
                 <p class="small text-muted mt-3 mb-0">QR được tạo theo chuẩn VietQR. MedClinic không thu thập thông tin đăng nhập ngân hàng.</p>
             </section>
         </div>
@@ -33,7 +35,7 @@
                     <dt class="col-5 text-muted">Chủ tài khoản</dt><dd class="col-7 fw-semibold" th:text="${payment.accountName}">MEDCLINIC</dd>
                     <dt class="col-5 text-muted">Mã hóa đơn</dt><dd class="col-7" th:text="${payment.invoiceCode}">INV-001</dd>
                     <dt class="col-5 text-muted">Số tiền</dt>
-                    <dd class="col-7 fw-bold text-primary fs-5" th:text="${#numbers.formatDecimal(payment.amount, 0, 'COMMA', 0, 'POINT') + ' đ'}">100.000 đ</dd>
+                    <dd class="col-7 fw-bold text-primary fs-5" th:text="${@money.vnd(payment.amount)}">100.000 đ</dd>
                     <dt class="col-5 text-muted">Nội dung</dt>
                     <dd class="col-7"><code class="fs-6 user-select-all" th:text="${payment.transferCode}">MC1ABCDEF</code></dd>
                     <dt class="col-5 text-muted">Hết hạn</dt><dd class="col-7" th:text="${#temporals.format(payment.expiresAt, 'dd/MM/yyyy HH:mm')}">23/09/2026 16:00</dd>
@@ -41,12 +43,14 @@
 
                 <div id="paymentStatus" class="alert mt-3 mb-3"
                      th:classappend="${payment.status.name() == 'CONFIRMED' ? 'alert-success' : 'alert-warning'}"
-                     role="status" aria-live="polite">
+                     role="status" aria-live="polite" aria-atomic="true">
                     <i class="bi bi-clock-history me-1"></i>
-                    <span th:text="${payment.status.name() == 'CONFIRMED' ? 'Đã xác nhận thanh toán' : 'Đang chờ ngân hàng xác nhận'}">Đang chờ xác nhận</span>
+                    <span th:text="${payment.status.name() == 'CONFIRMED' ? 'Đã xác nhận thanh toán' : (payment.status.name() == 'PENDING' ? 'Đang chờ ngân hàng xác nhận. Chưa ghi nhận thanh toán.' : (payment.status.name() == 'EXPIRED' ? 'Mã chuyển khoản đã hết hạn. Không dùng QR cũ. Nếu đã chuyển tiền, đối soát giao dịch tại quầy trước khi tạo mã mới; tránh chuyển tiền thêm.' : 'Giao dịch chưa được chấp nhận. Kiểm tra với người phụ trách đối soát trước khi chuyển tiền lại.'))}">Đang chờ xác nhận</span>
                 </div>
 
-                <details th:if="${payment.status.name() != 'CONFIRMED'}" class="border rounded p-3">
+                <button id="paymentRetry" type="button" class="btn btn-outline-secondary mb-3" th:hidden="${payment.status.name() != 'PENDING'}">Kiểm tra lại trạng thái</button>
+                <a id="paymentLogin" th:href="@{/auth/login}" class="btn btn-outline-primary mb-3" hidden>Đăng nhập lại</a>
+                <details id="paymentManual" th:if="${payment.status.name() == 'PENDING' or payment.status.name() == 'EXPIRED'}" class="border rounded p-3">
                     <summary class="fw-semibold">Đối soát thủ công tại quầy</summary>
                     <p class="small text-muted mt-2">Chỉ dùng sau khi lễ tân đã kiểm tra giao dịch trong tài khoản ngân hàng.</p>
                     <form th:action="@{/staff/billing/bank/payment/{id}/confirm(id=${payment.paymentId})}" method="post">
@@ -62,27 +66,7 @@
 </div>
 
 <div layout:fragment="scripts">
-<script th:inline="javascript">
-const statusUrl = /*[[@{/staff/billing/bank/payment/{id}/status(id=${payment.paymentId})}]]*/ '';
-const initialStatus = /*[[${payment.status.name()}]]*/ 'PENDING';
-if (initialStatus === 'PENDING') {
-    const timer = window.setInterval(async () => {
-        try {
-            const response = await fetch(statusUrl, {headers: {'Accept': 'application/json'}});
-            if (!response.ok) return;
-            const data = await response.json();
-            if (data.confirmed) {
-                window.clearInterval(timer);
-                document.getElementById('paymentStatus').className = 'alert alert-success mt-3 mb-3';
-                document.getElementById('paymentStatus').textContent = 'Đã xác nhận thanh toán. Đang quay về danh sách hóa đơn...';
-                window.setTimeout(() => window.location.assign('/staff/billing'), 900);
-            }
-        } catch (_) {
-            // Giữ màn hình để lễ tân có thể làm mới hoặc đối soát thủ công.
-        }
-    }, 3000);
-}
-</script>
+<script th:src="@{/js/bank-payment-status.js}"></script>
 </div>
 </body>
 </html>

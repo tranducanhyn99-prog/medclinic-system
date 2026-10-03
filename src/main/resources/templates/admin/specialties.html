@@ -91,31 +91,32 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <form th:action="@{/admin/specialties}" th:object="${specialtyForm}" method="post">
+                    <input type="hidden" th:field="*{id}">
                     <div class="modal-header">
-                        <h6 class="modal-title fw-bold text-dark" id="addSpecialtyModalTitle">
-                            <i class="bi bi-plus-circle-fill text-primary me-2"></i>Thêm Chuyên Khoa Mới
-                        </h6>
-                        <button type="button" class="btn-close" aria-label="Close" data-bs-dismiss="modal"></button>
+                        <h2 class="modal-title fw-bold text-dark" id="addSpecialtyModalTitle">
+                            <i class="bi bi-plus-circle-fill text-primary me-2"></i><span th:text="${specialtyForm.id == null ? 'Thêm chuyên khoa mới' : 'Sửa chuyên khoa'}">Thêm chuyên khoa mới</span>
+                        </h2>
+                        <button type="button" class="btn-close" aria-label="Đóng hộp thoại" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body">
                         <div class="mb-3">
-                            <label for="specName" class="form-label fw-semibold small">Tên chuyên khoa <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" id="specName" th:field="*{name}" placeholder="Ví dụ: Tim mạch, Nhi khoa..." required><div class="text-danger small" th:errors="*{name}"></div>
+                            <label for="name" class="form-label fw-semibold small">Tên chuyên khoa <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="name" th:field="*{name}" th:errorclass="is-invalid" placeholder="Ví dụ: Tim mạch, Nhi khoa..." required><div class="text-danger small" data-field-error th:errors="*{name}"></div>
                         </div>
                         <div class="mb-3">
-                            <label for="specIcon" class="form-label fw-semibold small">Icon Bootstrap</label>
-                            <input type="text" class="form-control" id="specIcon" th:field="*{icon}" placeholder="bi-heart-pulse, bi-lungs, bi-eye...">
-                            <div class="text-danger small" th:errors="*{icon}"></div>
+                            <label for="icon" class="form-label fw-semibold small">Icon Bootstrap</label>
+                            <input type="text" class="form-control" id="icon" th:field="*{icon}" th:errorclass="is-invalid" placeholder="bi-heart-pulse, bi-lungs, bi-eye...">
+                            <div class="text-danger small" data-field-error th:errors="*{icon}"></div>
                             <div class="form-text">Mã class từ Bootstrap Icons (VD: bi-heart-pulse).</div>
                         </div>
                         <div class="mb-2">
-                            <label for="specDesc" class="form-label fw-semibold small">Mô tả tóm tắt</label>
-                            <textarea class="form-control" id="specDesc" th:field="*{description}" rows="3" placeholder="Mô tả phạm vi khám và điều trị..."></textarea>
+                            <label for="description" class="form-label fw-semibold small">Mô tả tóm tắt</label>
+                            <textarea class="form-control" id="description" th:field="*{description}" th:errorclass="is-invalid" rows="3" placeholder="Mô tả phạm vi khám và điều trị..."></textarea>
                         </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                        <button type="submit" class="btn btn-sm btn-med-primary px-3">Lưu Chuyên Khoa</button>
+                        <button type="submit" class="btn btn-sm btn-med-primary px-3" th:text="${specialtyForm.id == null ? 'Lưu chuyên khoa' : 'Lưu thay đổi'}">Lưu chuyên khoa</button>
                     </div>
                 </form>
             </div>
@@ -126,7 +127,7 @@
         <div class="modal-dialog modal-dialog-centered"><div class="modal-content">
             <form th:action="@{/admin/specialties}" method="post">
                 <input type="hidden" name="id" th:value="${spec.id}">
-                <div class="modal-header"><h6 class="modal-title" th:id="${'editSpecialtyModalTitle-' + spec.id}">Sửa chuyên khoa</h6><button type="button" class="btn-close" aria-label="Close" data-bs-dismiss="modal"></button></div>
+                <div class="modal-header"><h2 class="modal-title" th:id="${'editSpecialtyModalTitle-' + spec.id}">Sửa chuyên khoa</h2><button type="button" class="btn-close" aria-label="Đóng hộp thoại" data-bs-dismiss="modal"></button></div>
                 <div class="modal-body">
                     <label class="form-label" th:for="${'editSpecialtyName-' + spec.id}">Tên chuyên khoa</label><input th:id="${'editSpecialtyName-' + spec.id}" class="form-control mb-2" name="name" required th:value="${spec.name}">
                     <label class="form-label" th:for="${'editSpecialtyIcon-' + spec.id}">Icon Bootstrap</label><input th:id="${'editSpecialtyIcon-' + spec.id}" class="form-control mb-2" name="icon" th:value="${spec.icon}">

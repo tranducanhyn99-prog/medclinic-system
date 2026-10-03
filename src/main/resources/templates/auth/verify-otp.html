@@ -31,7 +31,8 @@
                         <span><i class="bi bi-clock me-2"></i>Mã hết hạn sau</span>
                         <strong id="otpCountdown" th:attr="data-seconds=${secondsRemaining}">05:00</strong>
                     </div>
-                    <button type="submit" class="btn btn-med-primary mc-auth-submit">
+                    <p id="otpExpired" role="alert" class="text-danger small" th:hidden="${secondsRemaining > 0}">Mã đã hết hạn. Chọn “Gửi lại OTP” bên dưới để nhận mã mới.</p>
+                    <button id="otpSubmit" th:disabled="${secondsRemaining <= 0}" type="submit" class="btn btn-med-primary mc-auth-submit">
                         <i class="bi bi-check2-circle me-2"></i>Xác nhận OTP
                     </button>
                 </form>
@@ -54,24 +55,7 @@
 </div>
 
 <div layout:fragment="scripts">
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const timer = document.getElementById('otpCountdown');
-        let seconds = Number(timer.dataset.seconds || 0);
-        const render = () => {
-            const mins = Math.floor(Math.max(0, seconds) / 60).toString().padStart(2, '0');
-            const secs = Math.max(0, seconds % 60).toString().padStart(2, '0');
-            timer.textContent = `${mins}:${secs}`;
-            if (seconds <= 0) timer.classList.add('text-danger');
-        };
-        render();
-        const interval = setInterval(() => {
-            seconds -= 1;
-            render();
-            if (seconds <= 0) clearInterval(interval);
-        }, 1000);
-    });
-</script>
+<script th:src="@{/js/otp-countdown.js}"></script>
 </div>
 </body>
 </html>

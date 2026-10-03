@@ -54,8 +54,17 @@ public class PatientAppointmentController {
     }
 
     @GetMapping("/booking")
-    public String bookingForm(Model model) {
+    public String bookingForm(@RequestParam(required = false) Long doctorId, Model model) {
         prepareBookingForm(model);
+        if (doctorId != null) {
+            var doctor = doctorService.findById(doctorId);
+            if (!com.medclinic.util.DoctorAvailability.acceptsBookings(doctor)) {
+                throw new com.medclinic.exception.ResourceNotFoundException("Bác sĩ hiện không nhận lịch khám.");
+            }
+            BookingFormDto form = (BookingFormDto) model.getAttribute("bookingForm");
+            form.setSpecialtyId(doctor.getSpecialty().getId());
+            form.setDoctorId(doctor.getId());
+        }
         return "patient/booking";
     }
 
@@ -77,7 +86,7 @@ public class PatientAppointmentController {
             return "redirect:/patient/appointments/" + newAppointment.getId();
         } catch (Exception e) {
             model.addAttribute("bookingForm", form);
-            model.addAttribute("errorMessage", e.getMessage());
+            model.addAttribute("errorMessage", com.medclinic.util.PublicErrorMessages.forException(e));
             prepareBookingForm(model);
             return "patient/booking";
         }
@@ -89,7 +98,7 @@ public class PatientAppointmentController {
             appointmentService.cancelAppointment(id, userDetails.getId());
             redirectAttributes.addFlashAttribute("successMsg", "Hủy lịch khám thành công.");
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMsg", e.getMessage());
+            redirectAttributes.addFlashAttribute("errorMsg", com.medclinic.util.PublicErrorMessages.forException(e));
         }
         return "redirect:/patient/appointments";
     }
@@ -103,7 +112,7 @@ public class PatientAppointmentController {
 
     private void prepareBookingForm(Model model) {
         model.addAttribute("specialties", specialtyService.findAllActive());
-        model.addAttribute("doctors", doctorService.findAll());
+        model.addAttribute("doctors", doctorService.filterDoctors(null, null, null));
         if (!model.containsAttribute("bookingForm")) {
             model.addAttribute("bookingForm", new BookingFormDto());
         }

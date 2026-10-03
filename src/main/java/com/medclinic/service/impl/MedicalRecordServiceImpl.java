@@ -13,6 +13,7 @@ import com.medclinic.repository.MedicalRecordRepository;
 import com.medclinic.repository.MedicineRepository;
 import com.medclinic.service.MedicalRecordService;
 import com.medclinic.service.InvoiceService;
+import com.medclinic.util.PrescriptionValidation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.context.ApplicationEventPublisher;
@@ -77,7 +78,17 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
         if (medicalRecordRepository.findByAppointmentId(appointmentId).isPresent()) {
             throw new BusinessLogicException("Ca khám này đã có bệnh án");
         }
-
+        if (symptoms == null || symptoms.isBlank() || symptoms.length() > 5000
+                || diagnosis == null || diagnosis.isBlank() || diagnosis.length() > 5000
+                || (doctorNotes != null && doctorNotes.length() > 10000)
+                || (reExamDate != null && !reExamDate.isAfter(LocalDate.now()))) {
+            throw new BusinessLogicException("Triệu chứng, chẩn đoán hoặc ngày tái khám không hợp lệ.");
+        }
+        if (prescriptionItems != null && (prescriptionItems.size() > PrescriptionValidation.MAX_ITEMS
+                || prescriptionItems.stream().anyMatch(dto -> dto == null || !PrescriptionValidation.validRow(
+                    dto.getMedicineId(), dto.getQuantity(), dto.getDosage(), dto.getFrequency(), dto.getInstructions())))) {
+            throw new BusinessLogicException("Đơn thuốc không hợp lệ: tối đa 100 dòng, số lượng phải lớn hơn 0, liều dùng và tần suất tối đa 100 ký tự, hướng dẫn tối đa 255 ký tự.");
+        }
 
         MedicalRecord medicalRecord = new MedicalRecord();
         medicalRecord.setAppointment(appointment);
@@ -95,10 +106,11 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
         if (prescriptionItems != null && !prescriptionItems.isEmpty()) {
             Map<Long, Integer> quantitiesByMedicine = new TreeMap<>();
             for (PrescriptionItemDto dto : prescriptionItems) {
-                if (dto.getMedicineId() == null || dto.getQuantity() == null || dto.getQuantity() <= 0) {
-                    throw new BusinessLogicException("Mỗi thuốc phải có số lượng lớn hơn 0");
+                try {
+                    quantitiesByMedicine.merge(dto.getMedicineId(), dto.getQuantity(), Math::addExact);
+                } catch (ArithmeticException ex) {
+                    throw new BusinessLogicException("Tổng số lượng của một thuốc vượt giới hạn cho phép.");
                 }
-                quantitiesByMedicine.merge(dto.getMedicineId(), dto.getQuantity(), Math::addExact);
             }
             Map<Long, Medicine> lockedMedicines = new HashMap<>();
             for (Map.Entry<Long, Integer> entry : quantitiesByMedicine.entrySet()) {

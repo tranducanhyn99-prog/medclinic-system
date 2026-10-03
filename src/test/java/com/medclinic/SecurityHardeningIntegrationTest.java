@@ -3,7 +3,7 @@ package com.medclinic;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.test.context.ActiveProfiles;
@@ -36,6 +36,51 @@ class SecurityHardeningIntegrationTest {
                 .andExpect(header().string("Permissions-Policy",
                         "camera=(), microphone=(), geolocation=()"))
                 .andExpect(header().string("X-Content-Type-Options", "nosniff"));
+    }
+
+    @Test
+    void receptionCanRequestItsOwnCameraAndOfflinePageIsPublic() throws Exception {
+        mockMvc.perform(get("/staff/reception").with(
+                        SecurityMockMvcRequestPostProcessors.user("staff").roles("STAFF")))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Permissions-Policy",
+                        "camera=(self), microphone=(), geolocation=()"));
+        mockMvc.perform(get("/offline.html"))
+                .andExpect(status().isOk())
+                .andExpect(result -> org.junit.jupiter.api.Assertions.assertTrue(
+                        result.getResponse().getContentAsString(java.nio.charset.StandardCharsets.UTF_8)
+                                .contains("Chưa có kết nối mạng")));
+        mockMvc.perform(get("/user-content/avatars/private-patient.png"))
+                .andExpect(status().is3xxRedirection());
+    }
+
+    @Test
+    void deniedPortalAccessUsesMedClinicRecoveryPage() throws Exception {
+        mockMvc.perform(get("/admin/dashboard").with(
+                        SecurityMockMvcRequestPostProcessors.user("doctor").roles("DOCTOR")))
+                .andExpect(status().isForbidden())
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.forwardedUrl("/error/403"));
+        mockMvc.perform(get("/error/403").with(
+                        SecurityMockMvcRequestPostProcessors.user("doctor").roles("DOCTOR")))
+                .andExpect(status().isForbidden())
+                .andExpect(content().string(containsString("Tài khoản hiện tại không có quyền mở trang này")))
+                .andExpect(content().string(containsString("Về bàn khám")))
+                .andExpect(content().string(org.hamcrest.Matchers.not(containsString("Whitelabel Error Page"))));
+    }
+
+    @Test
+    void apiForbiddenRemainsJsonAndMissingWebPageIs404() throws Exception {
+        mockMvc.perform(get("/actuator/metrics").accept(MediaType.APPLICATION_JSON).with(
+                        SecurityMockMvcRequestPostProcessors.user("doctor").roles("DOCTOR")))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.code").value("FORBIDDEN"));
+        mockMvc.perform(get("/this-page-does-not-exist").with(
+                        SecurityMockMvcRequestPostProcessors.user("doctor").roles("DOCTOR")))
+                .andExpect(status().isNotFound())
+                .andExpect(content().string(containsString("Không tìm thấy trang")));
+        mockMvc.perform(get("/error").requestAttr(jakarta.servlet.RequestDispatcher.ERROR_STATUS_CODE, 500))
+                .andExpect(status().isInternalServerError())
+                .andExpect(content().string(containsString("Vui lòng thử lại sau")));
     }
 
     @Test

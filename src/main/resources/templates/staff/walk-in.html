@@ -17,9 +17,9 @@
                     <li class="breadcrumb-item active" aria-current="page">Tiếp nhận vãng lai</li>
                 </ol>
             </nav>
-            <h3 class="mc-page-title">
+            <h1 class="mc-page-title">
                 <i class="bi bi-person-plus-fill text-primary me-2"></i>Đăng Ký Khám Trực Tiếp Tại Quầy (Walk-in)
-            </h3>
+            </h1>
         </div>
         <div>
             <a th:href="@{/staff/reception}" class="btn btn-sm btn-outline-secondary">
@@ -35,9 +35,9 @@
                 <form th:action="@{/staff/walk-in}" method="post" id="walkInForm">
 
                     <!-- Patient Info Section -->
-                    <h5 class="mc-step-title">
+                    <h2 class="mc-step-title">
                         <i class="bi bi-person-vcard text-primary me-2"></i>1. Thông Tin Bệnh Nhân
-                    </h5>
+                    </h2>
 
                     <div class="row g-3 mb-4">
                         <div class="col-md-6">
@@ -69,9 +69,9 @@
                     <p class="small text-muted mb-4">Hồ sơ vãng lai không tạo tài khoản đăng nhập. Bệnh nhân có thể đăng ký tài khoản sau bằng email đã xác thực.</p>
 
                     <!-- Medical Assignment Section -->
-                    <h5 class="mc-step-title">
+                    <h2 class="mc-step-title">
                         <i class="bi bi-hospital text-success me-2"></i>2. Chỉ Định Khám & Khung Giờ
-                    </h5>
+                    </h2>
 
                     <div class="row g-3 mb-3">
                         <div class="col-md-6">
@@ -99,8 +99,8 @@
                         </div>
 
                         <div class="col-md-6">
-                            <label for="reason" class="form-label fw-semibold small">Lý do khám / Triệu chứng</label>
-                            <input type="text" class="form-control" id="reason" name="reason" placeholder="Triệu chứng sơ bộ...">
+                            <label for="reason" class="form-label fw-semibold small">Lý do khám / Triệu chứng <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="reason" name="reason" required maxlength="1000" placeholder="Triệu chứng sơ bộ...">
                         </div>
                     </div>
 
@@ -108,23 +108,28 @@
                     <div class="mb-4">
                         <label class="form-label fw-semibold small mb-2">Chọn khung giờ còn trống <span class="text-danger">*</span></label>
 
-                        <div id="slotStatePrompt" class="alert alert-light border small text-muted text-center py-2">
+                        <div id="slotStatePrompt" role="status" aria-live="polite" class="alert alert-light border small text-muted text-center py-2">
                             Vui lòng chọn Bác sĩ và Ngày khám để hiển thị khung giờ.
                         </div>
 
-                        <div id="slotStateLoading" class="text-center py-3 d-none">
+                        <div id="slotStateLoading" role="status" aria-live="polite" class="text-center py-3 d-none">
                             <div class="spinner-border spinner-border-sm text-primary"></div>
                             <span class="small text-muted ms-2">Đang tải slot...</span>
                         </div>
 
-                        <div id="slotStateEmpty" class="alert alert-warning small py-2 d-none">
+                        <div id="slotStateEmpty" role="status" aria-live="polite" class="alert alert-warning small py-2 d-none">
                             Không có khung giờ trống nào cho bác sĩ trong ngày này.
                         </div>
 
-                        <div id="slotGrid" class="row row-cols-2 row-cols-sm-4 g-2 d-none">
+<div id="slotStateError" class="alert alert-danger p-3 d-none" role="alert">
+                            <p class="mb-2">Chưa tải được lịch khám. Kiểm tra kết nối rồi thử lại; lựa chọn bác sĩ và ngày khám vẫn được giữ.</p>
+                            <button type="button" id="retrySlots" class="btn btn-outline-danger">Thử tải lại</button>
+                        </div>
+                        <div id="slotGrid" class="row row-cols-2 row-cols-sm-4 g-2 d-none" role="group" aria-label="Các khung giờ khám khả dụng">
                             <!-- Dynamic buttons -->
                         </div>
 
+                        <div id="slotSelectionStatus" class="visually-hidden" role="status" aria-live="polite"></div>
                         <input type="hidden" name="slotId" id="selectedSlotId" required>
                     </div>
 
@@ -145,6 +150,7 @@
 </div>
 
 <div layout:fragment="scripts">
+<script th:src="@{/js/slot-picker.js(v='3.0')}"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const specialtySelect = document.getElementById('specialtySelect');
@@ -157,6 +163,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const slotStatePrompt = document.getElementById('slotStatePrompt');
     const slotStateLoading = document.getElementById('slotStateLoading');
     const slotStateEmpty = document.getElementById('slotStateEmpty');
+    const slotStateError = document.getElementById('slotStateError');
 
     // Default date = today
     const today = new Date();
@@ -185,77 +192,14 @@ document.addEventListener('DOMContentLoaded', function () {
     doctorSelect.addEventListener('change', loadTimeSlots);
     appointmentDate.addEventListener('change', loadTimeSlots);
 
-    function clearSlots() {
-        slotGrid.innerHTML = '';
-        slotGrid.classList.add('d-none');
-        slotStatePrompt.classList.remove('d-none');
-        slotStateLoading.classList.add('d-none');
-        slotStateEmpty.classList.add('d-none');
-        selectedSlotId.value = '';
-        submitBtn.disabled = true;
-    }
-
-    function loadTimeSlots() {
-        const docId = doctorSelect.value;
-        const dateVal = appointmentDate.value;
-
-        if (!docId || !dateVal) {
-            clearSlots();
-            return;
-        }
-
-        slotStatePrompt.classList.add('d-none');
-        slotStateEmpty.classList.add('d-none');
-        slotGrid.classList.add('d-none');
-        slotStateLoading.classList.remove('d-none');
-        selectedSlotId.value = '';
-        submitBtn.disabled = true;
-
-        fetch(`/api/public/doctors/${docId}/slots?date=${dateVal}`)
-            .then(res => res.json())
-            .then(slots => {
-                slotStateLoading.classList.add('d-none');
-                slotGrid.innerHTML = '';
-
-                if (!slots || slots.length === 0) {
-                    slotStateEmpty.classList.remove('d-none');
-                    return;
-                }
-
-                slotGrid.classList.remove('d-none');
-                slots.forEach(slot => {
-                    const col = document.createElement('div');
-                    col.className = 'col';
-
-                    const isAvailable = slot.status === 'AVAILABLE';
-                    const timeText = `${slot.startTime.substring(0, 5)} - ${slot.endTime.substring(0, 5)}`;
-
-                    const btn = document.createElement('button');
-                    btn.type = 'button';
-                    btn.className = 'slot-btn w-100';
-                    btn.textContent = timeText;
-                    btn.dataset.slotId = slot.id;
-
-                    if (!isAvailable) {
-                        btn.disabled = true;
-                    } else {
-                        btn.addEventListener('click', function () {
-                            document.querySelectorAll('.slot-btn.selected').forEach(el => el.classList.remove('selected'));
-                            this.classList.add('selected');
-                            selectedSlotId.value = this.dataset.slotId;
-                            submitBtn.disabled = false;
-                        });
-                    }
-
-                    col.appendChild(btn);
-                    slotGrid.appendChild(col);
-                });
-            })
-            .catch(err => {
-                slotStateLoading.classList.add('d-none');
-                slotStateEmpty.classList.remove('d-none');
-            });
-    }
+    const picker = window.MedClinicSlots({grid: slotGrid, selected: selectedSlotId, submit: submitBtn,
+        prompt: slotStatePrompt, loading: slotStateLoading, empty: slotStateEmpty, error: slotStateError,
+        onSelect: time => { document.getElementById('slotSelectionStatus').textContent = 'Đã chọn khung giờ ' + time; },
+        onReset: () => { document.getElementById('slotSelectionStatus').textContent = ''; }
+    });
+    function clearSlots() { picker.clear(); }
+    function loadTimeSlots() { picker.load(doctorSelect.value, appointmentDate.value); }
+    document.getElementById('retrySlots').addEventListener('click', loadTimeSlots);
 });
 </script>
 </div>

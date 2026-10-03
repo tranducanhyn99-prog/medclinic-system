@@ -1,7 +1,7 @@
 package com.medclinic.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 import com.medclinic.service.DashboardService;
 import com.medclinic.service.DoctorService;
 import com.medclinic.service.MedicineService;
@@ -22,6 +22,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.validation.BindingResult;
 
 import java.math.BigDecimal;
+import java.util.LinkedHashMap;
+import com.medclinic.enums.AppointmentStatus;
 
 @Controller
 @RequestMapping("/admin")
@@ -36,16 +38,26 @@ public class AdminController {
     private final ObjectMapper objectMapper;
 
     @GetMapping("/dashboard")
-    public String dashboard(Model model) throws JsonProcessingException {
+    public String dashboard(Model model) throws JacksonException {
         model.addAttribute("totalPatients", dashboardService.countTotalPatients());
         model.addAttribute("totalDoctors", dashboardService.countTotalDoctors());
         model.addAttribute("todayAppointments", dashboardService.countTodayAppointments());
         model.addAttribute("totalRevenue", dashboardService.getTotalRevenue());
         model.addAttribute("lowStockCount", medicineService.countLowStock());
         
-        model.addAttribute("statusChartData", objectMapper.writeValueAsString(dashboardService.getAppointmentsByStatusGroup()));
-        model.addAttribute("specialtyChartData", objectMapper.writeValueAsString(dashboardService.getAppointmentsBySpecialtyGroup()));
-        
+        var statusSummary = new LinkedHashMap<String, Long>();
+        dashboardService.getAppointmentsByStatusGroup().forEach((status, count) -> {
+            String label;
+            try { label = AppointmentStatus.valueOf(status).getDisplayName(); }
+            catch (IllegalArgumentException ex) { label = status; }
+            statusSummary.put(label, count);
+        });
+        var specialtySummary = dashboardService.getAppointmentsBySpecialtyGroup();
+        model.addAttribute("statusSummary", statusSummary);
+        model.addAttribute("specialtySummary", specialtySummary);
+        model.addAttribute("statusChartData", objectMapper.writeValueAsString(statusSummary));
+        model.addAttribute("specialtyChartData", objectMapper.writeValueAsString(specialtySummary));
+
         return "admin/dashboard";
     }
 

@@ -20,9 +20,9 @@
             <div class="mc-profile-card mb-4">
                 <div class="mc-profile-identity">
                     <div class="mc-profile-avatar overflow-hidden">
-                        <img th:if="${user.avatarUrl != null}" th:src="${user.avatarUrl}" alt="Ảnh đại diện"
+                        <img th:if="${!#strings.isEmpty(user.avatarUrl)}" th:src="${user.avatarUrl}" alt="Ảnh đại diện" data-avatar
                              style="width:100%;height:100%;object-fit:cover">
-                        <span th:unless="${user.avatarUrl != null}" th:text="${#strings.substring(user.fullName, 0, 1)}">U</span>
+                        <span data-avatar-fallback th:hidden="${!#strings.isEmpty(user.avatarUrl)}" th:text="${#strings.substring(user.fullName, 0, 1)}">U</span>
                     </div>
                     <div>
                         <h2 class="mc-profile-name" th:text="${user.fullName}">Nguyễn Văn An</h2>
@@ -101,7 +101,8 @@
                             <div class="col-md-4">
                                 <label for="profileNewPassword" class="form-label">Mật khẩu mới</label>
                                 <input id="profileNewPassword" type="password" name="newPassword" class="form-control"
-                                       placeholder="Tối thiểu 8 ký tự" autocomplete="new-password" required>
+                                       placeholder="Tối thiểu 8 ký tự" minlength="8" maxlength="72" autocomplete="new-password" aria-describedby="profilePasswordHelp" required>
+                                <div id="profilePasswordHelp" class="form-text">Tối đa 72 byte UTF-8; chữ có dấu và emoji có thể đạt giới hạn sớm hơn.</div>
                             </div>
                             <div class="col-md-4">
                                 <label for="profileConfirmPassword" class="form-label">Xác nhận mật khẩu mới</label>

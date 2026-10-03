@@ -16,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
@@ -27,6 +28,15 @@ public class PdfExportServiceImpl implements PdfExportService {
 
     private final AppointmentRepository appointmentRepository;
     private final InvoiceRepository invoiceRepository;
+
+    @Value("${app.name:MedClinic - Phòng Khám Đa Khoa Tư Nhân}")
+    private String clinicName = "MedClinic - Phòng Khám Đa Khoa Tư Nhân";
+    @Value("${app.address:123 Đường Nguyễn Trãi, Quận 5, TP. Hồ Chí Minh}")
+    private String clinicAddress = "123 Đường Nguyễn Trãi, Quận 5, TP. Hồ Chí Minh";
+    @Value("${app.hotline:1900 6868}")
+    private String clinicHotline = "1900 6868";
+    @Value("${app.email:support@medclinic.vn}")
+    private String clinicEmail = "support@medclinic.vn";
 
     @Override
     @Transactional(readOnly = true)
@@ -122,48 +132,11 @@ public class PdfExportServiceImpl implements PdfExportService {
         }
 
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-            Document document = new Document(PageSize.A4);
-            PdfWriter.getInstance(document, baos);
-            document.open();
-
-            Font font = getFont(12, Font.NORMAL);
-            Font boldFont = getFont(14, Font.BOLD);
-            Font titleFont = getFont(18, Font.BOLD);
-
-            Paragraph clinicName = new Paragraph("PHÒNG KHÁM MEDCLINIC", titleFont);
-            clinicName.setAlignment(Element.ALIGN_CENTER);
-            document.add(clinicName);
-
-            Paragraph title = new Paragraph("HÓA ĐƠN THANH TOÁN", boldFont);
-            title.setAlignment(Element.ALIGN_CENTER);
-            title.setSpacingBefore(20);
-            title.setSpacingAfter(20);
-            document.add(title);
-
-            User patient = invoice.getAppointment().getPatient();
-            document.add(new Paragraph("Mã hóa đơn: " + (invoice.getInvoiceCode() != null ? invoice.getInvoiceCode() : String.valueOf(invoice.getId())), font));
-            document.add(new Paragraph("Họ tên bệnh nhân: " + patient.getFullName(), font));
-            document.add(new Paragraph("Ngày thanh toán: " + (invoice.getPaidAt() != null ? invoice.getPaidAt().toString() : ""), font));
-            document.add(new Paragraph("Hình thức thanh toán: " + (invoice.getPaymentMethod() != null ? invoice.getPaymentMethod().getDisplayName() : ""), font));
-
-            document.add(new Paragraph(" "));
-
-            PdfPTable table = new PdfPTable(2);
-            table.setWidthPercentage(100);
-
-            addCell(table, "Khoản phí", boldFont);
-            addCell(table, "Thành tiền (VND)", boldFont);
-
-            addCell(table, "Phí khám", font);
-            addCell(table, String.valueOf(invoice.getConsultationFee()), font);
-
-            addCell(table, "Phí thuốc", font);
-            addCell(table, String.valueOf(invoice.getMedicineFee()), font);
-
-            addCell(table, "Tổng tiền", boldFont);
-            addCell(table, String.valueOf(invoice.getTotalAmount()), boldFont);
-
-            document.add(table);
+            Document document = new Document(PageSize.A4, 40, 40, 36, 48);
+            PdfWriter writer = PdfWriter.getInstance(document, baos);
+            new InvoicePdfLayout(getFont(10, Font.NORMAL), getFont(10, Font.BOLD),
+                    getFont(8, Font.NORMAL), getFont(18, Font.BOLD), getFont(22, Font.BOLD))
+                    .write(document, writer, invoice, clinicName, clinicAddress, clinicHotline, clinicEmail);
 
             document.close();
             return baos.toByteArray();

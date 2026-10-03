@@ -78,7 +78,7 @@
                     <div>
                         <div class="mc-kpi-label">Doanh thu viện phí</div>
                         <div class="mc-kpi-value"
-                            th:text="${#numbers.formatDecimal(totalRevenue, 0, 'COMMA', 0, 'POINT') + ' đ'}">0 đ</div>
+                            th:text="${@money.vnd(totalRevenue)}">0 đ</div>
                     </div>
                     <div class="mc-kpi-icon">
                         <i class="bi bi-cash-coin fs-3"></i>
@@ -96,8 +96,17 @@
                 <h2 class="h6 fw-bold text-dark mb-3">
                     <i class="bi bi-pie-chart-fill text-primary me-2"></i>Trạng thái lịch hẹn
                 </h2>
-                <div class="chart-container" style="position: relative; height: 260px;">
-                    <canvas id="statusChart"></canvas>
+                <div th:if="${!#maps.isEmpty(statusSummary)}" class="chart-container" style="position: relative; height: 260px;">
+                    <canvas id="statusChart" role="img" aria-label="Trạng thái lịch hẹn" aria-describedby="statusData"></canvas>
+                </div>
+                <div class="table-responsive mt-3" id="statusData">
+                    <table class="table table-sm mb-0">
+                        <caption class="visually-hidden">Trạng thái lịch hẹn: số liệu tương đương biểu đồ</caption>
+                        <thead><tr><th scope="col">Trạng thái</th><th scope="col" class="text-end">Số lượt</th></tr></thead>
+                        <tbody><tr th:each="entry : ${statusSummary}"><th scope="row" th:text="${entry.key}"></th><td class="text-end" th:text="${entry.value}"></td></tr>
+                            <tr th:if="${#maps.isEmpty(statusSummary)}"><td colspan="2">Chưa có dữ liệu lịch hẹn.</td></tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -108,8 +117,17 @@
                 <h2 class="h6 fw-bold text-dark mb-3">
                     <i class="bi bi-bar-chart-fill text-success me-2"></i>Lượt đặt khám theo chuyên khoa
                 </h2>
-                <div class="chart-container" style="position: relative; height: 260px;">
-                    <canvas id="specialtyChart"></canvas>
+                <div th:if="${!#maps.isEmpty(specialtySummary)}" class="chart-container" style="position: relative; height: 260px;">
+                    <canvas id="specialtyChart" role="img" aria-label="Lượt đặt khám theo chuyên khoa" aria-describedby="specialtyData"></canvas>
+                </div>
+                <div class="table-responsive mt-3" id="specialtyData">
+                    <table class="table table-sm mb-0">
+                        <caption class="visually-hidden">Lượt đặt khám theo chuyên khoa: số liệu tương đương biểu đồ</caption>
+                        <thead><tr><th scope="col">Chuyên khoa</th><th scope="col" class="text-end">Số lượt</th></tr></thead>
+                        <tbody><tr th:each="entry : ${specialtySummary}"><th scope="row" th:text="${entry.key}"></th><td class="text-end" th:text="${entry.value}"></td></tr>
+                            <tr th:if="${#maps.isEmpty(specialtySummary)}"><td colspan="2">Chưa có dữ liệu lịch hẹn.</td></tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -155,6 +173,7 @@
 </div>
 
 <div layout:fragment="scripts">
+<script defer th:src="@{/js/vendor/chart.umd-4.5.1.min.js}"></script>
 <script th:inline="javascript">
 /*<![CDATA[*/
 const statusRawData = JSON.parse(/*[[${statusChartData}]]*/ '{}');
@@ -162,60 +181,46 @@ const specialtyRawData = JSON.parse(/*[[${specialtyChartData}]]*/ '{}');
 /*]]>*/
 
 document.addEventListener('DOMContentLoaded', function () {
-    // 1. Status Donut Chart
-    const statusLabels = Object.keys(statusRawData);
-    const statusValues = Object.values(statusRawData);
-
-    const statusCtx = document.getElementById('statusChart').getContext('2d');
-    new Chart(statusCtx, {
-        type: 'doughnut',
-        data: {
-            labels: statusLabels.length > 0 ? statusLabels : ['Chưa có dữ liệu'],
-            datasets: [{
-                data: statusValues.length > 0 ? statusValues : [1],
-                backgroundColor: statusLabels.length > 0 ? ['#0f6f8f', '#b7791f', '#15803d', '#b42318', '#667085'] : ['#e5e7eb'],
-                borderWidth: 2,
-                borderColor: '#ffffff'
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { position: 'bottom' }
-            }
-        }
+    if (!window.Chart) return; // The server-rendered tables remain usable without the library.
+    const charts = [];
+    function colors() {
+        const css = getComputedStyle(document.documentElement);
+        const token = name => css.getPropertyValue('--mc-' + name).trim();
+        return { text: token('text'), border: token('border-strong'), surface: token('surface'),
+            palette: ['primary', 'warning', 'success', 'danger', 'text-muted', 'info'].map(token) };
+    }
+    const initial = colors();
+    function create(id, type, raw) {
+        if (!Object.keys(raw).length) return;
+        charts.push(new Chart(document.getElementById(id), {
+            type, data: { labels: Object.keys(raw), datasets: [{ label: 'Số lượt', data: Object.values(raw),
+                backgroundColor: type === 'bar' ? initial.palette[0] : initial.palette,
+                borderColor: initial.surface, borderWidth: type === 'bar' ? 0 : 2, borderRadius: type === 'bar' ? 6 : 0 }] },
+            options: { responsive: true, maintainAspectRatio: false,
+                animation: !window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+                plugins: { legend: { display: type !== 'bar', position: 'bottom', labels: { color: initial.text } } },
+                scales: type === 'bar' ? { x: { ticks: { color: initial.text }, grid: { color: initial.border } },
+                    y: { beginAtZero: true, ticks: { precision: 0, color: initial.text }, grid: { color: initial.border } } } : {} }
+        }));
+    }
+    create('statusChart', 'doughnut', statusRawData);
+    create('specialtyChart', 'bar', specialtyRawData);
+    window.matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change', function (event) {
+        charts.forEach(chart => { chart.options.animation = !event.matches; chart.update('none'); });
     });
-
-    // 2. Specialty Bar Chart
-    const specLabels = Object.keys(specialtyRawData);
-    const specValues = Object.values(specialtyRawData);
-
-    const specCtx = document.getElementById('specialtyChart').getContext('2d');
-    new Chart(specCtx, {
-        type: 'bar',
-        data: {
-            labels: specLabels.length > 0 ? specLabels : ['Chưa có dữ liệu'],
-            datasets: [{
-                label: 'Số ca khám',
-                data: specValues.length > 0 ? specValues : [0],
-                backgroundColor: '#0f6f8f',
-                borderRadius: 6
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: { precision: 0 }
-                }
-            },
-            plugins: {
-                legend: { display: false }
-            }
-        }
+    document.addEventListener('medclinic:theme-change', function () {
+        const theme = colors();
+        charts.forEach(chart => {
+            chart.data.datasets[0].backgroundColor = chart.config.type === 'bar' ? theme.palette[0] : theme.palette;
+            chart.data.datasets[0].borderColor = theme.surface;
+            chart.options.plugins.legend.labels.color = theme.text;
+            Object.values(chart.options.scales).forEach(scale => {
+                scale.ticks.color = theme.text;
+                scale.grid.color = theme.border;
+                scale.border.color = theme.border;
+            });
+            chart.update('none');
+        });
     });
 });
 </script>

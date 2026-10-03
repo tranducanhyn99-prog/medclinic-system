@@ -1,0 +1,7 @@
+{
+  "fixture": "acceptance-backup-qr.png",
+  "originalSha256": "B64062FA5DF86D2E63CF8966033487F57DF3D0B7C571DDB6FA2F0A1DC15B3C5A",
+  "backupSha256": "B64062FA5DF86D2E63CF8966033487F57DF3D0B7C571DDB6FA2F0A1DC15B3C5A",
+  "restoreComparison": "PASS: cmp inside acceptance-app",
+  "backupDirectory": "backups/acceptance-20261002/20261002_074802"
+}

@@ -72,7 +72,14 @@
             <div class="col-md-6 col-xl-4" th:each="doctor : ${doctors}">
                 <article class="mc-doctor-card d-flex flex-column">
                     <div class="d-flex align-items-start gap-3">
-                        <div class="mc-doctor-avatar" aria-hidden="true"><i class="bi bi-person-badge"></i></div>
+                        <div class="mc-doctor-avatar mc-doctor-avatar--list">
+                            <img th:if="${doctor.user.avatarUrl != null and !doctor.user.avatarUrl.isBlank()}"
+                                 th:src="@{/api/public/doctors/{id}/avatar(id=${doctor.id},size=128)}"
+                                     th:srcset="@{/api/public/doctors/{id}/avatar(id=${doctor.id},size=128)} + ' 128w, ' + @{/api/public/doctors/{id}/avatar(id=${doctor.id},size=256)} + ' 256w, ' + @{/api/public/doctors/{id}/avatar(id=${doctor.id},size=512)} + ' 512w'"
+                                     sizes="(max-width: 575px) 64px, 128px" width="128" height="128" data-doctor-avatar th:alt="${'Ảnh bác sĩ ' + doctor.user.fullName}" loading="lazy">
+                            <span data-avatar-fallback th:hidden="${doctor.user.avatarUrl != null and !doctor.user.avatarUrl.isBlank()}"
+                                  th:text="${#strings.substring(doctor.user.fullName, 0, 1)}" aria-hidden="true">B</span>
+                        </div>
                         <div class="min-w-0">
                             <span class="badge bg-info-subtle text-info-emphasis mb-2" th:text="${doctor.specialty.name}">Nội khoa</span>
                             <h3 class="h5 fw-bold mb-0" th:text="${doctor.title + ' ' + doctor.user.fullName}">BS. Nguyễn Văn A</h3>
@@ -85,20 +92,41 @@
                             <span class="mc-meta-value" th:text="${doctor.experienceYears + ' năm'}">5 năm</span>
                         </div>
                         <div>
-                            <span class="mc-meta-label">Phí tư vấn</span>
+                            <span class="mc-meta-label">Phí khám</span>
                             <span class="mc-meta-value text-primary"
-                                  th:text="${#numbers.formatDecimal(doctor.consultationFee, 0, 'COMMA', 0, 'POINT') + ' đ'}">300.000 đ</span>
+                                  th:text="${@money.vnd(doctor.consultationFee)}">300.000 đ</span>
                         </div>
                     </div>
 
-                    <p class="text-muted small mb-4 flex-grow-1"
+                    <p class="text-muted small mb-3 flex-grow-1"
                        th:text="${doctor.bio != null && !doctor.bio.isBlank() ? doctor.bio : 'Bác sĩ giàu kinh nghiệm, sẵn sàng tư vấn và điều trị.'}">
                         Giới thiệu bác sĩ
                     </p>
 
-                    <a th:href="@{/doctors/{id}(id=${doctor.id})}" class="btn btn-med-outline justify-content-center">
-                        Xem hồ sơ <i class="bi bi-arrow-right ms-1"></i>
-                    </a>
+                    <div class="mc-doctor-contact-list pt-2 pb-3 mb-3 border-top border-light-subtle">
+                        <div class="d-flex align-items-center gap-2 text-muted small mb-1">
+                            <i class="bi bi-telephone text-primary"></i>
+                            <a th:href="${'tel:' + doctor.user.phone}" class="text-decoration-none text-dark fw-medium"
+                               th:text="${doctor.user.phone != null ? doctor.user.phone : '1900 6868'}">0911 000 001</a>
+                        </div>
+                        <div class="d-flex align-items-center gap-2 text-muted small mb-1">
+                            <i class="bi bi-envelope text-primary"></i>
+                            <span class="text-truncate" th:text="${doctor.user.email}">doctor@medclinic.vn</span>
+                        </div>
+                        <div class="d-flex align-items-center gap-2 text-muted small">
+                            <i class="bi bi-geo-alt text-primary"></i>
+                            <span th:text="${'Phòng khám ' + (100 + doctor.id) + ' • Tầng 2, Khu B'}">Phòng khám 101 • Tầng 2, Khu B</span>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <a th:href="@{/doctors/{id}(id=${doctor.id})}" class="btn btn-med-outline flex-fill justify-content-center">
+                            Xem hồ sơ <i class="bi bi-arrow-right ms-1"></i>
+                        </a>
+                        <a th:href="@{/patient/booking(doctorId=${doctor.id})}" class="btn btn-med-primary flex-fill justify-content-center">
+                            <i class="bi bi-calendar-plus"></i> Đặt khám
+                        </a>
+                    </div>
                 </article>
             </div>
         </div>

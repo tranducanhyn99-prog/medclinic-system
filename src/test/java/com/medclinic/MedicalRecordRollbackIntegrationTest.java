@@ -10,7 +10,7 @@ import com.medclinic.service.MedicalRecordService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.context.ActiveProfiles;
 
@@ -35,7 +35,7 @@ class MedicalRecordRollbackIntegrationTest {
     @Autowired private MedicineRepository medicines;
     @Autowired private InventoryTransactionRepository inventoryTransactions;
     @Autowired private UserRepository users;
-    @MockBean private InvoiceService invoiceService;
+    @MockitoBean private InvoiceService invoiceService;
 
     @Test
     @WithUserDetails("doctor")

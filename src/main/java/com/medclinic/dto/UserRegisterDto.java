@@ -18,7 +18,7 @@ public class UserRegisterDto {
     private String username;
 
     @NotBlank(message = "Mật khẩu không được để trống")
-    @Size(min = 6, message = "Mật khẩu tối thiểu 6 ký tự")
+    @com.medclinic.validation.ValidPassword
     private String password;
 
     @NotBlank(message = "Vui lòng xác nhận lại mật khẩu")
@@ -42,4 +42,3 @@ public class UserRegisterDto {
 
     private String address;
 }
-

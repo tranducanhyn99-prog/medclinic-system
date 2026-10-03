@@ -63,6 +63,7 @@ public class DoctorServiceImpl implements DoctorService {
     @Transactional(readOnly = true)
     public List<DoctorProfile> filterDoctors(Long specialtyId, BigDecimal maxFee, String keyword) {
         return findAll().stream()
+                .filter(com.medclinic.util.DoctorAvailability::acceptsBookings)
                 .filter(doc -> specialtyId == null || (doc.getSpecialty() != null && doc.getSpecialty().getId().equals(specialtyId)))
                 .filter(doc -> maxFee == null || doc.getConsultationFee().compareTo(maxFee) <= 0)
                 .filter(doc -> {
@@ -105,6 +106,7 @@ public class DoctorServiceImpl implements DoctorService {
     @Transactional
     @PreAuthorize("hasRole('ADMIN')")
     public DoctorProfile registerDoctor(AdminDoctorCreateDto doctorDto) {
+        com.medclinic.util.PasswordPolicy.requireValid(doctorDto.getPassword());
         validateProfile(doctorDto.getTitle(), doctorDto.getExperienceYears(), doctorDto.getConsultationFee());
         String username = doctorDto.getUsername().trim();
         String email = doctorDto.getEmail().trim().toLowerCase();

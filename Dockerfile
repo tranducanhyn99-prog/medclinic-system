@@ -8,6 +8,7 @@ COPY src ./src
 RUN mvn --batch-mode --no-transfer-progress -DskipTests package
 
 FROM eclipse-temurin:21-jre
+ENV TZ=Asia/Ho_Chi_Minh
 WORKDIR /app
 
 RUN useradd --system --uid 10001 medclinic \

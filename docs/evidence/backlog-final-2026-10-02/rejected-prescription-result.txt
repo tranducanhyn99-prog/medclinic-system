@@ -1,0 +1,1 @@
+PASS: database snapshot unchanged after invalid prescription.

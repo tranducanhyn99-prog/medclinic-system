@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<body>
+<div th:fragment="nurseMascot" class="mc-mascot-widget" aria-label="Trợ lý y tế An Nhiên">
+    <div class="mc-mascot-bubble mc-bubble-dismissed" hidden inert id="mascotBubble" role="dialog" aria-labelledby="mascotHelpTitle">
+        <div class="d-flex align-items-center justify-content-between mb-1 gap-2">
+            <span class="mc-mascot-bubble-tag"><i class="bi bi-heart-pulse-fill me-1 text-danger"></i>Điều dưỡng An Nhiên</span>
+            <button type="button" class="mc-mascot-bubble-close" id="closeMascotBubble" aria-label="Đóng hướng dẫn">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+        <strong id="mascotHelpTitle" class="mc-mascot-bubble-title">Hướng dẫn trong MedClinic</strong>
+        <p sec:authorize="isAnonymous() or hasRole('PATIENT')" class="mc-mascot-bubble-desc mb-2">Chọn bác sĩ và giờ khám, lưu phiếu hẹn QR rồi xuất trình tại quầy tiếp nhận.</p>
+        <p sec:authorize="hasRole('DOCTOR')" class="mc-mascot-bubble-desc mb-2">Hàng chờ ưu tiên bệnh nhân cần khám. Kiểm tra thông tin bệnh nhân, chẩn đoán và đơn thuốc trước khi lưu bệnh án.</p>
+        <p sec:authorize="hasRole('STAFF')" class="mc-mascot-bubble-desc mb-2">Quét QR hoặc tìm tên, số điện thoại để tra lịch hẹn. Tiếp nhận sẽ cấp số thứ tự; ca khám hoàn tất chuyển sang quầy thu ngân.</p>
+        <p sec:authorize="hasRole('ADMIN')" class="mc-mascot-bubble-desc mb-2">Quản lý chuyên khoa, bác sĩ, kho thuốc và tài khoản từ điều hướng bên trái. Kiểm tra dữ liệu trước khi lưu thay đổi.</p>
+        <div class="d-flex gap-1.5 flex-wrap">
+            <a sec:authorize="isAnonymous() or hasRole('PATIENT')" th:href="@{/patient/booking}" class="btn btn-sm btn-med-primary py-1 px-2.5 mc-mascot-bubble-btn">
+                <i class="bi bi-calendar-plus me-1"></i>Đặt khám
+            </a>
+            <a sec:authorize="hasRole('DOCTOR')" th:href="@{/doctor/desk}" class="btn btn-sm btn-med-primary mc-mascot-bubble-btn">Bàn khám</a>
+            <a sec:authorize="hasRole('STAFF')" th:href="@{/staff/reception}" class="btn btn-sm btn-med-primary mc-mascot-bubble-btn">Tiếp nhận</a>
+            <a sec:authorize="hasRole('ADMIN')" th:href="@{/admin/dashboard}" class="btn btn-sm btn-med-primary mc-mascot-bubble-btn">Quản trị</a>
+            <a href="tel:19006868" class="btn btn-sm btn-outline-primary py-1 px-2 mc-mascot-bubble-btn">
+                <i class="bi bi-telephone-fill me-1"></i>1900 6868
+            </a>
+        </div>
+    </div>
+    <button type="button"
+            class="mc-page-mascot mc-mascot-launcher"
+            data-page-mascot
+            aria-controls="mascotBubble" aria-expanded="false"
+            data-directions="/images/mascots/nurse-directions.webp"
+            data-reactions="/images/mascots/nurse-reactions.webp"
+            aria-label="Mở hướng dẫn từ điều dưỡng An Nhiên"
+            title="Điều dưỡng An Nhiên">
+        <span class="mc-mascot-halo" aria-hidden="true"></span>
+        <span class="mc-page-mascot-stage" data-mascot-stage>
+            <span class="mc-page-mascot-layer" data-mascot-directions-layer></span>
+            <span class="mc-page-mascot-layer" data-mascot-reactions-layer></span>
+        </span>
+        <span class="mc-mascot-label">Trợ giúp</span>
+    </button>
+</div>
+</body>
+</html>

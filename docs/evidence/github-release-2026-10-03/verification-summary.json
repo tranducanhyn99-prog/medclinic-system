@@ -1,0 +1,53 @@
+{
+  "completedAt": "2026-10-03T09:42:11+07:00",
+  "command": "mvn -B --no-transfer-progress clean verify",
+  "build": "SUCCESS",
+  "suites": 71,
+  "tests": 214,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "sqlServerTests": 31,
+  "databaseScope": "Disposable local medclinic_e2e and medclinic_flyway_it only",
+  "coverage": {
+    "BRANCH": {
+      "covered": 687,
+      "missed": 332,
+      "percent": 67.42
+    },
+    "LINE": {
+      "covered": 2082,
+      "missed": 383,
+      "percent": 84.46
+    }
+  },
+  "node": {
+    "tests": 24,
+    "passed": 24,
+    "skipped": 0
+  },
+  "cleanup": {
+    "removedFiles": 54,
+    "removedBytes": 10219038.0
+  },
+  "candidateSecretAudit": {
+    "checkedFiles": 447,
+    "scope": "tracked and non-ignored candidate files; exact local env secrets and private-key/GitHub/AWS patterns; not whole-history or exhaustive secret detection",
+    "findings": []
+  },
+  "dependencies": {
+    "springBoot": "4.1.1",
+    "springSecurity": "7.1.1",
+    "springFramework": "7.0.9",
+    "tomcat": "11.0.26",
+    "jackson": "3.1.7",
+    "hibernate": "7.4.5.Final",
+    "flyway": "12.4.0"
+  },
+  "stagedAudit": {
+    "checkedFiles": 254,
+    "findings": [],
+    "scope": "Exact staged bytes, local env secret values and private-key/GitHub/AWS patterns, plus prohibited private paths; not exhaustive or whole-history."
+  },
+  "documentationLocalTargets": 196
+}

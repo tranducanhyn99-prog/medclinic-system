@@ -4,6 +4,7 @@ import com.medclinic.dto.UserRegisterDto;
 import com.medclinic.entity.User;
 import com.medclinic.enums.AuthChallengeType;
 import com.medclinic.enums.Gender;
+import com.medclinic.enums.RoleType;
 import com.medclinic.security.CustomUserDetails;
 import com.medclinic.security.SecurityAuditService;
 import com.medclinic.service.AuthVerificationService;
@@ -23,6 +24,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.core.env.Environment;
+import org.springframework.core.env.Profiles;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -36,6 +39,7 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 public class AuthController {
     private static final String PENDING_OTP_CHALLENGE_ID = "PENDING_OTP_CHALLENGE_ID";
+    private static final String CONTINUE_BOOKING = "CONTINUE_BOOKING";
 
     private final UserService userService;
     private final PasswordResetService passwordResetService;
@@ -43,11 +47,19 @@ public class AuthController {
     private final AvatarStorageService avatarStorageService;
     private final AuthenticationManager authenticationManager;
     private final SecurityAuditService securityAuditService;
+    private final Environment environment;
 
     @GetMapping("/login")
     public String loginPage(@RequestParam(required = false) String error,
                             @RequestParam(required = false) String logout,
+                            @RequestParam(required = false) String next,
+                            HttpServletRequest request,
                             Model model) {
+        model.addAttribute("demoLoginEnabled", environment.acceptsProfiles(Profiles.of("dev"))
+                && !environment.acceptsProfiles(Profiles.of("prod")));
+        if ("/patient/booking".equals(next)) {
+            request.getSession(true).setAttribute(CONTINUE_BOOKING, Boolean.TRUE);
+        }
         if (error != null) {
             model.addAttribute("errorMessage", "Tên đăng nhập hoặc mật khẩu không chính xác!");
         }
@@ -72,7 +84,7 @@ public class AuthController {
                 establishSession(user, request);
                 securityAuditService.authenticationSuccess(user.getUsername(), request.getRemoteAddr());
                 redirectAttributes.addFlashAttribute("successMessage", "Đăng nhập thành công!");
-                return "redirect:" + redirectFor(user);
+                return "redirect:" + redirectFor(user, request);
             }
 
             var issued = authVerificationService.issueChallenge(user.getId(), AuthChallengeType.LOGIN);
@@ -110,7 +122,7 @@ public class AuthController {
                     "Tài khoản đã được tạo. Hãy xác thực email " + issued.maskedEmail() + " để kích hoạt.");
             return "redirect:/auth/otp?challenge=" + issued.challengeId();
         } catch (Exception exception) {
-            model.addAttribute("errorMessage", exception.getMessage());
+            model.addAttribute("errorMessage", com.medclinic.util.PublicErrorMessages.forException(exception));
             return "auth/register";
         }
     }
@@ -126,7 +138,7 @@ public class AuthController {
             model.addAttribute("secondsRemaining", secondsRemaining);
             return "auth/verify-otp";
         } catch (Exception exception) {
-            redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
+            redirectAttributes.addFlashAttribute("errorMessage", com.medclinic.util.PublicErrorMessages.forException(exception));
             return "redirect:/login";
         }
     }
@@ -143,9 +155,9 @@ public class AuthController {
             securityAuditService.authenticationSuccess(result.user().getUsername(), request.getRemoteAddr());
             redirectAttributes.addFlashAttribute("successMessage",
                     "Xác thực thành công. Bạn đã đăng nhập vào MedClinic.");
-            return "redirect:" + redirectFor(result.user());
+            return "redirect:" + redirectFor(result.user(), request);
         } catch (Exception exception) {
-            redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
+            redirectAttributes.addFlashAttribute("errorMessage", com.medclinic.util.PublicErrorMessages.forException(exception));
             return "redirect:/auth/otp?challenge=" + challengeId;
         }
     }
@@ -166,7 +178,7 @@ public class AuthController {
                     "Mã OTP mới đã được gửi đến " + issued.maskedEmail() + ".");
             return "redirect:/auth/otp?challenge=" + issued.challengeId();
         } catch (Exception exception) {
-            redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
+            redirectAttributes.addFlashAttribute("errorMessage", com.medclinic.util.PublicErrorMessages.forException(exception));
             return "redirect:/auth/otp?challenge=" + challengeId;
         }
     }
@@ -181,9 +193,9 @@ public class AuthController {
             securityAuditService.authenticationSuccess(result.user().getUsername(), request.getRemoteAddr());
             redirectAttributes.addFlashAttribute("successMessage",
                     "Email đã được xác thực. Bạn đã đăng nhập thành công vào MedClinic.");
-            return "redirect:" + redirectFor(result.user());
+            return "redirect:" + redirectFor(result.user(), request);
         } catch (Exception exception) {
-            redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
+            redirectAttributes.addFlashAttribute("errorMessage", com.medclinic.util.PublicErrorMessages.forException(exception));
             return "redirect:/login";
         }
     }
@@ -217,7 +229,7 @@ public class AuthController {
             redirectAttributes.addFlashAttribute("successMessage", "Đặt lại mật khẩu thành công. Vui lòng đăng nhập.");
             return "redirect:/login";
         } catch (Exception exception) {
-            redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
+            redirectAttributes.addFlashAttribute("errorMessage", com.medclinic.util.PublicErrorMessages.forException(exception));
             return "redirect:/reset-password?token=" + token;
         }
     }
@@ -257,7 +269,7 @@ public class AuthController {
             }
             redirectAttributes.addFlashAttribute("successMessage", "Cập nhật hồ sơ cá nhân thành công!");
         } catch (Exception exception) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Lỗi: " + exception.getMessage());
+            redirectAttributes.addFlashAttribute("errorMessage", "Lỗi: " + com.medclinic.util.PublicErrorMessages.forException(exception));
         }
         return "redirect:/profile";
     }
@@ -276,12 +288,16 @@ public class AuthController {
             userService.changePassword(userDetails.getId(), oldPassword, newPassword);
             redirectAttributes.addFlashAttribute("successMessage", "Đổi mật khẩu thành công!");
         } catch (Exception exception) {
-            redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
+            redirectAttributes.addFlashAttribute("errorMessage", com.medclinic.util.PublicErrorMessages.forException(exception));
         }
         return "redirect:/profile";
     }
 
     private void establishSession(User user, HttpServletRequest request) {
+        user = userService.findById(user.getId());
+        if (!Boolean.TRUE.equals(user.getIsActive())) {
+            throw new com.medclinic.exception.BusinessLogicException("Tài khoản đã bị khóa. Vui lòng liên hệ phòng khám.");
+        }
         CustomUserDetails details = new CustomUserDetails(user);
         var authentication = UsernamePasswordAuthenticationToken.authenticated(
                 details, null, details.getAuthorities());
@@ -302,7 +318,15 @@ public class AuthController {
         }
     }
 
-    private String redirectFor(User user) {
+    private String redirectFor(User user, HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        boolean continueBooking = session != null && Boolean.TRUE.equals(session.getAttribute(CONTINUE_BOOKING));
+        if (session != null) {
+            session.removeAttribute(CONTINUE_BOOKING);
+        }
+        if (continueBooking && user.getRole().getName() == RoleType.ROLE_PATIENT) {
+            return "/patient/booking";
+        }
         return switch (user.getRole().getName()) {
             case ROLE_ADMIN -> "/admin/dashboard";
             case ROLE_DOCTOR -> "/doctor/desk";

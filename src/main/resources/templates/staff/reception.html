@@ -83,13 +83,7 @@
         </form>
     </div>
 
-    <!-- Status Tabs Filter -->
-    <div class="mc-filter-tabs">
-        <a th:href="@{/staff/reception(status='ALL', keyword=${keyword})}"
-           class="filter-tab" th:classappend="${currentStatus == 'ALL' ? 'active' : ''}" th:attr="aria-current=${currentStatus == 'ALL' ? 'page' : null}">
-            <span>Tất cả hôm nay</span>
-            <span class="badge bg-secondary rounded-pill" th:text="${countAll}">0</span>
-        </a>
+    <nav class="mc-filter-tabs" aria-label="Lọc theo tiến độ tiếp nhận">
         <a th:href="@{/staff/reception(status='CONFIRMED', keyword=${keyword})}"
            class="filter-tab" th:classappend="${currentStatus == 'CONFIRMED' ? 'active' : ''}" th:attr="aria-current=${currentStatus == 'CONFIRMED' ? 'page' : null}">
             <i class="bi bi-clock text-primary"></i>
@@ -99,7 +93,7 @@
         <a th:href="@{/staff/reception(status='CHECKED_IN', keyword=${keyword})}"
            class="filter-tab" th:classappend="${currentStatus == 'CHECKED_IN' ? 'active' : ''}" th:attr="aria-current=${currentStatus == 'CHECKED_IN' ? 'page' : null}">
             <i class="bi bi-person-check-fill text-warning"></i>
-            <span>Đã tiếp nhận (Chờ khám)</span>
+            <span>Chờ khám</span>
             <span class="badge bg-warning text-dark rounded-pill" th:text="${countCheckedIn}">0</span>
         </a>
         <a th:href="@{/staff/reception(status='IN_PROGRESS', keyword=${keyword})}"
@@ -108,19 +102,18 @@
             <span>Đang khám</span>
             <span class="badge bg-info text-dark rounded-pill" th:text="${countInProgress}">0</span>
         </a>
-        <a th:href="@{/staff/reception(status='COMPLETED', keyword=${keyword})}"
-           class="filter-tab" th:classappend="${currentStatus == 'COMPLETED' ? 'active' : ''}" th:attr="aria-current=${currentStatus == 'COMPLETED' ? 'page' : null}">
-            <i class="bi bi-check-circle-fill text-success"></i>
-            <span>Đã khám xong</span>
-            <span class="badge bg-success rounded-pill" th:text="${countCompleted}">0</span>
-        </a>
-        <a th:href="@{/staff/reception(status='CANCELLED', keyword=${keyword})}"
-           class="filter-tab" th:classappend="${currentStatus == 'CANCELLED' ? 'active' : ''}" th:attr="aria-current=${currentStatus == 'CANCELLED' ? 'page' : null}">
-            <i class="bi bi-x-circle-fill text-danger"></i>
-            <span>Đã hủy</span>
-            <span class="badge bg-danger rounded-pill" th:text="${countCancelled}">0</span>
-        </a>
-    </div>
+        <form th:action="@{/staff/reception}" method="get" class="mc-filter-history">
+            <input type="hidden" name="keyword" th:value="${keyword}">
+            <label class="visually-hidden" for="receptionHistoryFilter">Xem tất cả hoặc lịch sử</label>
+            <select name="status" id="receptionHistoryFilter" class="form-select">
+                <option value="ALL" th:selected="${currentStatus == 'ALL'}" th:text="${'Tất cả hôm nay (' + countAll + ')'}">Tất cả hôm nay</option>
+                <option value="COMPLETED" th:selected="${currentStatus == 'COMPLETED'}" th:text="${'Đã khám xong (' + countCompleted + ')'}">Đã khám xong</option>
+                <option value="CANCELLED" th:selected="${currentStatus == 'CANCELLED'}" th:text="${'Đã hủy (' + countCancelled + ')'}">Đã hủy</option>
+                <option value="" disabled th:if="${currentStatus != 'ALL' and currentStatus != 'COMPLETED' and currentStatus != 'CANCELLED'}" selected>Tất cả / lịch sử</option>
+            </select>
+            <button class="btn btn-outline-secondary" type="submit">Xem</button>
+        </form>
+    </nav>
 
     <!-- Table Card -->
     <div class="mc-data-card">
@@ -278,9 +271,9 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h6 class="modal-title fw-bold text-dark" id="qrScannerModalTitle">
+                    <h2 class="modal-title fw-bold text-dark" id="qrScannerModalTitle">
                         <i class="bi bi-camera-video text-primary me-2"></i>Quét Mã QR Phiếu Hẹn Bằng Camera
-                    </h6>
+                    </h2>
                     <button type="button" class="btn-close" aria-label="Close" data-bs-dismiss="modal" id="btnCloseScanner"></button>
                 </div>
                 <div class="modal-body text-center">
@@ -300,11 +293,11 @@
         <div class="modal-dialog modal-sm modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header py-2">
-                    <h6 class="modal-title small fw-bold" id="ticketModalTitle">Phiếu Số Thứ Tự Khám</h6>
+                    <h2 class="modal-title small fw-bold" id="ticketModalTitle">Phiếu Số Thứ Tự Khám</h2>
                     <button type="button" class="btn-close" aria-label="Close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body text-center p-4" id="printTicketModalBody">
-                    <h6 class="fw-bold mb-1">PHÒNG KHÁM MEDCLINIC</h6>
+                    <h3 class="h6 fw-bold mb-1">PHÒNG KHÁM MEDCLINIC</h3>
                     <small class="text-muted d-block mb-2">Số thứ tự khám bệnh</small>
                     <div class="display-3 fw-bold text-primary my-2" id="ticketQueueNumber">STT-01</div>
                     <div class="border-top border-bottom py-2 my-2 text-start small">
@@ -335,6 +328,10 @@ document.addEventListener('DOMContentLoaded', function () {
     const scannerModal = document.getElementById('qrScannerModal');
 
     scannerModal.addEventListener('shown.bs.modal', function () {
+        if (typeof Html5QrcodeScanner === 'undefined' || !navigator.mediaDevices) {
+            document.getElementById('qr-reader-results').textContent = 'Không thể mở camera trên thiết bị này. Đóng cửa sổ và nhập mã cuộc hẹn vào ô tra cứu.';
+            return;
+        }
         if (!html5QrcodeScanner) {
             html5QrcodeScanner = new Html5QrcodeScanner(
                 "qr-reader",

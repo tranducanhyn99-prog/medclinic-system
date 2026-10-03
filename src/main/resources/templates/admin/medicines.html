@@ -62,7 +62,7 @@
                                 <span class="badge bg-light text-dark border" th:text="${med.unit}">Viên</span>
                             </td>
                             <td class="text-end fw-semibold text-primary"
-                                th:text="${#numbers.formatDecimal(med.unitPrice, 0, 'COMMA', 0, 'POINT') + ' đ'}">
+                                th:text="${@money.vnd(med.unitPrice)}">
                                 2,500 đ
                             </td>
                             <td class="text-center">
@@ -108,21 +108,22 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <form th:action="@{/admin/medicines}" th:object="${medicineForm}" method="post">
+                    <input type="hidden" th:field="*{id}">
                     <div class="modal-header">
-                        <h6 class="modal-title fw-bold text-dark" id="addMedicineModalTitle">
-                            <i class="bi bi-capsule text-warning me-2"></i>Thêm Thuốc Mới Vào Kho
-                        </h6>
-                        <button type="button" class="btn-close" aria-label="Close" data-bs-dismiss="modal"></button>
+                        <h2 class="modal-title fw-bold text-dark" id="addMedicineModalTitle">
+                            <i class="bi bi-capsule text-warning me-2"></i><span th:text="${medicineForm.id == null ? 'Thêm thuốc mới vào kho' : 'Sửa thông tin thuốc'}">Thêm thuốc mới vào kho</span>
+                        </h2>
+                        <button type="button" class="btn-close" aria-label="Đóng hộp thoại" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body">
                         <div class="mb-3">
-                            <label for="medName" class="form-label fw-semibold small">Tên thuốc / Dược phẩm <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" id="medName" th:field="*{name}" placeholder="Ví dụ: Amoxicillin 500mg..." required><div class="text-danger small" th:errors="*{name}"></div>
+                            <label for="name" class="form-label fw-semibold small">Tên thuốc / Dược phẩm <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="name" th:field="*{name}" th:errorclass="is-invalid" placeholder="Ví dụ: Amoxicillin 500mg..." required><div class="text-danger small" data-field-error th:errors="*{name}"></div>
                         </div>
                         <div class="row g-3 mb-3">
                             <div class="col-md-6">
-                                <label for="medUnit" class="form-label fw-semibold small">Đơn vị tính <span class="text-danger">*</span></label>
-                                <select class="form-select" id="medUnit" th:field="*{unit}" required>
+                                <label for="unit" class="form-label fw-semibold small">Đơn vị tính <span class="text-danger">*</span></label>
+                                <select class="form-select" id="unit" th:field="*{unit}" th:errorclass="is-invalid" required>
                                     <option value="Viên" selected>Viên</option>
                                     <option value="Vỉ">Vỉ</option>
                                     <option value="Hộp">Hộp</option>
@@ -130,30 +131,31 @@
                                     <option value="Gói">Gói</option>
                                     <option value="Tuýp">Tuýp</option>
                                 </select>
-                                <div class="text-danger small" th:errors="*{unit}"></div>
+                                <div class="text-danger small" data-field-error th:errors="*{unit}"></div>
                             </div>
                             <div class="col-md-6">
-                                <label for="medPrice" class="form-label fw-semibold small">Đơn giá (VNĐ) <span class="text-danger">*</span></label>
-                                <input type="number" class="form-control" id="medPrice" th:field="*{unitPrice}" min="0" step="500" required><div class="text-danger small" th:errors="*{unitPrice}"></div>
+                                <label for="unitPrice" class="form-label fw-semibold small">Đơn giá (VNĐ) <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" id="unitPrice" th:field="*{unitPrice}" th:errorclass="is-invalid" min="0" step="500" required><div class="text-danger small" data-field-error th:errors="*{unitPrice}"></div>
                             </div>
                         </div>
                         <div class="mb-3">
-                            <label for="medStock" class="form-label fw-semibold small">Số lượng nhập kho ban đầu <span class="text-danger">*</span></label>
-                            <input type="number" class="form-control" id="medStock" th:field="*{stockQuantity}" min="0" required><div class="text-danger small" th:errors="*{stockQuantity}"></div>
+                            <label for="stockQuantity" class="form-label fw-semibold small">Số lượng nhập kho ban đầu <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" id="stockQuantity" th:field="*{stockQuantity}" th:errorclass="is-invalid" min="0" required><div class="text-danger small" data-field-error th:errors="*{stockQuantity}"></div>
                         </div>
                         <div class="mb-3">
-                            <label for="medReorderLevel" class="form-label fw-semibold small">Ngưỡng cảnh báo cần nhập thêm <span class="text-danger">*</span></label>
-                            <input type="number" class="form-control" id="medReorderLevel" th:field="*{reorderLevel}" min="0" required>
+                            <label for="reorderLevel" class="form-label fw-semibold small">Ngưỡng cảnh báo cần nhập thêm <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" id="reorderLevel" th:field="*{reorderLevel}" th:errorclass="is-invalid" min="0" required>
+                            <div class="text-danger small" data-field-error th:errors="*{reorderLevel}"></div>
                             <div class="form-text">Khi tồn kho nhỏ hơn hoặc bằng ngưỡng này, hệ thống cảnh báo Admin.</div>
                         </div>
                         <div class="mb-2">
-                            <label for="medGuide" class="form-label fw-semibold small">Hướng dẫn sử dụng gợi ý</label>
-                            <input type="text" class="form-control" id="medGuide" th:field="*{usageGuide}" placeholder="Ví dụ: Uống sau ăn, tránh dùng khi đói...">
+                            <label for="usageGuide" class="form-label fw-semibold small">Hướng dẫn sử dụng gợi ý</label>
+                            <input type="text" class="form-control" id="usageGuide" th:field="*{usageGuide}" th:errorclass="is-invalid" placeholder="Ví dụ: Uống sau ăn, tránh dùng khi đói...">
                         </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                        <button type="submit" class="btn btn-sm btn-med-primary px-3">Lưu Thuốc Mới</button>
+                        <button type="submit" class="btn btn-sm btn-med-primary px-3" th:text="${medicineForm.id == null ? 'Lưu thuốc mới' : 'Lưu thay đổi'}">Lưu thuốc mới</button>
                     </div>
                 </form>
             </div>
@@ -163,12 +165,12 @@
     <div th:each="med : ${medicines}" class="modal fade" th:id="${'restockMedicineModal-' + med.id}" tabindex="-1" th:attr="aria-labelledby=${'restockMedicineModalTitle-' + med.id}">
         <div class="modal-dialog modal-dialog-centered"><div class="modal-content">
             <form th:action="@{/admin/medicines/{id}/restock(id=${med.id})}" method="post">
-                <div class="modal-header"><h6 class="modal-title" th:id="${'restockMedicineModalTitle-' + med.id}">Nhập thêm <span th:text="${med.name}">thuốc</span></h6><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>
+                <div class="modal-header"><h2 class="modal-title" th:id="${'restockMedicineModalTitle-' + med.id}">Nhập thêm <span th:text="${med.name}">thuốc</span></h2><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng hộp thoại"></button></div>
                 <div class="modal-body">
                     <div class="alert alert-light border small">Tồn hiện tại: <strong th:text="${med.stockQuantity + ' ' + med.unit}">0</strong> · Ngưỡng cảnh báo: <strong th:text="${med.reorderLevel}">50</strong></div>
-                    <label class="form-label">Số lượng nhập thêm</label><input class="form-control mb-3" type="number" name="quantity" min="1" required>
-                    <label class="form-label">Giá nhập / đơn vị (VNĐ)</label><input class="form-control mb-3" type="number" name="unitCost" min="0" step="100">
-                    <label class="form-label">Ghi chú</label><textarea class="form-control" name="note" maxlength="255" rows="2" placeholder="Nhà cung cấp, số phiếu nhập..."></textarea>
+                    <label class="form-label" th:for="${'restock-quantity-' + med.id}">Số lượng nhập thêm</label><input class="form-control mb-3" type="number" name="quantity" th:id="${'restock-quantity-' + med.id}" min="1" required>
+                    <label class="form-label" th:for="${'restock-unitCost-' + med.id}">Giá nhập / đơn vị (VNĐ)</label><input class="form-control mb-3" type="number" name="unitCost" th:id="${'restock-unitCost-' + med.id}" min="0" step="100">
+                    <label class="form-label" th:for="${'restock-note-' + med.id}">Ghi chú</label><textarea class="form-control" name="note" th:id="${'restock-note-' + med.id}" maxlength="255" rows="2" placeholder="Nhà cung cấp, số phiếu nhập..."></textarea>
                 </div>
                 <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button><button type="submit" class="btn btn-success">Xác nhận nhập kho</button></div>
             </form>
@@ -179,7 +181,7 @@
         <div class="modal-dialog modal-dialog-centered"><div class="modal-content">
             <form th:action="@{/admin/medicines}" method="post">
                 <input type="hidden" name="id" th:value="${med.id}">
-                <div class="modal-header"><h6 class="modal-title" th:id="${'editMedicineModalTitle-' + med.id}">Sửa thuốc</h6><button type="button" class="btn-close" aria-label="Close" data-bs-dismiss="modal"></button></div>
+                <div class="modal-header"><h2 class="modal-title" th:id="${'editMedicineModalTitle-' + med.id}">Sửa thuốc</h2><button type="button" class="btn-close" aria-label="Đóng hộp thoại" data-bs-dismiss="modal"></button></div>
                 <div class="modal-body">
                     <label class="form-label" th:for="${'editMedicineName-' + med.id}">Tên thuốc</label><input th:id="${'editMedicineName-' + med.id}" class="form-control mb-2" name="name" required th:value="${med.name}">
                     <label class="form-label" th:for="${'editMedicineUnit-' + med.id}">Đơn vị</label><input th:id="${'editMedicineUnit-' + med.id}" class="form-control mb-2" name="unit" required th:value="${med.unit}">

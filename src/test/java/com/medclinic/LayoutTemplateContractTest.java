@@ -17,21 +17,23 @@ class LayoutTemplateContractTest {
     @Test
     void publicLayoutProvidesEarlyCsrfAndKeyboardNavigationContracts() throws IOException {
         String main = read("layout/main.html");
+        String styles = Files.readString(Path.of("src/main/resources/static/css/medclinic-main-shell.css"));
 
         assertTrue(main.contains("name=\"_csrf\""));
         assertTrue(main.contains("th:content=\"${_csrf.token}\""));
         assertTrue(main.contains("class=\"skip-link\" href=\"#main-content\""));
         assertTrue(main.contains("aria-controls=\"navbarMain\""));
         assertTrue(main.contains("aria-expanded=\"false\""));
-        assertTrue(main.contains(":focus-visible"));
-        assertTrue(main.contains("prefers-reduced-motion"));
-        assertTrue(main.contains("form.dataset.submitting"));
+        assertTrue(styles.contains(":focus-visible"));
+        assertTrue(styles.contains("prefers-reduced-motion"));
+        assertTrue(main.contains("/js/medclinic-ui.js"));
         assertBalancedScriptTags(main);
     }
 
     @Test
     void portalLayoutProvidesAccessibleMobileSidebarContract() throws IOException {
         String dashboard = read("layout/dashboard.html");
+        String styles = Files.readString(Path.of("src/main/resources/static/css/medclinic-portal-shell.css"));
 
         assertTrue(dashboard.contains("id=\"sidebarToggle\""));
         assertTrue(dashboard.contains("aria-controls=\"sidebar-wrapper\""));
@@ -41,8 +43,8 @@ class LayoutTemplateContractTest {
         assertTrue(dashboard.contains("firstSidebarControl.focus()"));
         assertTrue(dashboard.contains("toggle.focus()"));
         assertTrue(dashboard.contains("tabindex=\"-1\""));
-        assertTrue(dashboard.contains("@media (max-width: 767.98px)"));
-        assertTrue(dashboard.contains(".table-responsive"));
+        assertTrue(styles.contains("@media (max-width: 767.98px)"));
+        assertTrue(styles.contains(".table-responsive"));
         assertTrue(dashboard.contains("class=\"skip-link\" href=\"#main-content\""));
         assertBalancedScriptTags(dashboard);
 
@@ -56,7 +58,7 @@ class LayoutTemplateContractTest {
         assertTrue(booking.contains("id=\"slotSelectionStatus\""));
         assertTrue(booking.contains("aria-live=\"polite\""));
         assertTrue(booking.contains("role=\"alert\""));
-        assertTrue(booking.contains("setAttribute('aria-pressed', 'true')"));
+        assertTrue(booking.contains("/js/slot-picker.js"));
 
         String reception = read("staff/reception.html");
         assertTrue(reception.contains("aria-labelledby=\"qrScannerModalTitle\""));
@@ -75,7 +77,7 @@ class LayoutTemplateContractTest {
 
         String bankPayment = read("staff/bank-payment.html");
         assertTrue(bankPayment.contains("aria-live=\"polite\""));
-        assertTrue(bankPayment.contains("fetch(statusUrl"));
+        assertTrue(bankPayment.contains("/js/bank-payment-status.js"));
         assertTrue(bankPayment.contains("bankTransactionId"));
         assertBalancedScriptTags(bankPayment);
     }
@@ -84,8 +86,8 @@ class LayoutTemplateContractTest {
     void adminCrudDialogsExposeProgrammaticNamesAndFormLabels() throws IOException {
         String doctors = read("admin/doctors.html");
         assertTrue(doctors.contains("aria-labelledby=\"addDoctorModalTitle\""));
-        assertTrue(doctors.contains("for=\"doctorUsername\""));
-        assertTrue(doctors.contains("id=\"doctorUsername\""));
+        assertTrue(doctors.contains("for=\"username\""));
+        assertTrue(doctors.contains("id=\"username\""));
         assertTrue(doctors.contains("aria-labelledby=${'editDoctorModalTitle-' + doc.id}"));
         assertTrue(doctors.contains("th:for=\"${'editDoctorSpecialty-' + doc.id}\""));
 

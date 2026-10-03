@@ -96,6 +96,12 @@ Trạng thái lịch hẹn luôn gồm chữ, badge/icon và màu; không dùng 
 ## 8. Bằng chứng triển khai
 
 Template được tổ chức theo role tại `src/main/resources/templates/{patient,doctor,staff,admin}`; hai layout dùng chung là `layout/main.html` và `layout/dashboard.html`. Bằng chứng triển khai UX được giữ trong test render/accessibility, JaCoCo và lịch sử commit của repository.
+
+> [!TIP]
+> **Bộ Prompt & Tài Liệu Đặc Tả Thiết Kế Dành Riêng Cho Figma AI:**<br>
+> Xem tài liệu chi tiết gồm 8 bộ prompt có cấu trúc và mã JSON Tokens tại:<br>
+> 🔗 [FIGMA_AI_PROMPT_SPECIFICATION.md](design/FIGMA_AI_PROMPT_SPECIFICATION.md)
+
 ## 9. Figma handoff — cấu trúc file thiết kế
 
 Khi dựng trên Figma, tạo file `MedClinic UI Kit & Screens` với các Pages sau. Không đặt toàn bộ màn hình và component trên một canvas.
@@ -104,7 +110,7 @@ Khi dựng trên Figma, tạo file `MedClinic UI Kit & Screens` với các Pages
 |---|---|---|
 | `00 · Cover & Notes` | Mục tiêu, vai trò, link tài liệu và phiên bản | Chỉ đọc, ghi ngày cập nhật |
 | `01 · Foundations` | Màu sắc, chữ, khoảng cách, elevation, icon | Dùng Variables/Styles, không tô màu rời rạc |
-| `02 · Components` | Button, input, select, badge, alert, card, modal, bảng | Tạo component + variant trước khi ghép màn hình |
+| `02 · Components` | Button, input, select, badge, alert, card, modal, bảng, Mascot An Nhiên | Tạo component + variant trước khi ghép màn hình |
 | `03 · Public & Auth` | Trang chủ, danh sách bác sĩ, đăng nhập, đăng ký | Frame độc lập theo breakpoint |
 | `04 · Patient Flow` | Đặt lịch, lịch hẹn, QR, bệnh án | Có prototype flow hoàn chỉnh |
 | `05 · Internal Portal` | Bác sĩ, lễ tân, thu ngân, admin | Desktop-first, kèm trạng thái bảng |
@@ -119,21 +125,25 @@ Khi dựng trên Figma, tạo file `MedClinic UI Kit & Screens` với các Pages
 
 ## 10. Foundations và design tokens
 
-### 10.1. Màu
+### 10.1. Màu (Đồng bộ với medclinic-design-system.css)
 
 | Token | Giá trị | Mục đích |
 |---|---:|---|
-| `color/primary/600` | `#0284C7` | CTA chính, focus, liên kết quan trọng |
-| `color/primary/700` | `#0369A1` | Hover CTA |
-| `color/navy/900` | `#0F172A` | Sidebar, footer |
-| `color/surface/default` | `#FFFFFF` | Card, modal, input |
-| `color/background/subtle` | `#F8FAFC` | Nền trang |
-| `color/text/primary` | `#1E293B` | Nội dung chính |
-| `color/text/secondary` | `#64748B` | Nội dung phụ |
+| `color/primary/default` | `#0891B2` | Medical Cyan chính, CTA, viền active, icon |
+| `color/primary/hover` | `#0E7490` | Hover nút bấm chính, link tương tác |
+| `color/primary/strong` | `#155E75` | Tiêu đề trang, văn bản thương hiệu, viền nhấn |
+| `color/primary/soft` | `#ECFEFF` | Nền thẻ bác sĩ, nền slot chọn, background badge |
+| `color/secondary/default` | `#0D9488` | Nhãn chuyên khoa, tag dịch vụ hỗ trợ |
+| `color/navy/950` | `#090E1A` | Nền thanh điều hướng Sidebar quản trị (Dashboard) |
+| `color/navy/900` | `#0F172A` | Tiêu đề Headings, văn bản chính, footer |
+| `color/surface/default` | `#FFFFFF` | Nền card, modal, input |
+| `color/background/subtle` | `#F8FAFC` | Nền trang tổng thể (chống lóa) |
+| `color/text/primary` | `#0F172A` | Nội dung văn bản chính |
+| `color/text/secondary` | `#64748B` | Nội dung phụ, subtitle |
 | `color/border/default` | `#E2E8F0` | Viền input, card, table |
-| `color/success/600` | `#16A34A` | Thành công/hoàn thành |
-| `color/warning/600` | `#CA8A04` | Cảnh báo/chờ xử lý |
-| `color/danger/600` | `#DC2626` | Lỗi/hủy/khóa |
+| `color/success/600` | `#059669` | Thành công, đã khám, đã thanh toán |
+| `color/warning/600` | `#D97706` | Cảnh báo, chờ khám, tồn kho thấp |
+| `color/danger/600` | `#E11D48` | Lỗi, đã hủy lịch, hotline cấp cứu |
 
 Không truyền đạt trạng thái chỉ bằng màu: badge trạng thái luôn có icon và nhãn chữ.
 

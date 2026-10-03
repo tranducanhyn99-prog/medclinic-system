@@ -22,6 +22,10 @@ public interface UserRepository extends JpaRepository<User, Long> {
     List<User> findByRole_Name(RoleType roleName);
     long countByRole_Name(RoleType roleName);
 
+    @org.springframework.data.jpa.repository.Modifying
+    @Query("update AuthVerificationChallenge c set c.consumedAt = :now where c.user.id = :userId and c.consumedAt is null")
+    int invalidateAuthChallenges(@Param("userId") Long userId, @Param("now") java.time.LocalDateTime now);
+
     @Query("SELECT u FROM User u WHERE " +
            "LOWER(u.fullName) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
            "LOWER(u.phone) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +

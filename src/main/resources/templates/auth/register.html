@@ -7,7 +7,7 @@
 </head>
 <body>
 <div layout:fragment="content">
-    <div class="container">
+<div class="container">
         <section class="mc-auth-section" aria-labelledby="registerTitle">
             <div class="mc-auth-single">
                 <div class="mc-auth-eyebrow">Hồ sơ bệnh nhân</div>
@@ -37,7 +37,8 @@
                                 <label for="password" class="form-label">Mật khẩu <span class="text-danger">*</span></label>
                                 <input type="password" th:field="*{password}" class="form-control"
                                        th:classappend="${#fields.hasErrors('password')} ? 'is-invalid'"
-                                       placeholder="Ít nhất 6 ký tự" autocomplete="new-password">
+                                       placeholder="Ít nhất 8 ký tự" minlength="8" maxlength="72" autocomplete="new-password" aria-describedby="registerPasswordHelp">
+                                <div id="registerPasswordHelp" class="form-text">Tối đa 72 byte UTF-8; chữ có dấu và emoji có thể đạt giới hạn sớm hơn.</div>
                                 <div class="invalid-feedback" th:errors="*{password}"></div>
                             </div>
                             <div class="col-md-6">

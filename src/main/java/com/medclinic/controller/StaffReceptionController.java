@@ -91,7 +91,7 @@ public class StaffReceptionController {
 
     @GetMapping("/walk-in")
     public String walkInForm(Model model) {
-        model.addAttribute("doctors", doctorService.findAll());
+        model.addAttribute("doctors", doctorService.filterDoctors(null, null, null));
         model.addAttribute("specialties", specialtyService.findAllActive());
         return "staff/walk-in";
     }

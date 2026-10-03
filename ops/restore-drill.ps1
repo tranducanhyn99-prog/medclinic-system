@@ -1,7 +1,8 @@
 [CmdletBinding()]
 param(
     [Parameter(Mandatory = $true)]
-    [string]$BackupFile
+    [string]$BackupFile,
+    [string]$SqlServerContainer = 'medclinic-sqlserver'
 )
 
 $ErrorActionPreference = 'Stop'
@@ -18,10 +19,10 @@ $drillDatabase = "medclinic_restore_drill_$stamp"
 
 Push-Location $projectRoot
 try {
-    & docker cp $resolvedBackup "medclinic-sqlserver:${containerPath}"
+    & docker cp $resolvedBackup "${SqlServerContainer}:${containerPath}"
     if ($LASTEXITCODE -ne 0) { throw 'Could not copy backup into SQL Server container.' }
 
-    & docker compose exec -T sqlserver /bin/bash /docker/restore-drill-db.sh $containerPath $drillDatabase
+    & docker exec $SqlServerContainer /bin/bash /docker/restore-drill-db.sh $containerPath $drillDatabase
     if ($LASTEXITCODE -ne 0) { throw 'Restore drill failed.' }
 
     Write-Host "Restore drill passed. Temporary database $drillDatabase was checked and removed."

@@ -16,7 +16,7 @@ graph TD
     end
 
     subgraph Security ["Tầng Bảo Mật (Security Layer)"]
-        Filter[Spring Security 6 FilterChain]
+        Filter[Spring Security 7 FilterChain]
         CSRF[CSRF Protection & Remember-Me]
         RBAC[Role-Based Access Control]
     end
@@ -71,7 +71,7 @@ graph TD
 - **Cơ chế Layout:** Sử dụng `layout:decorate="~{layout/main}"` cho trang công khai/bệnh nhân và `layout:decorate="~{layout/dashboard}"` cho khu vực quản trị/bác sĩ/lễ tân.
 
 ### 2.2. Security Layer (Tầng Bảo mật & Phân quyền)
-- **Công nghệ:** Spring Security 6 với cấu hình `SecurityFilterChain`.
+- **Công nghệ:** Spring Security 7 với cấu hình `SecurityFilterChain`.
 - **Cơ chế xác thực:** Session-based authentication kết hợp Remember-me token 14 ngày. Endpoint SockJS/STOMP `/ws/**` yêu cầu session đã xác thực; Doctor Desk nhận cập nhật qua user destination riêng của tài khoản đăng nhập.
 - **Phân quyền RBAC:**
   - `ROLE_PATIENT`: Truy cập `/patient/**`

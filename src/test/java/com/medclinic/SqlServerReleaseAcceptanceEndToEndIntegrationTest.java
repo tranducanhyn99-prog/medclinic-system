@@ -24,7 +24,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.test.context.support.WithUserDetails;
@@ -59,7 +59,7 @@ class SqlServerReleaseAcceptanceEndToEndIntegrationTest {
     @Autowired private TimeSlotRepository slots;
     @Autowired private MedicineRepository medicines;
     @Autowired private JdbcTemplate jdbcTemplate;
-    @MockBean private SimpMessagingTemplate messagingTemplate;
+    @MockitoBean private SimpMessagingTemplate messagingTemplate;
 
     @Test
     @WithUserDetails("admin")

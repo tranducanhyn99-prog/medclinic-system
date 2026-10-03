@@ -15,7 +15,7 @@ import com.medclinic.enums.ShiftType;
 import com.medclinic.enums.SlotStatus;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.test.context.support.WithUserDetails;
@@ -82,6 +82,31 @@ public class StartExaminationIntegrationTest {
                 .andExpect(content().string(containsString("id=\"medicineTable\"")))
                 .andExpect(content().string(containsString("id=\"btnAddMedicine\"")))
                 .andExpect(content().string(containsString("id=\"btnSubmitExamine\"")));
+    }
+
+    @Test
+    @WithUserDetails("doctor")
+    void completedAppointmentRedirectsWithoutOfferingANewExamination() throws Exception {
+        var doctor = doctorProfileRepository.findByUserId(userRepository.findByUsername("doctor").orElseThrow().getId()).orElseThrow();
+        var patient = userRepository.findByUsername("patient").orElseThrow();
+        LocalDate date = LocalDate.now().plusDays(62);
+        var schedule = doctorScheduleRepository.save(DoctorSchedule.builder().doctor(doctor)
+                .workDate(date).shift(ShiftType.MORNING).maxPatients(8).build());
+        var slot = timeSlotRepository.save(TimeSlot.builder().schedule(schedule)
+                .startTime(LocalTime.of(10, 0)).endTime(LocalTime.of(10, 30)).status(SlotStatus.BOOKED).build());
+        var appointment = appointmentRepository.save(Appointment.builder().patient(patient).doctor(doctor)
+                .appointmentDate(date).timeSlot(slot).reason("Completed fixture")
+                .bookingCode("CLOSED-" + UUID.randomUUID().toString().substring(0, 8))
+                .status(AppointmentStatus.COMPLETED).build());
+        mockMvc.perform(get("/doctor/examine/{id}", appointment.getId()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/doctor/desk?closed=true"));
+        mockMvc.perform(get("/doctor/desk?closed=true"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Ca khám đã hoàn tất và bệnh án đã được lưu.")));
+        mockMvc.perform(get("/doctor/examine/{id}", appointment.getId())
+                        .with(SecurityMockMvcRequestPostProcessors.user("staff").roles("STAFF")))
+                .andExpect(status().isForbidden());
     }
 
     @Test

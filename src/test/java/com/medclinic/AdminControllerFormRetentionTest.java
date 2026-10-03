@@ -1,6 +1,6 @@
 package com.medclinic;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import com.medclinic.controller.AdminController;
 import com.medclinic.dto.AdminMedicineDto;
 import com.medclinic.dto.AdminSpecialtyDto;

@@ -11,9 +11,9 @@
     <!-- Top Header -->
     <div class="mc-page-header align-items-end border-bottom pb-3">
         <div>
-            <h3 class="mc-page-title">
+            <h1 class="mc-page-title">
                 <i class="bi bi-calendar3-week-fill text-primary me-2"></i>Lịch Trực & Khung Giờ Công Tác (14 Ngày Tới)
-            </h3>
+            </h1>
             <p class="mc-page-subtitle">Theo dõi ca trực và tình trạng kín chỗ của từng khung giờ khám 30 phút.</p>
         </div>
         <div>
@@ -26,7 +26,7 @@
     <!-- Empty State -->
     <div th:if="${#lists.isEmpty(schedules)}" class="card card-portal p-5 text-center my-4">
         <i class="bi bi-calendar-x fs-1 text-secondary mb-2"></i>
-        <h5 class="fw-bold text-dark">Chưa Có Lịch Trực Trong 14 Ngày Tới</h5>
+        <h2 class="h5 fw-bold text-dark">Chưa Có Lịch Trực Trong 14 Ngày Tới</h2>
         <p class="small text-muted mb-0">Vui lòng liên hệ ban quản lý phòng khám để phân bổ ca trực.</p>
     </div>
 
@@ -38,7 +38,7 @@
                 <!-- Card Header: Date & Shift -->
                 <div class="card-header bg-white py-3 border-bottom d-flex align-items-center justify-content-between">
                     <div>
-                        <h6 class="fw-bold text-dark mb-0" th:text="${#temporals.format(sch.workDate, 'EEEE, dd/MM/yyyy')}">Thứ Hai, 16/09/2026</h6>
+                        <h2 class="h6 fw-bold text-dark mb-0" th:text="${(sch.workDate.dayOfWeek.value == 7 ? 'Chủ nhật' : 'Thứ ' + (sch.workDate.dayOfWeek.value + 1)) + ', ' + #temporals.format(sch.workDate, 'dd/MM/yyyy')}">Thứ Hai, 16/09/2026</h2>
                         <span class="badge bg-light text-primary border small" th:text="${'Ca: ' + sch.shift.displayName}">Ca Sáng</span>
                     </div>
                     <span class="badge bg-primary-subtle text-primary small" th:text="${'Tối đa: ' + sch.maxPatients + ' ca'}">8 ca</span>
@@ -46,14 +46,17 @@
 
                 <!-- Card Body: Time Slots -->
                 <div class="card-body p-3">
-                    <label class="form-label text-muted small fw-semibold mb-2">Danh Sách Khung Giờ:</label>
+                    <p class="text-muted small fw-semibold mb-2">Khung giờ: dấu tích là còn trống, biểu tượng người là đã đặt.</p>
                     <div class="d-flex flex-wrap gap-1.5">
                         <div th:each="slot : ${sch.timeSlots}">
                             <span class="mc-schedule-slot"
                                   th:classappend="${slot.status.name() == 'AVAILABLE' ? 'is-available' :
                                                    (slot.status.name() == 'BOOKED' ? 'is-booked' : '')}"
-                                  th:title="${slot.status.name() == 'BOOKED' ? 'Đã có bệnh nhân đặt' : 'Còn trống'}"
-                                  th:text="${slot.timeRangeFormatted}">08:00 - 08:30</span>
+                                  th:title="${slot.status.name() == 'AVAILABLE' ? 'Còn trống' : (slot.status.name() == 'BOOKED' ? 'Đã đặt' : 'Không khả dụng')}">
+                                <i class="bi me-1" aria-hidden="true" th:classappend="${slot.status.name() == 'AVAILABLE' ? 'bi-check2' : (slot.status.name() == 'BOOKED' ? 'bi-person-check' : 'bi-dash-circle')}"></i>
+                                <span th:text="${slot.timeRangeFormatted}">08:00 - 08:30</span>
+                                <span class="visually-hidden" th:text="${slot.status.name() == 'AVAILABLE' ? ' — Còn trống' : (slot.status.name() == 'BOOKED' ? ' — Đã đặt' : ' — Không khả dụng')}"></span>
+                            </span>
                         </div>
                     </div>
                 </div>

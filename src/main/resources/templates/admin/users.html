@@ -26,12 +26,13 @@
     <div class="mc-search-toolbar">
         <form th:action="@{/admin/users}" method="get" class="row g-2 align-items-center">
             <div class="col-md-9">
+                <label for="adminUserSearch" class="form-label">Tìm tài khoản</label>
                 <div class="input-group">
                     <span class="input-group-text bg-white border-end-0 text-muted">
                         <i class="bi bi-search"></i>
                     </span>
                     <input type="text" class="form-control border-start-0 ps-0"
-                           name="keyword"
+                           id="adminUserSearch" name="keyword"
                            th:value="${keyword}"
                            placeholder="Tìm kiếm tài khoản theo Họ tên, Tên đăng nhập, Email hoặc Số điện thoại...">
                 </div>
@@ -50,9 +51,9 @@
     <!-- Users Table Card -->
     <div class="mc-data-card">
         <div class="mc-data-toolbar">
-            <h6 class="mc-data-title">
+            <h2 class="h6 mc-data-title">
                 <i class="bi bi-person-lines-fill text-primary me-2"></i>Danh Sách Tài Khoản Người Dùng
-            </h6>
+            </h2>
             <span class="badge bg-light text-dark border" th:text="${#lists.size(users) + ' tài khoản'}">0 tài khoản</span>
         </div>
 

@@ -36,7 +36,7 @@ MedClinic là giải pháp chuyển đổi số toàn diện cho phòng khám đ
 ### 2.1. Phối cảnh sản phẩm (Product Perspective)
 Hệ thống được phát triển theo mô hình kiến trúc phân tầng chuẩn (Layered Architecture):
 - **Tầng Trình diễn (Presentation Layer):** Thymeleaf Server-Side Rendering + Bootstrap 5.3 + AJAX REST cho tải dữ liệu động và Spring WebSocket/STOMP cho cập nhật hàng chờ bác sĩ theo thời gian thực.
-- **Tầng Bảo mật & Nghiệp vụ (Security & Business Service Layer):** Spring Security 6 RBAC, Spring Data JPA Services, Concurrency Manager, Async Email Engine, OpenPDF & ZXing Utilities.
+- **Tầng Bảo mật & Nghiệp vụ (Security & Business Service Layer):** Spring Security 7 RBAC, Spring Data JPA Services, Concurrency Manager, Async Email Engine, OpenPDF & ZXing Utilities.
 - **Tầng Dữ liệu (Data Layer):** Relational Database (H2 Database cho Development/Test / Microsoft SQL Server cho hệ thống hiện tại và Production) đạt chuẩn 3NF. MySQL được giữ ở roadmap tương lai, không thuộc tiêu chí nghiệm thu phiên bản hiện tại.
 
 ### 2.2. Danh mục tác nhân trong hệ thống (User Classes and Roles)
@@ -54,7 +54,7 @@ Hệ thống được phát triển theo mô hình kiến trúc phân tầng chu
 
 ### 3.1. Phân hệ Xác thực & Phân quyền (Authentication & Authorization)
 - **FR-AUTH-01 (Đăng ký tài khoản):** Khách hàng đăng ký tài khoản bệnh nhân với Họ tên, Tên đăng nhập, Mật khẩu, Email, SĐT, Ngày sinh, Giới tính, Địa chỉ. Tài khoản mới ở trạng thái chưa kích hoạt cho đến khi xác thực email thành công.
-- **FR-AUTH-02 (Đăng nhập & RBAC):** Hệ thống kiểm tra tên đăng nhập/email + mật khẩu bằng Spring Security 6 và BCrypt; tài khoản thường phải hoàn tất OTP email trước khi tạo session đăng nhập. Sau xác thực, hệ thống chuyển hướng đúng portal theo vai trò. Seed/test account được đánh dấu `otp_bypass` và không yêu cầu OTP.
+- **FR-AUTH-02 (Đăng nhập & RBAC):** Hệ thống kiểm tra tên đăng nhập/email + mật khẩu bằng Spring Security 7 và BCrypt; tài khoản thường phải hoàn tất OTP email trước khi tạo session đăng nhập. Sau xác thực, hệ thống chuyển hướng đúng portal theo vai trò. Seed/test account được đánh dấu `otp_bypass` và không yêu cầu OTP.
 - **FR-AUTH-03 (Quản lý Hồ sơ cá nhân):** Người dùng có thể cập nhật Họ tên, SĐT, Giới tính, Ngày sinh, Địa chỉ, thay đổi ảnh đại diện JPG/PNG/WebP tối đa 5 MB và đổi mật khẩu. Username/email là định danh tài khoản và không sửa trực tiếp tại form Profile.
 - **FR-AUTH-04 (Quản lý Tài khoản người dùng):** Quản trị viên có thể xem danh sách tài khoản, tìm kiếm theo từ khóa và thực hiện khóa / mở khóa tài khoản người dùng.
 - **FR-AUTH-05 (Khôi phục mật khẩu):** Người dùng yêu cầu đặt lại mật khẩu qua email. Hệ thống chỉ lưu SHA-256 hash của token, token hết hạn sau 24 giờ, chỉ dùng một lần và phản hồi theo cách không tiết lộ email có tồn tại hay không.

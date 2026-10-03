@@ -75,10 +75,13 @@ class ScheduleServiceTest {
 
     @Test
     void delegatesScheduleAndSlotQueries() {
-        LocalDate from = LocalDate.of(2026, 9, 20);
+        LocalDate from = LocalDate.now().plusDays(1);
         LocalDate to = from.plusDays(14);
         DoctorSchedule schedule = new DoctorSchedule();
         TimeSlot slot = new TimeSlot();
+        when(doctorRepository.findById(1L)).thenReturn(Optional.of(DoctorProfile.builder()
+                .user(com.medclinic.entity.User.builder().isActive(true).build())
+                .specialty(com.medclinic.entity.Specialty.builder().isActive(true).build()).build()));
         when(scheduleRepository.findByDoctorIdAndWorkDateBetweenWithTimeSlots(1L, from, to))
                 .thenReturn(List.of(schedule));
         when(timeSlotRepository.findAvailableSlotsByDoctorAndDate(1L, from, SlotStatus.AVAILABLE))

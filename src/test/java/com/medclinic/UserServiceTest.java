@@ -53,8 +53,8 @@ class UserServiceTest {
 
         registerDto = new UserRegisterDto();
         registerDto.setUsername("nguyenvanan");
-        registerDto.setPassword("123456");
-        registerDto.setConfirmPassword("123456");
+        registerDto.setPassword("12345678");
+        registerDto.setConfirmPassword("12345678");
         registerDto.setFullName("Nguyễn Văn An");
         registerDto.setEmail("an.nguyen@example.com");
         registerDto.setPhone("0912345678");
@@ -69,7 +69,7 @@ class UserServiceTest {
         when(userRepository.existsByUsername("nguyenvanan")).thenReturn(false);
         when(userRepository.existsByEmail("an.nguyen@example.com")).thenReturn(false);
         when(roleRepository.findByName(RoleType.ROLE_PATIENT)).thenReturn(Optional.of(patientRole));
-        when(passwordEncoder.encode("123456")).thenReturn("hashedPassword123");
+        when(passwordEncoder.encode("12345678")).thenReturn("hashedPassword123");
 
         when(userRepository.save(any(User.class))).thenAnswer(invocation -> {
             User saved = invocation.getArgument(0);
@@ -122,7 +122,7 @@ class UserServiceTest {
     void rejectsShortNewPassword() {
         BusinessLogicException exception = assertThrows(BusinessLogicException.class,
                 () -> userService.changePassword(1L, "old", "short"));
-        assertTrue(exception.getMessage().contains("ít nhất 8"));
+        assertEquals(com.medclinic.util.PasswordPolicy.MESSAGE, exception.getMessage());
         verify(userRepository, never()).save(any(User.class));
     }
 }

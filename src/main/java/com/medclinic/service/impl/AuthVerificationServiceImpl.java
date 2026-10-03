@@ -112,8 +112,11 @@ public class AuthVerificationServiceImpl implements AuthVerificationService {
     }
 
     private VerificationResult consume(AuthVerificationChallenge challenge) {
-        challenge.setConsumedAt(LocalDateTime.now());
         User user = challenge.getUser();
+        if (challenge.getType() == AuthChallengeType.LOGIN && !Boolean.TRUE.equals(user.getIsActive())) {
+            throw new BusinessLogicException("Tài khoản đã bị khóa. Vui lòng liên hệ phòng khám.");
+        }
+        challenge.setConsumedAt(LocalDateTime.now());
         if (challenge.getType() == AuthChallengeType.REGISTRATION) {
             user.setEmailVerified(true);
             user.setIsActive(true);
@@ -124,6 +127,9 @@ public class AuthVerificationServiceImpl implements AuthVerificationService {
     }
 
     private ChallengeIssued createChallenge(User user, AuthChallengeType type) {
+        if (type == AuthChallengeType.LOGIN && !Boolean.TRUE.equals(user.getIsActive())) {
+            throw new BusinessLogicException("Tài khoản đã bị khóa. Vui lòng liên hệ phòng khám.");
+        }
         LocalDateTime now = LocalDateTime.now();
         for (AuthVerificationChallenge open : challengeRepository
                 .findByUserIdAndTypeAndConsumedAtIsNull(user.getId(), type)) {

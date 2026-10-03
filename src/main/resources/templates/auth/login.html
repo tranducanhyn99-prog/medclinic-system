@@ -7,7 +7,7 @@
 </head>
 <body>
 <div layout:fragment="content">
-    <div class="container">
+<div class="container">
         <section class="mc-auth-section" aria-labelledby="loginTitle">
             <div class="mc-auth-shell">
                 <aside class="mc-auth-aside">
@@ -60,7 +60,7 @@
                         </div>
                     </form>
 
-                    <div class="mc-demo-panel">
+                    <div th:if="${demoLoginEnabled}" class="mc-demo-panel">
                         <div class="mc-demo-panel-title">Tài khoản demo dùng cho môi trường phát triển</div>
                         <div class="d-flex flex-wrap gap-2 justify-content-center">
                             <button type="button" class="btn btn-sm btn-outline-secondary demo-login" data-username="admin" data-password="123456">Admin</button>

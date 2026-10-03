@@ -109,8 +109,8 @@ mvn "-Dtest=SqlServer*" test
 
 Các kiểm chứng trọng yếu gồm:
 
-- Fresh Flyway migration V1 → V5 + Hibernate validate.
-- Legacy 16-table adoption: BASELINE v1 → V2–V5 + Hibernate validate.
+- Fresh Flyway migration V1 → V6 + Hibernate validate.
+- Legacy 16-table adoption: BASELINE v1 → V2–V6 + Hibernate validate.
 - Concurrent booking, medicine stock locking, invoice-code reservation và rollback.
 - Release acceptance E2E Patient → Staff → Doctor → Billing/PDF.
 

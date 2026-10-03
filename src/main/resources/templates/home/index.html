@@ -8,155 +8,749 @@
 </head>
 <body>
 <div layout:fragment="content">
-    <div class="container mc-public-shell">
+    <style>
+        /* Hero Floating Care Card & Process */
+        .mc-hero-care-card {
+            background-color: #ffffff !important;
+            border: 1px solid #e2e8f0 !important;
+            border-radius: 1.25rem !important;
+            padding: 1.35rem 1.25rem !important;
+            box-shadow: 0 20px 45px -10px rgba(15, 23, 42, 0.14), 0 0 0 1px rgba(8, 145, 178, 0.08) !important;
+            position: relative !important;
+            z-index: 2 !important;
+            transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+        }
+        .mc-hero-care-card:hover {
+            transform: translateY(-2px) !important;
+            box-shadow: 0 24px 50px -10px rgba(8, 145, 178, 0.18), 0 0 0 1px rgba(8, 145, 178, 0.14) !important;
+        }
+        .mc-care-card-header {
+            margin-bottom: 0.85rem !important;
+            padding-bottom: 0.85rem !important;
+            border-bottom: 1px solid #e2e8f0 !important;
+        }
+        .mc-care-badge {
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 0.35rem !important;
+            font-size: 0.72rem !important;
+            font-weight: 700 !important;
+            padding: 0.25rem 0.65rem !important;
+            border-radius: 9999px !important;
+            background-color: #e0f2fe !important;
+            color: #0369a1 !important;
+            border: 1px solid #bae6fd !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.03em !important;
+        }
+        .mc-care-status {
+            font-size: 0.76rem !important;
+            font-weight: 600 !important;
+            color: #059669 !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 0.4rem !important;
+        }
+        .mc-status-pulse {
+            width: 8px !important;
+            height: 8px !important;
+            border-radius: 50% !important;
+            background-color: #10b981 !important;
+            display: inline-block !important;
+            box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7) !important;
+            animation: mcStatusPulseAnim 2s infinite !important;
+        }
+        @keyframes mcStatusPulseAnim {
+            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+        .mc-care-title {
+            font-size: 1.05rem !important;
+            font-weight: 750 !important;
+            color: #0f172a !important;
+            margin-bottom: 0 !important;
+            line-height: 1.3 !important;
+        }
+        .mc-care-subtitle {
+            font-size: 0.8rem !important;
+            color: #64748b !important;
+            margin: 0 !important;
+            line-height: 1.4 !important;
+        }
+        .mc-care-card-body {
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 0.5rem !important;
+        }
+        .mc-care-row {
+            display: flex !important;
+            flex-direction: row !important;
+            align-items: center !important;
+            gap: 0.85rem !important;
+            padding: 0.65rem 0.75rem !important;
+            border-radius: 0.75rem !important;
+            transition: background-color 0.15s ease, transform 0.15s ease !important;
+            border: 1px solid transparent !important;
+        }
+        .mc-care-row:hover {
+            background-color: #f8fafc !important;
+            border-color: #f1f5f9 !important;
+            transform: translateX(3px) !important;
+        }
+        .mc-care-icon {
+            width: 2.75rem !important;
+            height: 2.75rem !important;
+            min-width: 2.75rem !important;
+            flex: 0 0 2.75rem !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            border-radius: 0.75rem !important;
+            font-size: 1.25rem !important;
+        }
+        .mc-care-icon--cyan {
+            background-color: #ecfeff !important;
+            color: #0891b2 !important;
+            border: 1px solid #cffafe !important;
+        }
+        .mc-care-icon--emerald {
+            background-color: #ecfdf5 !important;
+            color: #059669 !important;
+            border: 1px solid #a7f3d0 !important;
+        }
+        .mc-care-icon--purple {
+            background-color: #f5f3ff !important;
+            color: #7c3aed !important;
+            border: 1px solid #ddd6fe !important;
+        }
+        .mc-care-text {
+            flex: 1 1 auto !important;
+            min-width: 0 !important;
+        }
+        .mc-care-row-title {
+            font-size: 0.92rem !important;
+            font-weight: 700 !important;
+            color: #0f172a !important;
+            margin-bottom: 0.15rem !important;
+            line-height: 1.25 !important;
+        }
+        .mc-care-row-desc {
+            font-size: 0.78rem !important;
+            color: #64748b !important;
+            margin: 0 !important;
+            line-height: 1.35 !important;
+        }
+        .mc-care-card-footer {
+            margin-top: 0.75rem !important;
+            padding-top: 0.75rem !important;
+            border-top: 1px solid #e2e8f0 !important;
+        }
+
+        /* Dark Mode Overrides for mc-hero-care-card */
+        [data-bs-theme="dark"] .mc-hero-care-card {
+            background-color: #0f172a !important;
+            border-color: #1e293b !important;
+            box-shadow: 0 24px 50px -12px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(56, 189, 248, 0.12) !important;
+        }
+        [data-bs-theme="dark"] .mc-care-card-header {
+            border-bottom-color: #1e293b !important;
+        }
+        [data-bs-theme="dark"] .mc-care-badge {
+            background-color: rgba(3, 105, 161, 0.25) !important;
+            color: #38bdf8 !important;
+            border-color: rgba(56, 189, 248, 0.3) !important;
+        }
+        [data-bs-theme="dark"] .mc-care-status {
+            color: #34d399 !important;
+        }
+        [data-bs-theme="dark"] .mc-care-title {
+            color: #f8fafc !important;
+        }
+        [data-bs-theme="dark"] .mc-care-subtitle {
+            color: #94a3b8 !important;
+        }
+        [data-bs-theme="dark"] .mc-care-row:hover {
+            background-color: #1e293b !important;
+            border-color: #334155 !important;
+        }
+        [data-bs-theme="dark"] .mc-care-icon--cyan {
+            background-color: rgba(8, 145, 178, 0.2) !important;
+            color: #38bdf8 !important;
+            border-color: rgba(56, 189, 248, 0.3) !important;
+        }
+        [data-bs-theme="dark"] .mc-care-icon--emerald {
+            background-color: rgba(5, 150, 105, 0.2) !important;
+            color: #34d399 !important;
+            border-color: rgba(52, 211, 153, 0.3) !important;
+        }
+        [data-bs-theme="dark"] .mc-care-icon--purple {
+            background-color: rgba(124, 58, 237, 0.2) !important;
+            color: #a78bfa !important;
+            border-color: rgba(167, 139, 250, 0.3) !important;
+        }
+        [data-bs-theme="dark"] .mc-care-row-title {
+            color: #f8fafc !important;
+        }
+        [data-bs-theme="dark"] .mc-care-row-desc {
+            color: #94a3b8 !important;
+        }
+        [data-bs-theme="dark"] .mc-care-card-footer {
+            border-top-color: #1e293b !important;
+        }
+    </style>
+    <div class="container mc-public-shell mc-home-shell">
+
+        <!-- =================================================================
+             1. Medpro-Inspired Hero & Mega Search Hub
+             ================================================================= -->
         <section class="mc-hero mb-4" aria-labelledby="homeHeroTitle">
             <div class="row align-items-center g-4 g-xl-5">
-                <div class="col-lg-8">
-                    <span class="mc-eyebrow">
-                        <i class="bi bi-shield-check"></i> Chăm sóc chủ động, lịch hẹn rõ ràng
-                    </span>
-                    <h1 id="homeHeroTitle" class="mc-hero-title">Đặt lịch khám đúng bác sĩ, đúng khung giờ.</h1>
+                <div class="col-lg-7 col-xl-7">
+                    <h1 id="homeHeroTitle" class="mc-hero-title">
+                        Đặt lịch khám nhanh chóng, <span class="mc-hero-highlight">chọn đúng chuyên gia</span>
+                    </h1>
                     <p class="mc-hero-copy mb-0">
-                        Tìm bác sĩ theo nhu cầu, xem thông tin trước khi đặt và chọn khung giờ còn trống.
-                        MedClinic giúp hành trình từ đặt lịch đến check-in gọn hơn và dễ theo dõi hơn.
+                        Chủ động chọn chuyên khoa, bác sĩ và khung giờ 30 phút còn trống.
+                        Dùng phiếu hẹn QR để nhân viên tiếp nhận tra cứu và cấp số thứ tự tại quầy.
                     </p>
-                    <form class="mc-search-panel" th:action="@{/doctors}" method="get" role="search">
-                        <label for="homeDoctorSearch" class="visually-hidden">Tìm bác sĩ theo tên hoặc chức danh</label>
-                        <div class="d-flex flex-column flex-sm-row gap-2">
-                            <div class="input-group flex-grow-1">
-                                <span class="input-group-text"><i class="bi bi-search"></i></span>
-                                <input id="homeDoctorSearch" name="keyword" type="search" class="form-control"
-                                       placeholder="Tìm bác sĩ, chức danh..." autocomplete="off">
+
+                    <!-- Mega Search Box -->
+                    <form class="mc-medpro-search-box mt-3" th:action="@{/doctors}" method="get" role="search">
+                        <label for="homeDoctorSearch" class="visually-hidden">Tìm bác sĩ, chuyên khoa khám bệnh</label>
+                        <div class="d-flex flex-column flex-sm-row align-items-sm-center gap-2">
+                            <div class="d-flex align-items-center flex-grow-1">
+                                <i class="bi bi-search text-primary fs-5 me-2" aria-hidden="true"></i>
+                                <input id="homeDoctorSearch" name="keyword" type="search" class="form-control border-0 bg-transparent shadow-none ps-0"
+                                       placeholder="Tìm bác sĩ, chức danh hoặc chuyên khoa khám bệnh..." autocomplete="off">
                             </div>
-                            <button type="submit" class="btn btn-med-primary px-4 justify-content-center">
-                                Tìm bác sĩ
+                            <button type="submit" class="btn btn-med-primary px-4 py-2 flex-shrink-0">
+                                <i class="bi bi-search me-1"></i> Tìm bác sĩ
                             </button>
                         </div>
                     </form>
-                    <div class="d-flex flex-wrap gap-2 mt-3">
-                        <a th:href="@{/patient/booking}" class="btn btn-med-primary">
-                            <i class="bi bi-calendar2-check"></i> Đặt lịch khám
-                        </a>
-                        <a th:href="@{/doctors}" class="btn btn-med-outline">
-                            <i class="bi bi-person-badge"></i> Xem đội ngũ bác sĩ
-                        </a>
+
+                    <!-- Search Suggestions / Chips -->
+                    <div class="mc-search-chips">
+                        <span class="mc-search-chip-label"><i class="bi bi-fire text-danger me-1"></i>Phổ biến:</span>
+                        <a th:href="@{/doctors(keyword='Nội')}" class="mc-search-chip">Nội tổng quát</a>
+                        <a th:href="@{/doctors(keyword='Tai Mũi Họng')}" class="mc-search-chip">Tai Mũi Họng</a>
+                        <a th:href="@{/doctors(keyword='Nhi')}" class="mc-search-chip">Nhi khoa</a>
+                        <a th:href="@{/doctors(keyword='Tim mạch')}" class="mc-search-chip">Tim mạch</a>
+                        <a th:href="@{/doctors(keyword='Da liễu')}" class="mc-search-chip">Da liễu</a>
+                        <a th:href="@{/doctors(keyword='Mắt')}" class="mc-search-chip">Mắt</a>
                     </div>
                 </div>
-                <div class="col-lg-4">
-                    <aside class="mc-care-panel" aria-label="Điểm nổi bật của quy trình khám">
-                        <div class="mc-care-row">
-                            <div class="mc-icon-tile"><i class="bi bi-clock-history"></i></div>
-                            <div><div class="fw-bold">Khung giờ 30 phút</div><div class="small text-muted">Xem lịch còn trống trước khi xác nhận.</div></div>
+
+                <div class="col-lg-5 col-xl-5">
+                    <div class="mc-hero-care-card d-none d-lg-flex flex-column" aria-label="Quy trình khám bệnh MedClinic">
+                        <div class="mc-care-card-header">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <h2 class="h3 mc-care-title mb-0">Quy Trình Khám Bệnh</h2>
+                                <span class="mc-care-status">
+                                    <i class="bi bi-info-circle" aria-hidden="true"></i> Hướng dẫn khám
+                                </span>
+                            </div>
+                            <p class="mc-care-subtitle mt-1">Từ đặt lịch đến kết quả khám trong 4 bước</p>
                         </div>
-                        <div class="mc-care-row">
-                            <div class="mc-icon-tile"><i class="bi bi-qr-code"></i></div>
-                            <div><div class="fw-bold">QR check-in</div><div class="small text-muted">Tra cứu và tiếp nhận lịch hẹn nhanh tại quầy.</div></div>
+
+                        <div class="mc-care-card-body">
+                            <!-- Item 1 -->
+                            <div class="mc-care-row">
+                                <div class="mc-care-icon mc-care-icon--cyan">
+                                    <i class="bi bi-clock-history" aria-hidden="true"></i>
+                                </div>
+                                <div class="mc-care-text">
+                                    <div class="mc-care-row-title">Chọn bác sĩ và giờ khám</div>
+                                    <div class="mc-care-row-desc">Xem khung giờ còn trống trước khi đặt.</div>
+                                </div>
+                            </div>
+
+                            <!-- Item 2 -->
+                            <div class="mc-care-row">
+                                <div class="mc-care-icon mc-care-icon--emerald">
+                                    <i class="bi bi-qr-code-scan" aria-hidden="true"></i>
+                                </div>
+                                <div class="mc-care-text">
+                                    <div class="mc-care-row-title">Nhận phiếu hẹn QR</div>
+                                    <div class="mc-care-row-desc">Dùng mã QR để tra cứu phiếu hẹn tại quầy tiếp nhận.</div>
+                                </div>
+                            </div>
+
+                            <div class="mc-care-row">
+                                <div class="mc-care-icon mc-care-icon--cyan"><i class="bi bi-person-check" aria-hidden="true"></i></div>
+                                <div class="mc-care-text">
+                                    <div class="mc-care-row-title">Check-in tại quầy</div>
+                                    <div class="mc-care-row-desc">Xuất trình phiếu hẹn để nhận số thứ tự khám.</div>
+                                </div>
+                            </div>
+                            <!-- Item 3 -->
+                            <div class="mc-care-row">
+                                <div class="mc-care-icon mc-care-icon--purple">
+                                    <i class="bi bi-file-earmark-medical" aria-hidden="true"></i>
+                                </div>
+                                <div class="mc-care-text">
+                                    <div class="mc-care-row-title">Khám và xem hồ sơ</div>
+                                    <div class="mc-care-row-desc">Tra cứu đơn thuốc và lịch sử khám trong tài khoản.</div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="mc-care-row">
-                            <div class="mc-icon-tile"><i class="bi bi-file-earmark-medical"></i></div>
-                            <div><div class="fw-bold">Hồ sơ điện tử</div><div class="small text-muted">Theo dõi lịch sử khám và toa thuốc thuận tiện.</div></div>
+
+                        <div class="mc-care-card-footer">
+                            <a th:href="@{/patient/booking}" class="btn btn-sm btn-med-primary w-100 justify-content-center py-2 shadow-sm">
+                                <i class="bi bi-calendar-check-fill me-1"></i> Đặt Lịch Khám Ngay
+                            </a>
                         </div>
-                    </aside>
-                </div>
-            </div>
-        </section>
-
-        <section class="mc-trust-strip mb-5" aria-label="Năng lực nổi bật của MedClinic">
-            <div class="mc-trust-item">
-                <div class="mc-trust-label"><i class="bi bi-calendar-check text-primary me-1"></i> Đặt lịch chủ động</div>
-                <p class="mc-trust-copy">Chọn chuyên khoa, bác sĩ, ngày và giờ phù hợp.</p>
-            </div>
-            <div class="mc-trust-item">
-                <div class="mc-trust-label"><i class="bi bi-shield-check text-primary me-1"></i> Chống trùng lịch</div>
-                <p class="mc-trust-copy">Khung giờ được kiểm tra trạng thái trước khi xác nhận.</p>
-            </div>
-            <div class="mc-trust-item">
-                <div class="mc-trust-label"><i class="bi bi-person-check text-primary me-1"></i> Tiếp nhận rõ ràng</div>
-                <p class="mc-trust-copy">QR và số thứ tự hỗ trợ quy trình check-in tại quầy.</p>
-            </div>
-            <div class="mc-trust-item">
-                <div class="mc-trust-label"><i class="bi bi-journal-medical text-primary me-1"></i> Theo dõi sau khám</div>
-                <p class="mc-trust-copy">Lịch hẹn, bệnh án và toa thuốc được quản lý tập trung.</p>
-            </div>
-        </section>
-
-        <section class="mb-5" aria-labelledby="quickActionsTitle">
-            <div class="row align-items-end mb-4 g-3">
-                <div class="col-lg-7">
-                    <div class="mc-section-kicker">Bắt đầu từ nhu cầu của bạn</div>
-                    <h2 id="quickActionsTitle" class="mc-section-title">Bạn muốn làm gì hôm nay?</h2>
-                    <p class="text-muted mb-0">Đi thẳng đến tác vụ chính, không cần dò qua nhiều lớp menu.</p>
-                </div>
-            </div>
-            <div class="row g-3">
-                <div class="col-md-4">
-                    <a th:href="@{/doctors}" class="card mc-action-card">
-                        <div class="mc-icon-tile mb-3"><i class="bi bi-person-badge"></i></div>
-                        <h3 class="h5 fw-bold mb-2">Tìm bác sĩ</h3>
-                        <p class="text-muted small mb-3">Lọc theo chuyên khoa, tên bác sĩ và mức phí tư vấn.</p>
-                        <span class="fw-semibold text-primary">Xem danh sách <i class="bi bi-arrow-right ms-1"></i></span>
-                    </a>
-                </div>
-                <div class="col-md-4">
-                    <a th:href="@{/patient/booking}" class="card mc-action-card">
-                        <div class="mc-icon-tile mb-3"><i class="bi bi-calendar2-check"></i></div>
-                        <h3 class="h5 fw-bold mb-2">Đặt lịch khám</h3>
-                        <p class="text-muted small mb-3">Chọn bác sĩ và khung giờ còn trống theo lịch trực.</p>
-                        <span class="fw-semibold text-primary">Đặt lịch ngay <i class="bi bi-arrow-right ms-1"></i></span>
-                    </a>
-                </div>
-                <div class="col-md-4">
-                    <a th:href="@{/patient/appointments}" class="card mc-action-card">
-                        <div class="mc-icon-tile mb-3"><i class="bi bi-clock-history"></i></div>
-                        <h3 class="h5 fw-bold mb-2">Quản lý lịch hẹn</h3>
-                        <p class="text-muted small mb-3">Xem lại thời gian khám, trạng thái và thông tin check-in.</p>
-                        <span class="fw-semibold text-primary">Mở lịch hẹn <i class="bi bi-arrow-right ms-1"></i></span>
-                    </a>
-                </div>
-            </div>
-        </section>
-
-        <section class="row g-4 align-items-center mb-5" aria-labelledby="processTitle">
-            <div class="col-lg-5">
-                <div class="mc-section-kicker">Quy trình đơn giản</div>
-                <h2 id="processTitle" class="h3 fw-bold text-dark">Từ tìm bác sĩ đến khám chỉ trong 4 bước</h2>
-                <p class="text-muted mb-0">Mỗi bước chỉ hiển thị thông tin cần thiết, giúp người bệnh biết mình đang ở đâu trong quy trình.</p>
-            </div>
-            <div class="col-lg-7">
-                <div class="card card-custom p-4 p-lg-5">
-                    <div class="mc-step mb-4">
-                        <span class="mc-step-number">1</span>
-                        <div><h3 class="h6 fw-bold mb-2">Chọn chuyên khoa hoặc bác sĩ</h3><p class="small text-muted mb-0">Tra cứu thông tin trước khi đặt để chọn đúng nhu cầu khám.</p></div>
-                    </div>
-                    <div class="mc-step mb-4">
-                        <span class="mc-step-number">2</span>
-                        <div><h3 class="h6 fw-bold mb-2">Chọn ngày và khung giờ</h3><p class="small text-muted mb-0">Chỉ các ca khám phù hợp với lịch bác sĩ mới được hiển thị.</p></div>
-                    </div>
-                    <div class="mc-step mb-4">
-                        <span class="mc-step-number">3</span>
-                        <div><h3 class="h6 fw-bold mb-2">Xác nhận lịch hẹn</h3><p class="small text-muted mb-0">Kiểm tra lại bác sĩ, thời gian và phí khám trước khi gửi.</p></div>
-                    </div>
-                    <div class="mc-step">
-                        <span class="mc-step-number">4</span>
-                        <div><h3 class="h6 fw-bold mb-2">Check-in và theo dõi hồ sơ</h3><p class="small text-muted mb-0">Dùng QR tại quầy và xem lại thông tin sau khám trong tài khoản.</p></div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <section class="mc-soft-callout d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3">
-            <div>
-                <div class="mc-section-kicker">Sẵn sàng đặt lịch?</div>
-                <h2 class="h4 fw-bold mb-1">Chọn bác sĩ và thời gian phù hợp với bạn.</h2>
-                <p class="text-muted mb-0">Bạn có thể xem hồ sơ bác sĩ trước hoặc đi thẳng vào quy trình đặt lịch.</p>
+        <!-- =================================================================
+             2. Medpro Quick Service Hub (6-Item Core Booking Grid)
+             ================================================================= -->
+        <details class="mc-service-directory mb-4">
+            <summary>Tiện ích và tra cứu y tế</summary>
+        <div class="mc-medpro-hub-grid" aria-label="Tiện ích dịch vụ y tế trực tuyến">
+            <a th:href="@{/doctors}" class="mc-hub-card">
+                <div class="mc-hub-icon-wrap mc-hub-icon--cyan">
+                    <i class="bi bi-hospital"></i>
+                </div>
+                <div class="mc-hub-title">Khám Chuyên Khoa</div>
+                <p class="mc-hub-desc">Chọn khoa khám phù hợp triệu chứng</p>
+            </a>
+            <a th:href="@{/doctors}" class="mc-hub-card">
+                <div class="mc-hub-icon-wrap mc-hub-icon--blue">
+                    <i class="bi bi-person-badge-fill"></i>
+                </div>
+                <div class="mc-hub-title">Khám Theo Bác Sĩ</div>
+                <p class="mc-hub-desc">BS.CKII, Thạc sĩ giàu kinh nghiệm</p>
+            </a>
+            <a th:href="@{/patient/booking}" class="mc-hub-card">
+                <div class="mc-hub-icon-wrap mc-hub-icon--emerald">
+                    <i class="bi bi-calendar2-check-fill"></i>
+                </div>
+                <div class="mc-hub-title">Đặt Khám Nhanh</div>
+                <p class="mc-hub-desc">Chọn ngày & khung giờ còn trống</p>
+            </a>
+            <a th:href="@{/patient/appointments}" class="mc-hub-card">
+                <div class="mc-hub-icon-wrap mc-hub-icon--amber">
+                    <i class="bi bi-qr-code-scan"></i>
+                </div>
+                <div class="mc-hub-title">Thẻ Check-in QR</div>
+                <p class="mc-hub-desc">Tra cứu lịch hẹn & vé khám số</p>
+            </a>
+            <a th:href="@{/patient/medical-history}" class="mc-hub-card">
+                <div class="mc-hub-icon-wrap mc-hub-icon--purple">
+                    <i class="bi bi-journal-medical"></i>
+                </div>
+                <div class="mc-hub-title">Bệnh Án Điện Tử</div>
+                <p class="mc-hub-desc">Xem toa thuốc & tiền sử khám bệnh</p>
+            </a>
+            <a href="tel:19006868" class="mc-hub-card">
+                <div class="mc-hub-icon-wrap mc-hub-icon--rose">
+                    <i class="bi bi-headset"></i>
+                </div>
+                <div class="mc-hub-title">Hỗ Trợ Đặt Lịch</div>
+                <p class="mc-hub-desc">Hotline hỗ trợ & Điều dưỡng An Nhiên</p>
+            </a>
+        </div>
+        </details>
+
+        <!-- =================================================================
+             3. Medpro Promotional Marketing Banners (Interactive 3-Card Carousel)
+             ================================================================= -->
+        <section class="mc-banner-carousel-section" aria-label="Hướng dẫn sử dụng MedClinic" id="mcBannerCarouselSection">
+            <div class="mc-banner-viewport" id="mcBannerViewport" tabindex="0" aria-roledescription="carousel" aria-label="Hướng dẫn đặt lịch và tra cứu hồ sơ">
+                <div class="mc-banner-track" id="mcBannerTrack">
+
+                    <!-- Slide 1: Care247 - Chọn lịch phù hợp / Chuẩn bị trước khi đến khám -->
+                    <div class="mc-banner-slide">
+                        <div class="mc-banner-card">
+                            <div class="mc-banner-bg-visual" th:style="'background-image: url(' + @{/images/banner-companion.webp} + ');'"></div>
+                            <div class="mc-banner-gradient-mask"></div>
+                            <div class="mc-banner-content">
+                                <div>
+                                    <div class="mc-banner-badge mc-banner-badge--green">
+                                        <i class="bi bi-heart-pulse-fill"></i> Hỗ trợ đặt lịch
+                                    </div>
+                                    <h3 class="mc-banner-heading">
+                                        <span class="text-orange-bold">Chọn lịch phù hợp</span>
+                                        <span class="text-emerald-bold d-block">Chuẩn bị trước khi đến khám</span>
+                                    </h3>
+                                    <p class="mc-banner-features">
+                                        Chọn chuyên khoa, bác sĩ và khung giờ trên hệ thống. Xem lại thông tin cuộc hẹn trước khi đến phòng khám.
+                                    </p>
+                                </div>
+                                <div class="mc-banner-actions">
+                                    <a href="tel:19006868" class="mc-banner-hotline mc-hotline-orange" aria-label="Gọi hotline hỗ trợ 1900 6868">
+                                        <i class="bi bi-telephone-fill"></i> 1900 6868 <small>GỌI NGAY</small>
+                                    </a>
+                                    <a th:href="@{/patient/booking}" class="mc-banner-btn mc-banner-btn--teal">
+                                        Đặt lịch khám
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="mc-banner-bottom-strip">
+                                <span><img th:src="@{/images/logo.svg}" alt="MedClinic" class="mc-banner-mini-logo"> MedClinic Đặt lịch</span>
+                                <span>Thông tin cuộc hẹn trong tài khoản</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Slide 2: Đặt lịch trên hệ thống - Tư vấn khám bệnh trực tuyến -->
+                    <div class="mc-banner-slide">
+                        <div class="mc-banner-card">
+                            <div class="mc-banner-bg-visual" th:style="'background-image: url(' + @{/images/banner-telehealth.webp} + ');'"></div>
+                            <div class="mc-banner-gradient-mask"></div>
+                            <div class="mc-banner-content">
+                                <div>
+                                    <div class="mc-banner-badge mc-banner-badge--cyan">
+                                        <i class="bi bi-broadcast"></i> Đặt lịch trên hệ thống
+                                    </div>
+                                    <h3 class="mc-banner-heading">
+                                        <span class="text-navy-bold">CHỌN BÁC SĨ</span>
+                                        <span class="text-cyan-bold d-block">VÀ KHUNG GIỜ KHÁM</span>
+                                    </h3>
+                                    <p class="mc-banner-features">
+                                        Xem hồ sơ bác sĩ, chuyên khoa và phí khám. Chọn khung giờ còn trống để đặt cuộc hẹn tại phòng khám.
+                                    </p>
+                                </div>
+                                <div class="mc-banner-actions">
+                                    <a th:href="@{/patient/booking}" class="mc-banner-btn mc-banner-btn--cyan">
+                                        CHỌN LỊCH KHÁM
+                                    </a>
+                                    <a href="tel:19006868" class="mc-banner-hotline mc-hotline-red" aria-label="Gọi hotline 1900 6868">
+                                        <i class="bi bi-telephone-fill"></i> 1900 6868
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="mc-banner-bottom-strip mc-banner-bottom-strip--cyan">
+                                <span><img th:src="@{/images/logo.svg}" alt="MedClinic" class="mc-banner-mini-logo"> MedClinic Đặt khám</span>
+                                <span class="mc-banner-doc-title">Xem hồ sơ và phí khám trước khi đặt lịch</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Slide 3: Kết nối chất lượng cao - Tầm soát & Bảo lãnh viện phí -->
+                    <div class="mc-banner-slide">
+                        <div class="mc-banner-card">
+                            <div class="mc-banner-bg-visual" th:style="'background-image: url(' + @{/images/banner-screening.webp} + ');'"></div>
+                            <div class="mc-banner-gradient-mask"></div>
+                            <div class="mc-banner-content">
+                                <div>
+                                    <div class="mc-banner-badge mc-banner-badge--navy">
+                                        <i class="bi bi-shield-check"></i> Theo dõi cuộc hẹn
+                                    </div>
+                                    <h3 class="mc-banner-heading">
+                                        <span class="text-navy-bold">PHIẾU HẸN ĐIỆN TỬ</span>
+                                        <span class="text-teal-bold d-block">TIẾP NHẬN BẰNG MÃ QR</span>
+                                    </h3>
+                                    <div class="mc-banner-chips">
+                                        <span><i class="bi bi-check2"></i> Chọn khung giờ</span>
+                                        <span><i class="bi bi-check2"></i> Xem mã cuộc hẹn</span>
+                                        <span><i class="bi bi-check2"></i> Phiếu hẹn QR</span>
+                                        <span><i class="bi bi-check2"></i> Theo dõi trạng thái</span>
+                                    </div>
+                                </div>
+                                <div class="mc-banner-actions">
+                                    <a th:href="@{/patient/booking}" class="mc-banner-btn mc-banner-btn--teal">
+                                        ĐẶT LỊCH KHÁM <i class="bi bi-arrow-right"></i>
+                                    </a>
+                                    <a href="tel:19006868" class="mc-banner-hotline mc-hotline-teal" aria-label="Gọi tổng đài hỗ trợ 1900 6868">
+                                        <i class="bi bi-telephone-fill"></i> 1900 6868
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="mc-banner-bottom-strip">
+                                <span><img th:src="@{/images/logo.svg}" alt="MedClinic" class="mc-banner-mini-logo"> MedClinic Care</span>
+                                <span>Mang phiếu hẹn khi đến quầy tiếp nhận</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Slide 4: Chuẩn bị cho buổi khám Bảo Vệ Bé Yêu -->
+                    <div class="mc-banner-slide">
+                        <div class="mc-banner-card">
+                            <div class="mc-banner-bg-visual" th:style="'background-image: url(' + @{/images/banner-vaccine.webp} + ');'"></div>
+                            <div class="mc-banner-gradient-mask"></div>
+                            <div class="mc-banner-content">
+                                <div>
+                                    <div class="mc-banner-badge mc-banner-badge--rose">
+                                        <i class="bi bi-stars"></i> Chuẩn bị cho buổi khám
+                                    </div>
+                                    <h3 class="mc-banner-heading">
+                                        <span class="text-navy-bold">XEM THÔNG TIN LỊCH HẸN</span>
+                                        <span class="text-rose-bold d-block">TRƯỚC KHI ĐẾN KHÁM</span>
+                                    </h3>
+                                    <p class="mc-banner-features">
+                                        Kiểm tra ngày khám, bác sĩ và phí khám trong phiếu hẹn. Liên hệ phòng khám nếu cần hướng dẫn thêm.
+                                    </p>
+                                </div>
+                                <div class="mc-banner-actions">
+                                    <a th:href="@{/patient/appointments}" class="mc-banner-btn mc-banner-btn--rose">
+                                        XEM LỊCH HẸN
+                                    </a>
+                                    <a href="tel:19006868" class="mc-banner-hotline mc-hotline-rose" aria-label="Hotline hỗ trợ lịch hẹn">
+                                        <i class="bi bi-telephone-fill"></i> 1900 6868
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="mc-banner-bottom-strip">
+                                <span><img th:src="@{/images/logo.svg}" alt="MedClinic" class="mc-banner-mini-logo"> MedClinic Lịch hẹn</span>
+                                <span>Lịch hẹn được lưu trong tài khoản</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Slide 5: Tầm Soát Tim Mạch & Đột Quỵ Kỹ Thuật Cao -->
+                    <div class="mc-banner-slide">
+                        <div class="mc-banner-card">
+                            <div class="mc-banner-bg-visual" th:style="'background-image: url(' + @{/images/banner-cardiac.webp} + ');'"></div>
+                            <div class="mc-banner-gradient-mask"></div>
+                            <div class="mc-banner-content">
+                                <div>
+                                    <div class="mc-banner-badge mc-banner-badge--blue">
+                                        <i class="bi bi-activity"></i> Hồ sơ sau buổi khám
+                                    </div>
+                                    <h3 class="mc-banner-heading">
+                                        <span class="text-navy-bold">TRA CỨU HỒ SƠ KHÁM</span>
+                                        <span class="text-blue-bold d-block">TRONG TÀI KHOẢN CỦA BẠN</span>
+                                    </h3>
+                                    <p class="mc-banner-features">
+                                        Xem lại thông tin khám và đơn thuốc đã được bác sĩ lưu. Đăng nhập để truy cập hồ sơ của bạn.
+                                    </p>
+                                </div>
+                                <div class="mc-banner-actions">
+                                    <a th:href="@{/doctors}" class="mc-banner-btn mc-banner-btn--blue">
+                                        XEM ĐỘI NGŨ BÁC SĨ
+                                    </a>
+                                    <a href="tel:19006868" class="mc-banner-hotline mc-hotline-blue" aria-label="Hotline hỗ trợ 1900 6868">
+                                        <i class="bi bi-telephone-fill"></i> 1900 6868
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="mc-banner-bottom-strip">
+                                <span><img th:src="@{/images/logo.svg}" alt="MedClinic" class="mc-banner-mini-logo"> MedClinic Hồ sơ khám</span>
+                                <span>Thông tin do bác sĩ lưu sau buổi khám</span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Navigation Chevrons -->
+                <button type="button" class="mc-banner-nav-btn mc-nav-prev" id="mcBannerPrevBtn" aria-label="Xem banner trước">
+                    <i class="bi bi-chevron-left" aria-hidden="true"></i>
+                </button>
+                <button type="button" class="mc-banner-nav-btn mc-nav-next" id="mcBannerNextBtn" aria-label="Xem banner tiếp theo">
+                    <i class="bi bi-chevron-right" aria-hidden="true"></i>
+                </button>
             </div>
-            <div class="d-flex flex-wrap gap-2 flex-shrink-0">
-                <a th:href="@{/doctors}" class="btn btn-med-outline">Xem bác sĩ</a>
-                <a th:href="@{/patient/booking}" class="btn btn-med-primary">
-                    <i class="bi bi-calendar-plus"></i> Đặt lịch khám
+
+            <!-- 5 Pagination Dots matching Medpro reference -->
+            <div class="mc-banner-indicators" id="mcBannerIndicators" role="group" aria-label="Chọn banner hiển thị">
+                <button type="button" class="mc-carousel-dot active" data-index="0" aria-pressed="true" aria-label="Banner 1: Dịch vụ đồng hành Care247"></button>
+                <button type="button" class="mc-carousel-dot" data-index="1" aria-pressed="false" aria-label="Banner 2: Tư vấn khám trực tuyến 4.0"></button>
+                <button type="button" class="mc-carousel-dot" data-index="2" aria-pressed="false" aria-label="Banner 3: Tầm soát sức khỏe toàn diện"></button>
+                <button type="button" class="mc-carousel-dot" data-index="3" aria-pressed="false" aria-label="Banner 4: Nhi khoa & Tiêm chủng"></button>
+                <button type="button" class="mc-carousel-dot" data-index="4" aria-pressed="false" aria-label="Banner 5: Tầm soát tim mạch kỹ thuật cao"></button>
+            </div>
+            <div class="text-center"><button type="button" id="mcBannerPauseBtn" class="btn btn-sm btn-outline-secondary" aria-pressed="false">Tạm dừng chuyển tự động</button></div>
+            <p id="mcBannerStatus" class="visually-hidden" role="status" aria-live="polite"></p>
+        </section>
+
+        <!-- =================================================================
+             4. Live Operational Stats Strip
+             ================================================================= -->
+        <div class="mc-live-stats-bar" aria-label="Thông số vận hành phòng khám MedClinic">
+            <div class="mc-stat-item">
+                <div class="mc-stat-icon"><i class="bi bi-people-fill"></i></div>
+                <div>
+                    <div class="mc-stat-value" th:text="${#lists.size(specialties)}">0</div>
+                    <div class="mc-stat-label">Chuyên khoa đang hoạt động</div>
+                </div>
+            </div>
+            <div class="mc-stat-item">
+                <div class="mc-stat-icon"><i class="bi bi-award-fill"></i></div>
+                <div>
+                    <div class="mc-stat-value" th:text="${#lists.size(featuredDoctors)}">0</div>
+                    <div class="mc-stat-label">Bác sĩ đang hoạt động</div>
+                </div>
+            </div>
+            <div class="mc-stat-item">
+                <div class="mc-stat-icon"><i class="bi bi-lightning-charge-fill"></i></div>
+                <div>
+                    <div class="mc-stat-value">QR</div>
+                    <div class="mc-stat-label">Phiếu hẹn điện tử</div>
+                </div>
+            </div>
+            <div class="mc-stat-item">
+                <div class="mc-stat-icon"><i class="bi bi-heart-pulse-fill"></i></div>
+                <div>
+                    <div class="mc-stat-value">Hồ sơ</div>
+                    <div class="mc-stat-label">Tra cứu sau buổi khám</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- =================================================================
+             4. Featured Specialties Grid
+             ================================================================= -->
+        <section class="mc-specialty-section mb-5" th:if="${!#lists.isEmpty(specialties)}" aria-labelledby="homeSpecialtiesTitle">
+            <div class="d-flex flex-column flex-md-row align-items-md-end justify-content-between gap-2 mb-3">
+                <div>
+                    <h2 id="homeSpecialtiesTitle" class="mc-section-title mb-0">Chọn chuyên khoa khám phù hợp</h2>
+                </div>
+                <a th:href="@{/doctors}" class="fw-semibold text-primary text-decoration-none">Xem tất cả bác sĩ <i class="bi bi-arrow-right"></i></a>
+            </div>
+            <div class="mc-specialty-grid">
+                <a th:each="specialty : ${specialties}" th:href="@{/doctors(specialtyId=${specialty.id})}" class="mc-specialty-link">
+                    <span class="mc-specialty-link-icon"><i class="bi bi-heart-pulse" aria-hidden="true"></i></span>
+                    <span th:text="${#strings.replace(specialty.name, 'Chuyên Khoa ', '')}">Chuyên khoa</span>
+                    <i class="bi bi-arrow-up-right ms-auto" aria-hidden="true"></i>
                 </a>
             </div>
         </section>
+
+        <!-- =================================================================
+             5. Featured Top Doctors Section
+             ================================================================= -->
+        <section class="mb-5" th:if="${!#lists.isEmpty(featuredDoctors)}" aria-labelledby="featuredDoctorsTitle">
+            <div class="d-flex flex-column flex-md-row align-items-md-end justify-content-between gap-2 mb-4">
+                <div>
+                    <h2 id="featuredDoctorsTitle" class="mc-section-title mb-0">Bác sĩ Chuyên khoa Tiêu biểu</h2>
+                    <p class="text-muted small mb-0">Đội ngũ y bác sĩ giàu y đức, tận tâm với nhiều năm công tác tại các bệnh viện tuyến đầu.</p>
+                </div>
+                <a th:href="@{/doctors}" class="fw-semibold text-primary text-decoration-none">
+                    Xem toàn bộ đội ngũ bác sĩ <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+
+            <div class="row g-4">
+                <!-- Limit to 3 top doctors on homepage -->
+                <div class="col-md-6 col-xl-4" th:each="doctor, iterStat : ${featuredDoctors}" th:if="${iterStat.index < 3}">
+                    <article class="mc-doctor-card d-flex flex-column h-100">
+                        <div class="d-flex align-items-start gap-3">
+                            <div class="mc-doctor-avatar mc-doctor-avatar--list">
+                                <img th:if="${doctor.user.avatarUrl != null and !doctor.user.avatarUrl.isBlank()}"
+                                     th:src="@{/api/public/doctors/{id}/avatar(id=${doctor.id},size=128)}"
+                                     th:srcset="@{/api/public/doctors/{id}/avatar(id=${doctor.id},size=128)} + ' 128w, ' + @{/api/public/doctors/{id}/avatar(id=${doctor.id},size=256)} + ' 256w, ' + @{/api/public/doctors/{id}/avatar(id=${doctor.id},size=512)} + ' 512w'"
+                                     sizes="(max-width: 575px) 64px, 128px" width="128" height="128" data-doctor-avatar th:alt="${'Ảnh bác sĩ ' + doctor.user.fullName}" loading="lazy">
+                                <span data-avatar-fallback th:hidden="${doctor.user.avatarUrl != null and !doctor.user.avatarUrl.isBlank()}"
+                                      th:text="${#strings.substring(doctor.user.fullName, 0, 1)}" aria-hidden="true">B</span>
+                            </div>
+                            <div class="min-w-0">
+                                <span class="badge bg-info-subtle text-info-emphasis mb-2" th:text="${doctor.specialty.name}">Nội khoa</span>
+                                <h3 class="h6 fw-bold mb-1 text-truncate" th:text="${doctor.title + ' ' + doctor.user.fullName}">BS. Nguyễn Văn A</h3>
+                            </div>
+                        </div>
+
+                        <div class="mc-doctor-meta mt-3">
+                            <div>
+                                <span class="mc-meta-label">Kinh nghiệm</span>
+                                <span class="mc-meta-value" th:text="${doctor.experienceYears + ' năm'}">5 năm</span>
+                            </div>
+                            <div>
+                                <span class="mc-meta-label">Phí khám</span>
+                                <span class="mc-meta-value text-primary"
+                                      th:text="${@money.vnd(doctor.consultationFee)}">300.000 đ</span>
+                            </div>
+                        </div>
+
+                        <p class="text-muted small mb-3 flex-grow-1 mt-2 line-clamp-2"
+                           th:text="${doctor.bio != null && !doctor.bio.isBlank() ? doctor.bio : 'Bác sĩ giàu kinh nghiệm, chuyên môn sâu và tận tâm với bệnh nhân.'}">
+                            Giới thiệu bác sĩ
+                        </p>
+
+                        <div class="d-flex gap-2 pt-2 border-top border-light-subtle">
+                            <a th:href="@{/doctors/{id}(id=${doctor.id})}" class="btn btn-outline-secondary btn-sm flex-grow-1">
+                                <i class="bi bi-info-circle me-1"></i> Xem hồ sơ
+                            </a>
+                            <a th:href="@{/patient/booking(doctorId=${doctor.id})}" class="btn btn-med-primary btn-sm flex-grow-1">
+                                <i class="bi bi-calendar2-check me-1"></i> Đặt khám
+                            </a>
+                        </div>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <!-- =================================================================
+             6. Medpro-Inspired 4-Step Patient Journey
+             ================================================================= -->
+        <section class="mb-5 d-lg-none" aria-labelledby="processTitle">
+            <div class="text-center max-w-xl mx-auto mb-4">
+                <h2 id="processTitle" class="mc-section-title">Khám bệnh thông minh chỉ trong 4 bước</h2>
+                <p class="text-muted small mb-0">Chuẩn bị phiếu hẹn trước khi đến và theo dõi hồ sơ sau buổi khám.</p>
+            </div>
+
+            <div class="mc-journey-grid">
+                <div class="mc-journey-card">
+                    <span class="mc-journey-step-badge">01</span>
+                    <div class="mc-journey-icon">
+                        <i class="bi bi-person-lines-fill"></i>
+                    </div>
+                    <h3 class="h6 fw-bold mb-2">Chọn Bác Sĩ & Giờ Khám</h3>
+                    <p class="mc-journey-desc">Tra cứu chuyên khoa, chọn bác sĩ yêu thích và khung giờ 30 phút còn trống trực tiếp.</p>
+                </div>
+
+                <div class="mc-journey-card">
+                    <span class="mc-journey-step-badge">02</span>
+                    <div class="mc-journey-icon">
+                        <i class="bi bi-qr-code"></i>
+                    </div>
+                    <h3 class="h6 fw-bold mb-2">Nhận Thẻ Lịch Hẹn QR</h3>
+                    <p class="mc-journey-desc">Phiếu hẹn gồm mã đặt khám MED-... và mã QR được lưu trong tài khoản.</p>
+                </div>
+
+                <div class="mc-journey-card">
+                    <span class="mc-journey-step-badge">03</span>
+                    <div class="mc-journey-icon">
+                        <i class="bi bi-upc-scan"></i>
+                    </div>
+                    <h3 class="h6 fw-bold mb-2">Check-in Nhận Số Thứ Tự</h3>
+                    <p class="mc-journey-desc">Đến quầy tiếp nhận và xuất trình phiếu hẹn để nhận số thứ tự. Chờ bác sĩ gọi theo hàng chờ.</p>
+                </div>
+
+                <div class="mc-journey-card">
+                    <span class="mc-journey-step-badge">04</span>
+                    <div class="mc-journey-icon">
+                        <i class="bi bi-file-earmark-medical-fill"></i>
+                    </div>
+                    <h3 class="h6 fw-bold mb-2">Khám & Bệnh Án Số Hóa</h3>
+                    <p class="mc-journey-desc">Bác sĩ ghi nhận kết quả khám và đơn thuốc. Xem hóa đơn và các phương thức thanh toán tại quầy thu ngân.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- =================================================================
+             7. Emergency Triage Hotline & Commitment Banner
+             ================================================================= -->
+        <section class="mc-hotline-callout d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-4 mb-4" aria-labelledby="hotlineCalloutTitle">
+            <div class="d-flex flex-column flex-sm-row align-items-start align-items-sm-center gap-3 gap-md-4">
+                <div class="mc-hotline-icon">
+                    <i class="bi bi-headset"></i>
+                </div>
+                <div>
+                    <h2 id="hotlineCalloutTitle" class="h4 fw-bold mb-1 text-white">Chưa rõ triệu chứng hoặc cần hướng dẫn đặt khám?</h2>
+                    <p class="text-white-50 mb-0 small">
+                        Đội ngũ điều dưỡng và nhân viên y tế MedClinic sẵn sàng hỗ trợ bạn giải đáp thắc mắc và định hướng khoa khám phù hợp nhất.
+                    </p>
+                </div>
+            </div>
+            <div class="d-flex flex-wrap gap-2 flex-shrink-0 align-items-center">
+                <a href="tel:19006868" class="btn btn-med-primary px-4 py-2.5 shadow">
+                    <i class="bi bi-telephone-fill me-2"></i> Gọi ngay: 1900 6868
+                </a>
+                <a th:href="@{/doctors}" class="btn btn-outline-light px-3 py-2.5">
+                    <i class="bi bi-person-lines-fill me-1"></i> Tra cứu bác sĩ
+                </a>
+            </div>
+        </section>
+
+        <script defer th:src="@{/js/home-carousel.js(v=3.0)}"></script>
+
     </div>
 </div>
 </body>

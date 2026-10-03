@@ -23,6 +23,9 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class ScheduleServiceImpl implements ScheduleService {
+    private java.time.Clock businessClock = java.time.Clock.system(java.time.ZoneId.of("Asia/Ho_Chi_Minh"));
+    @org.springframework.beans.factory.annotation.Autowired
+    public void setBusinessClock(java.time.Clock clock) { this.businessClock = clock; }
 
     private final DoctorScheduleRepository doctorScheduleRepository;
     private final TimeSlotRepository timeSlotRepository;
@@ -76,7 +79,16 @@ public class ScheduleServiceImpl implements ScheduleService {
     @Override
     @Transactional(readOnly = true)
     public List<TimeSlot> getAvailableSlots(Long doctorId, LocalDate date) {
-        return timeSlotRepository.findAvailableSlotsByDoctorAndDate(doctorId, date, SlotStatus.AVAILABLE);
+        LocalDate today = LocalDate.now(businessClock);
+        DoctorProfile doctor = doctorProfileRepository.findById(doctorId)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy hồ sơ bác sĩ"));
+        if (!com.medclinic.util.DoctorAvailability.acceptsBookings(doctor)
+                || date == null || date.isBefore(today) || date.isAfter(today.plusDays(14))) {
+            return List.of();
+        }
+        LocalTime now = LocalTime.now(businessClock);
+        return timeSlotRepository.findAvailableSlotsByDoctorAndDate(doctorId, date, SlotStatus.AVAILABLE)
+                .stream().filter(slot -> !date.equals(today) || slot.getStartTime().isAfter(now)).toList();
     }
 
     @Override

@@ -30,6 +30,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public User registerPatient(UserRegisterDto registerDto) {
+        com.medclinic.util.PasswordPolicy.requireValid(registerDto.getPassword());
         if (!registerDto.getPassword().equals(registerDto.getConfirmPassword())) {
             throw new BusinessLogicException("Mật khẩu xác nhận không khớp!");
         }
@@ -131,9 +132,7 @@ public class UserServiceImpl implements UserService {
     @Transactional
     @PreAuthorize("#userId == principal.id or hasRole('ADMIN')")
     public void changePassword(Long userId, String oldPassword, String newPassword) {
-        if (newPassword == null || newPassword.length() < 8) {
-            throw new BusinessLogicException("Mật khẩu mới phải có ít nhất 8 ký tự.");
-        }
+        com.medclinic.util.PasswordPolicy.requireValid(newPassword);
         User user = findById(userId);
         if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
             throw new BusinessLogicException("Mật khẩu hiện tại không chính xác!");
@@ -149,6 +148,9 @@ public class UserServiceImpl implements UserService {
         User user = findById(userId);
         user.setIsActive(!user.getIsActive());
         userRepository.save(user);
+        if (!Boolean.TRUE.equals(user.getIsActive())) {
+            userRepository.invalidateAuthChallenges(userId, java.time.LocalDateTime.now());
+        }
     }
 
     private void requireText(String value, String label) {

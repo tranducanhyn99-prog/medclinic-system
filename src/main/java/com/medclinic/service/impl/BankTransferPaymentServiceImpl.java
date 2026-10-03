@@ -62,7 +62,7 @@ public class BankTransferPaymentServiceImpl implements BankTransferPaymentServic
 
         BankTransferPayment payment = BankTransferPayment.builder()
                 .invoice(invoice)
-                .transferCode(nextTransferCode(invoice.getId()))
+                .transferCode(nextTransferCode())
                 .amount(invoice.getTotalAmount())
                 .bankId(properties.getBankId().toUpperCase(Locale.ROOT))
                 .status(BankTransferStatus.PENDING)
@@ -178,12 +178,11 @@ public class BankTransferPaymentServiceImpl implements BankTransferPaymentServic
         }
     }
 
-    private String nextTransferCode(Long invoiceId) {
+    private String nextTransferCode() {
         for (int i = 0; i < 8; i++) {
             String random = UUID.randomUUID().toString().replace("-", "")
-                    .substring(0, 8).toUpperCase(Locale.ROOT);
-            String code = "MC" + invoiceId + random;
-            if (code.length() > 25) code = code.substring(code.length() - 25);
+                    .substring(0, 6).toUpperCase(Locale.ROOT);
+            String code = "Thanh toan hoa don " + random;
             if (!paymentRepository.existsByTransferCode(code)) return code;
         }
         throw new BusinessLogicException("Không thể cấp nội dung chuyển khoản duy nhất");
@@ -207,7 +206,7 @@ public class BankTransferPaymentServiceImpl implements BankTransferPaymentServic
         } catch (ArithmeticException exception) {
             throw new BusinessLogicException("Số tiền VND phải là số nguyên");
         }
-        return UriComponentsBuilder.fromHttpUrl(path)
+        return UriComponentsBuilder.fromUriString(path)
                 .queryParam("amount", amount)
                 .queryParam("addInfo", payment.getTransferCode())
                 .queryParam("accountName", properties.getAccountName())
