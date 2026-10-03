@@ -1,17 +1,18 @@
 # Bàn giao source GitHub — 03/10/2026
 
-Source đã đủ điều kiện commit/push lên nhánh `feature/frontend-design-system` sau khi hoàn tất GH-01–06 và kiểm chứng local dưới đây. Trạng thái GitHub Actions sẽ được ghi sau khi push, không suy ra từ local pass.
+**Hoàn tất GH-01–07.** Source commit `a83db02` đã push lên nhánh `feature/frontend-design-system`, GitHub Actions xác nhận thành công. Kiểm chứng local và hosted CI được ghi riêng dưới đây.
 
 ## Kiểm chứng source cuối
 
 | Kiểm tra | Kết quả |
 |---|---|
 | Maven `clean verify`, Java 21, hoàn tất 09:42:11 +07 ngày 03/10/2026 | BUILD SUCCESS, 214 test / 71 suite, 0 failure/error/skipped |
-| SQL Server integration | 31 test chạy trên `medclinic_e2e` và `medclinic_flyway_it` disposable; fresh/legacy Flyway V1–V6 và Hibernate validate đạt; không chạy trên DB browser chứa ca DEMO |
+| SQL Server integration | 25 integration test chạy trên `medclinic_e2e` và `medclinic_flyway_it` disposable, thêm 6 test SQL artifact/schema; fresh/legacy Flyway V1–V6 và Hibernate validate đạt; không chạy trên DB browser chứa ca DEMO |
 | JaCoCo từ clean run | LINE 84,46%, BRANCH 67,42%; gate 70%/50% đạt |
 | Node regression | 24/24 pass, 0 skipped |
 | Dependency runtime | OSV query 131 tọa độ compile/runtime: 0 finding trong lần rà cuối |
 | Candidate secret audit | 447 file tracked/non-ignored, không khớp secret hiện có trong `.env` hoặc pattern private key/GitHub/AWS đã kiểm tra |
+| Staged audit / tài liệu | 254 file staged: 0 secret/private-path finding trong phạm vi scan; 196 link local đã xác minh trước push source |
 | Diff whitespace | Đạt, có xét CRLF Windows |
 | GH-06 browser | Banner ca hoàn tất đọc được desktop/mobile, không tràn ngang, không có form khám trên trang redirect |
 
@@ -33,7 +34,9 @@ Chi tiết có thể kiểm tra trong [verification summary](evidence/github-rel
 
 ## Git và CI
 
-Repo đích: [medclinic-system](https://github.com/tranducanhyn99-prog/medclinic-system). Push thường lên nhánh đang làm việc, không force-push hoặc merge main. Chờ xác nhận run trên [GitHub Actions](https://github.com/tranducanhyn99-prog/medclinic-system/actions/workflows/ci.yml).
+Repo đích: [medclinic-system](https://github.com/tranducanhyn99-prog/medclinic-system). Push thường lên nhánh đang làm việc, không force-push hoặc merge main. [Source commit a83db02](https://github.com/tranducanhyn99-prog/medclinic-system/commit/a83db0221c141c329e312daa54b304bce35e0fea) đã đồng bộ local/remote, working tree sạch sau push.
+
+[CI run 37093057483](https://github.com/tranducanhyn99-prog/medclinic-system/actions/runs/37093057483) hoàn tất thành công lúc **10:27:28 +07, 03/10/2026**: Maven clean verify, JaCoCo gate, Node regression, link checker và upload JAR/report đều đạt. Hosted CI có **214 test: 189 pass, 25 SQL-guard skipped**, 0 failure/error; LINE **81.01%**, BRANCH **65.75%**. [CI summary từ artifact thật](evidence/github-release-2026-10-03/ci-summary.json). Commit chốt biên bản chỉ cập nhật tài liệu/bằng chứng kết quả; CI của HEAD mới được kiểm tra lại trước khi trả kết quả cuối.
 
 Ngân hàng/SMTP nhà cung cấp thật, HTTPS production và matrix thiết bị toàn diện vẫn thuộc nghiệm thu triển khai riêng; source demo được công bố không thay thế gate đó.
 

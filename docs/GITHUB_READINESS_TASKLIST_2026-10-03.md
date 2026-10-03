@@ -1,6 +1,6 @@
 # Trạng thái xử lý 7 mục GitHub — 03/10/2026
 
-GH-01–06 đã thực hiện. GH-07 đang kiểm chứng source cuối, commit/push và chờ GitHub Actions. Kết quả mới nhất nằm trong [bàn giao source](GITHUB_RELEASE_2026-10-03.md); phần bên dưới giữ nguyên bối cảnh kiểm tra ban đầu.
+**Đã hoàn tất 7/7 mục.** Source commit `a83db02` đã push lên `feature/frontend-design-system`; [CI thực tế đã đạt](https://github.com/tranducanhyn99-prog/medclinic-system/actions/runs/37093057483). Kết quả mới nhất nằm trong [bàn giao source](GITHUB_RELEASE_2026-10-03.md); phần bên dưới giữ nguyên bối cảnh kiểm tra ban đầu.
 
 - [x] **GH-01:** Spring Boot 4.1.1 / Security 7.1.1 / Framework 7.0.9; Tomcat 11.0.26, Jackson 3.1.7. Rà OSV 131 tọa độ runtime, không có finding trong lần rà cuối.
 - [x] **GH-02:** Policy chung tối đa 72 byte UTF-8, DTO/service/encoder và regression HTTP đăng nhập ASCII/Unicode; giữ hash BCrypt cũ.
@@ -8,7 +8,7 @@ GH-01–06 đã thực hiện. GH-07 đang kiểm chứng source cuối, commit/
 - [x] **GH-04:** Ignore secret/output/hook/bằng chứng camera-mail riêng; dọn 54 file tạm khoảng 10 MB, giữ license và bằng chứng DEMO được chọn.
 - [x] **GH-05:** README mới, link tương đối, kiểm tra link trong CI; số liệu cũ giữ dưới dạng lịch sử; cập nhật runbook V1–V6.
 - [x] **GH-06:** URL ca COMPLETED redirect sau kiểm tra quyền, thông báo đã lưu; không mở form tạo bệnh án mới.
-- [ ] **GH-07:** Chốt fresh clean verify + SQL Server riêng, staged audit, commit/push thường và CI thật.
+- [x] **GH-07:** Clean verify 214/214, gồm 25 SQL Server integration test trên DB riêng và 6 test artifact/schema; staged audit đạt; push thường `a83db02`; GitHub Actions Maven/Node/docs đạt.
 
 ---
 

@@ -49,5 +49,7 @@
     "findings": [],
     "scope": "Exact staged bytes, local env secret values and private-key/GitHub/AWS patterns, plus prohibited private paths; not exhaustive or whole-history."
   },
-  "documentationLocalTargets": 196
+  "documentationLocalTargets": 196,
+  "sqlServerIntegrationTests": 25,
+  "sqlServerArtifactTests": 6
 }
