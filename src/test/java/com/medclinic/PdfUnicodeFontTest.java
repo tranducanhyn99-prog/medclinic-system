@@ -5,7 +5,7 @@ import com.medclinic.entity.Invoice;
 import com.medclinic.entity.User;
 import com.medclinic.repository.AppointmentRepository;
 import com.medclinic.repository.InvoiceRepository;
-import com.medclinic.service.impl.PdfExportServiceImpl;
+import com.medclinic.service.PdfExportService;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -26,7 +26,7 @@ class PdfUnicodeFontTest {
                 .consultationFee(BigDecimal.TEN).medicineFee(BigDecimal.ZERO).totalAmount(BigDecimal.TEN).build();
         when(invoices.findById(4L)).thenReturn(Optional.of(invoice));
 
-        byte[] pdf = new PdfExportServiceImpl(appointments, invoices).exportInvoicePdf(4L, 7L, "ROLE_PATIENT");
+        byte[] pdf = new PdfExportService(appointments, invoices).exportInvoicePdf(4L, 7L, "ROLE_PATIENT");
 
         String rawPdf = new String(pdf, StandardCharsets.ISO_8859_1);
         assertTrue(rawPdf.startsWith("%PDF"));

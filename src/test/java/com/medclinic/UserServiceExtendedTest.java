@@ -1,12 +1,11 @@
 package com.medclinic;
 
 import com.medclinic.entity.User;
-import com.medclinic.enums.RoleType;
 import com.medclinic.exception.BusinessLogicException;
 import com.medclinic.exception.ResourceNotFoundException;
 import com.medclinic.repository.RoleRepository;
 import com.medclinic.repository.UserRepository;
-import com.medclinic.service.impl.UserServiceImpl;
+import com.medclinic.service.UserService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -26,7 +25,7 @@ class UserServiceExtendedTest {
     @Mock UserRepository userRepository;
     @Mock RoleRepository roleRepository;
     @Mock PasswordEncoder passwordEncoder;
-    @InjectMocks UserServiceImpl service;
+    @InjectMocks UserService service;
 
     private User user(long id) {        User user = new User();
         user.setId(id);
@@ -57,15 +56,11 @@ class UserServiceExtendedTest {
     @Test
     void delegatesFindAndSearchVariants() {
         User u = user(1L);
-        when(userRepository.findById(1L)).thenReturn(Optional.of(u));        when(userRepository.findByPhone("0901")).thenReturn(Optional.of(u));
-        when(userRepository.findByRole_Name(RoleType.ROLE_PATIENT)).thenReturn(List.of(u));
+        when(userRepository.findById(1L)).thenReturn(Optional.of(u));
         when(userRepository.findAll()).thenReturn(List.of(u));
         when(userRepository.searchUsers("abc")).thenReturn(List.of(u));
 
         assertSame(u, service.findById(1L));
-        assertSame(u, service.findByPhone("0901"));
-        assertNull(service.findByPhone("none"));
-        assertEquals(List.of(u), service.findByRole(RoleType.ROLE_PATIENT));
         assertEquals(List.of(u), service.searchUsers(null));
         assertEquals(List.of(u), service.searchUsers("   "));
         assertEquals(List.of(u), service.searchUsers(" abc "));

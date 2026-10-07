@@ -30,7 +30,7 @@ class ServiceAuthorizationIntegrationTest {
     @WithMockUser(roles = "PATIENT")
     void patientCannotUseAdministrativeOrDoctorServiceEntryPoints() {
         assertThrows(AccessDeniedException.class, () -> specialties.save("Khoa trái phép", null, null));
-        assertThrows(AccessDeniedException.class, () -> medicines.save("Thuốc trái phép", "viên", BigDecimal.ONE, null, 1));
+        assertThrows(AccessDeniedException.class, () -> medicines.save("Thuốc trái phép", "viên", BigDecimal.ONE, null, 1, 50));
         assertThrows(AccessDeniedException.class, () -> doctors.registerDoctor(new AdminDoctorCreateDto()));
         assertThrows(AccessDeniedException.class, () -> users.toggleUserStatus(1L));
         assertThrows(AccessDeniedException.class, () -> records.startExamination(1L, 1L));

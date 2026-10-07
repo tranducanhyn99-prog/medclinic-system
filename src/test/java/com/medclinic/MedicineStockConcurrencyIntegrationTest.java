@@ -47,9 +47,10 @@ class MedicineStockConcurrencyIntegrationTest {
         medicine.setStockQuantity(1);
         medicines.saveAndFlush(medicine);
 
-        LocalDate date = LocalDate.now().plusDays(90);
-        DoctorSchedule schedule = schedules.save(DoctorSchedule.builder().doctor(doctor).workDate(date)
-                .shift(ShiftType.MORNING).maxPatients(8).build());
+        LocalDate date = LocalDate.now(java.time.ZoneId.of("Asia/Ho_Chi_Minh"));
+        DoctorSchedule schedule = schedules.findByDoctorIdAndWorkDateAndShift(doctor.getId(), date, ShiftType.MORNING)
+                .orElseGet(() -> schedules.save(DoctorSchedule.builder().doctor(doctor).workDate(date)
+                        .shift(ShiftType.MORNING).maxPatients(8).build()));
         Appointment first = createInProgressAppointment(patient, doctor, schedule, date, LocalTime.of(8, 0));
         Appointment second = createInProgressAppointment(patient, doctor, schedule, date, LocalTime.of(8, 30));
 

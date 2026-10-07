@@ -1,0 +1,1 @@
+{"checks":[{"test":"reject-future-walk-in-auto-check-in","passed":false,"appointmentDate":"2026-10-05","futureWalkInAccepted":true,"queueAssignment":"service bookWalkInAppointment calls checkInAppointment; the success UI does not display STT"}],"fixture":true,"realPayments":0,"passed":false}

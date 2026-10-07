@@ -69,6 +69,8 @@ management:
 
 app:
   name: MedClinic - Phòng Khám Đa Khoa Tư Nhân
+  demo:
+    early-clinical-processing: false
   address: 123 Đường Nguyễn Trãi, Quận 5, TP. Hồ Chí Minh
   hotline: 1900 6868
   email: support@medclinic.vn
@@ -76,6 +78,7 @@ app:
   auth:
     otp-validity-seconds: ${AUTH_OTP_VALIDITY_SECONDS:300}
   mail-delivery:
+    from: ${MAIL_FROM:no-reply@medclinic.test}
     max-attempts: ${EMAIL_MAX_ATTEMPTS:3}
     retry-backoff-ms: ${EMAIL_RETRY_BACKOFF_MS:250}
   payment:
@@ -130,27 +133,11 @@ spring:
     defer-datasource-initialization: true
 
 app:
+  demo:
+    early-clinical-processing: ${DEMO_EARLY_CLINICAL_PROCESSING:true}
   security:
     # Local H2 data is ephemeral; production never receives a checked-in key.
     remember-me-key: dev-only-replace-before-deploy
-
----
-# MySQL Production / Local Profile
-spring:
-  config:
-    activate:
-      on-profile: mysql
-
-  datasource:
-    url: jdbc:mysql://localhost:3306/medclinic_db?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=Asia/Ho_Chi_Minh&characterEncoding=UTF-8
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
-    driver-class-name: com.mysql.cj.jdbc.Driver
-
-  jpa:
-    hibernate:
-      ddl-auto: update
-    database-platform: org.hibernate.dialect.MySQLDialect
 
 ---
 # SQL Server Profile (Primary Production / Local Database)
@@ -194,6 +181,17 @@ server:
     session:
       cookie:
         secure: ${SESSION_COOKIE_SECURE:true}
+
+---
+# Defense demo: future bookings can be processed immediately, retaining their booked dates.
+spring:
+  config:
+    activate:
+      on-profile: demo
+
+app:
+  demo:
+    early-clinical-processing: ${DEMO_EARLY_CLINICAL_PROCESSING:true}
 
 ---
 # Production hardening is activated together with the database profile: sqlserver,prod.

@@ -1,13 +1,10 @@
 package com.medclinic.service;
 
+import com.medclinic.util.Sha256;
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.stereotype.Component;
 
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.HexFormat;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Component
@@ -42,12 +39,6 @@ public class EmailDeliveryMonitor {
 
     public static String recipientFingerprint(String email) {
         String normalized = email == null ? "unknown" : email.trim().toLowerCase();
-        try {
-            byte[] digest = MessageDigest.getInstance("SHA-256")
-                    .digest(normalized.getBytes(StandardCharsets.UTF_8));
-            return HexFormat.of().formatHex(digest).substring(0, 12);
-        } catch (NoSuchAlgorithmException exception) {
-            throw new IllegalStateException("SHA-256 không khả dụng", exception);
-        }
+        return Sha256.hex(normalized).substring(0, 12);
     }
 }

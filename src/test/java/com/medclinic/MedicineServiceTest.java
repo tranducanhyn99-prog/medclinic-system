@@ -8,7 +8,7 @@ import com.medclinic.exception.ResourceNotFoundException;
 import com.medclinic.repository.InventoryTransactionRepository;
 import com.medclinic.repository.MedicineRepository;
 import com.medclinic.repository.UserRepository;
-import com.medclinic.service.impl.MedicineServiceImpl;
+import com.medclinic.service.MedicineService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -28,7 +28,7 @@ class MedicineServiceTest {
     @Mock MedicineRepository medicineRepository;
     @Mock InventoryTransactionRepository inventoryTransactionRepository;
     @Mock UserRepository userRepository;
-    @InjectMocks MedicineServiceImpl service;
+    @InjectMocks MedicineService service;
 
     private Medicine medicine(long id, String name, Boolean active) {
         Medicine medicine = new Medicine();
@@ -56,7 +56,7 @@ class MedicineServiceTest {
         when(medicineRepository.findByName("  Paracetamol  ")).thenReturn(Optional.empty());
         when(medicineRepository.save(any(Medicine.class))).thenAnswer(i -> i.getArgument(0));
 
-        Medicine saved = service.save("  Paracetamol  ", " viên ", new BigDecimal("1500"), "Sau ăn", 20);
+        Medicine saved = service.save("  Paracetamol  ", " viên ", new BigDecimal("1500"), "Sau ăn", 20, 50);
 
         assertEquals("Paracetamol", saved.getName());
         assertEquals("viên", saved.getUnit());
@@ -67,32 +67,34 @@ class MedicineServiceTest {
     void rejectsDuplicateAndInvalidMedicineData() {
         when(medicineRepository.findByName("Paracetamol")).thenReturn(Optional.of(medicine(2L, "Paracetamol", true)));
         assertThrows(BusinessLogicException.class,
-                () -> service.save("Paracetamol", "viên", BigDecimal.ONE, null, 1));
+                () -> service.save("Paracetamol", "viên", BigDecimal.ONE, null, 1, 50));
 
         assertThrows(BusinessLogicException.class,
-                () -> service.save(" ", "viên", BigDecimal.ONE, null, 1));
+                () -> service.save(" ", "viên", BigDecimal.ONE, null, 1, 50));
         assertThrows(BusinessLogicException.class,
-                () -> service.save("A", " ", BigDecimal.ONE, null, 1));
+                () -> service.save("A", " ", BigDecimal.ONE, null, 1, 50));
         assertThrows(BusinessLogicException.class,
-                () -> service.save("A", "viên", new BigDecimal("-1"), null, 1));
+                () -> service.save("A", "viên", new BigDecimal("-1"), null, 1, 50));
         assertThrows(BusinessLogicException.class,
-                () -> service.save("A", "viên", BigDecimal.ONE, null, -1));
+                () -> service.save("A", "viên", BigDecimal.ONE, null, -1, 50));
     }
 
     @Test
     void updatesWhenNameBelongsToSameMedicineButRejectsOtherOwner() {
         Medicine current = medicine(1L, "Old", true);
-        when(medicineRepository.findById(1L)).thenReturn(Optional.of(current));
+        when(medicineRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(current));
         when(medicineRepository.findByName("New")).thenReturn(Optional.of(medicine(1L, "New", true)));
         when(medicineRepository.save(any(Medicine.class))).thenAnswer(i -> i.getArgument(0));
 
-        Medicine updated = service.update(1L, "New", " hộp ", new BigDecimal("2500"), "Guide", 4);
+        Medicine updated = service.updateCatalog(1L, "New", " hộp ", new BigDecimal("2500"), "Guide", 4);
         assertEquals("New", updated.getName());
         assertEquals("hộp", updated.getUnit());
+        assertEquals(10, updated.getStockQuantity());
+        assertEquals(4, updated.getReorderLevel());
 
         when(medicineRepository.findByName("Taken")).thenReturn(Optional.of(medicine(2L, "Taken", true)));
         assertThrows(BusinessLogicException.class,
-                () -> service.update(1L, "Taken", "viên", BigDecimal.ONE, null, 1));
+                () -> service.updateCatalog(1L, "Taken", "viên", BigDecimal.ONE, null, 1));
     }
     @Test
     void togglesMedicineStatusBothDirections() {

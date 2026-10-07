@@ -1,0 +1,116 @@
+[
+  {
+    "file": "bootstrap.min.css",
+    "source": "bootstrap-5.3.3.tgz",
+    "member": "package/dist/css/bootstrap.min.css",
+    "sha256": "26db49828d6701fcfce37a96da6ec3f0ed481abae49c8c9969a575b064413cad"
+  },
+  {
+    "file": "bootstrap.bundle.min.js",
+    "source": "bootstrap-5.3.3.tgz",
+    "member": "package/dist/js/bootstrap.bundle.min.js",
+    "sha256": "073254afbfc06331b8b548b7fc0532b4ffe2cfdd588368dcc338e7abd50810e1"
+  },
+  {
+    "file": "LICENSE-bootstrap.txt",
+    "source": "bootstrap-5.3.3.tgz",
+    "member": "package/LICENSE",
+    "sha256": "8c14611ae41ac6fd543c13349f22188eb12c69b3e59105c5eca3925a8e4eca3e"
+  },
+  {
+    "file": "bootstrap-icons.css",
+    "source": "bootstrap-icons-1.11.3.tgz",
+    "member": "package/font/bootstrap-icons.css",
+    "sha256": "4ffa6bea4304d2eda418683f56261685ed47bf00995039f27e5ad62d53938d2d"
+  },
+  {
+    "file": "fonts/bootstrap-icons.woff2",
+    "source": "bootstrap-icons-1.11.3.tgz",
+    "member": "package/font/fonts/bootstrap-icons.woff2",
+    "sha256": "476adf42b40325098fcfa8b36ab3e769186bb4f6ce6a249753e2e1a9c22bf99e"
+  },
+  {
+    "file": "fonts/bootstrap-icons.woff",
+    "source": "bootstrap-icons-1.11.3.tgz",
+    "member": "package/font/fonts/bootstrap-icons.woff",
+    "sha256": "bb1de989b83970f6f4e54de1cd974c5cba55b73582da5e1b225a6d0edf029483"
+  },
+  {
+    "file": "LICENSE-bootstrap-icons.txt",
+    "source": "bootstrap-icons-1.11.3.tgz",
+    "member": "package/LICENSE",
+    "sha256": "0fb3e11bd57e896c5a512afd64864d28a37de45d19835016c87ca1ad19ead969"
+  },
+  {
+    "file": "sweetalert2.min.css",
+    "source": "sweetalert2-11.10.6.tgz",
+    "member": "package/dist/sweetalert2.min.css",
+    "sha256": "8761a49fe1f7de59ca9504cd9ed4322d7316abbffd5c8dab94f0ac2ec55c501b"
+  },
+  {
+    "file": "sweetalert2.all.min.js",
+    "source": "sweetalert2-11.10.6.tgz",
+    "member": "package/dist/sweetalert2.all.min.js",
+    "sha256": "772c3887a80c6d3935bd288ea9cb3fc2a872ab276cb882c197bf1685c0f8e256"
+  },
+  {
+    "file": "LICENSE-sweetalert2.txt",
+    "source": "sweetalert2-11.10.6.tgz",
+    "member": "package/LICENSE",
+    "sha256": "879aa33feba35b3428c6485fc17cddd8c820d7a8780281aa945e60582a28c4b4"
+  },
+  {
+    "file": "fonts/Geist-Variable.woff2",
+    "source": "geist-1.4.2.tgz",
+    "member": "package/dist/fonts/geist-sans/Geist-Variable.woff2",
+    "sha256": "46525b05bbf4527d263f8624ca7024c7d0dce3c64430267d30c31c6dd3821e4d"
+  },
+  {
+    "file": "fonts/GeistMono-Variable.woff2",
+    "source": "geist-1.4.2.tgz",
+    "member": "package/dist/fonts/geist-mono/GeistMono-Variable.woff2",
+    "sha256": "3ef2c50dc1042ebfa89ca66bb6901e9dde5737970547c21b4de7a44dfb2ab948"
+  },
+  {
+    "file": "LICENSE-geist.txt",
+    "source": "geist-1.4.2.tgz",
+    "member": "package/LICENSE.TXT",
+    "sha256": "930853ee1daa68554d9e35c8a9175affb74f699fad9a5da6ee5ebe76379d9137"
+  },
+  {
+    "file": "html5-qrcode.min.js",
+    "source": "html5-qrcode-2.3.8.tgz",
+    "member": "package/html5-qrcode.min.js",
+    "sha256": "660b12437b1d747e3e68b8be0685c08cb728140110ad213f167b14b66f8b1d8e"
+  },
+  {
+    "file": "LICENSE-html5-qrcode.txt",
+    "source": "html5-qrcode-2.3.8.tgz",
+    "member": "package/LICENSE",
+    "sha256": "306bc450da41244fefb92fec6fba30f27afb9d9b0eaa72b96372c23e2338c612"
+  },
+  {
+    "file": "sockjs.min.js",
+    "source": "sockjs-client-1.6.1.tgz",
+    "member": "package/dist/sockjs.min.js",
+    "sha256": "e51639670f66de1c3e6d0389b2461734ec5c8aa30e6c40bfb79c35f33dfcf239"
+  },
+  {
+    "file": "LICENSE-sockjs.txt",
+    "source": "sockjs-client-1.6.1.tgz",
+    "member": "package/LICENSE",
+    "sha256": "8ed26c0901535830e357f6ab802d0e6c4ff889d79c00dcebd4251eceecacd57e"
+  },
+  {
+    "file": "stomp.umd.min.js",
+    "source": "stomp-stompjs-7.2.1.tgz",
+    "member": "package/bundles/stomp.umd.min.js",
+    "sha256": "e5d3a5f14d400048501f502f4ebe8eb48dcee6a61eb3fae0c4791ce6c97469d3"
+  },
+  {
+    "file": "LICENSE-stomp.txt",
+    "source": "stomp-stompjs-7.2.1.tgz",
+    "member": "package/LICENSE",
+    "sha256": "c46641c7a00292f58f73544f661200f940d31622be1137aef70c19da4182ffcc"
+  }
+]

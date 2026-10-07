@@ -5,7 +5,7 @@
 <head>
     <title>Bàn Tiếp Nhận & Check-in QR - MedClinic</title>
     <!-- HTML5 QR Code Scanner CDN for Camera scanning -->
-    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <script th:src="@{/vendor/ui/html5-qrcode.min.js}"></script>
     <style>
         @media print {
             body * {
@@ -106,7 +106,7 @@
             <input type="hidden" name="keyword" th:value="${keyword}">
             <label class="visually-hidden" for="receptionHistoryFilter">Xem tất cả hoặc lịch sử</label>
             <select name="status" id="receptionHistoryFilter" class="form-select">
-                <option value="ALL" th:selected="${currentStatus == 'ALL'}" th:text="${'Tất cả hôm nay (' + countAll + ')'}">Tất cả hôm nay</option>
+                <option value="ALL" th:selected="${currentStatus == 'ALL'}" th:text="${(clinicalDemoMode == true ? 'Tất cả lịch demo (' : 'Tất cả hôm nay (') + countAll + ')'}">Tất cả hôm nay</option>
                 <option value="COMPLETED" th:selected="${currentStatus == 'COMPLETED'}" th:text="${'Đã khám xong (' + countCompleted + ')'}">Đã khám xong</option>
                 <option value="CANCELLED" th:selected="${currentStatus == 'CANCELLED'}" th:text="${'Đã hủy (' + countCancelled + ')'}">Đã hủy</option>
                 <option value="" disabled th:if="${currentStatus != 'ALL' and currentStatus != 'COMPLETED' and currentStatus != 'CANCELLED'}" selected>Tất cả / lịch sử</option>
@@ -122,7 +122,7 @@
                 <i class="bi bi-list-check text-primary me-2"></i>
                 <span th:if="${keyword != null and !keyword.isEmpty()}" th:text="${'Kết quả tra cứu cho: &quot;' + keyword + '&quot;'}">Kết quả</span>
                 <span th:unless="${keyword != null and !keyword.isEmpty()}">
-                    Danh Sách Bệnh Nhân Hôm Nay
+                    <span th:text="${clinicalDemoMode == true ? 'Danh Sách Lịch Hẹn Demo Trong 14 Ngày' : 'Danh Sách Bệnh Nhân Hôm Nay'}">Danh Sách Bệnh Nhân Hôm Nay</span>
                     <span class="text-secondary fw-normal ms-1" th:text="${'(' + #temporals.format(#temporals.createNow(), 'dd/MM/yyyy') + ')'}">(16/09/2026)</span>
                 </span>
             </h2>
@@ -138,7 +138,7 @@
                 <p class="small mb-3">Không tìm thấy cuộc hẹn nào theo bộ lọc hoặc từ khóa hiện tại.</p>
                 <div class="d-flex justify-content-center gap-2">
                     <a th:href="@{/staff/reception}" class="btn btn-sm btn-outline-secondary">
-                        <i class="bi bi-arrow-clockwise me-1"></i> Xem tất cả hôm nay
+                        <i class="bi bi-arrow-clockwise me-1"></i> <span th:text="${clinicalDemoMode == true ? 'Xem tất cả lịch demo' : 'Xem tất cả hôm nay'}">Xem tất cả hôm nay</span>
                     </a>
                     <a th:href="@{/staff/walk-in}" class="btn btn-sm btn-med-primary">
                         <i class="bi bi-person-plus me-1"></i> Tiếp nhận khám vãng lai

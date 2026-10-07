@@ -15,7 +15,7 @@
     <div class="mc-page-header align-items-end border-bottom pb-3">
         <div>
             <h1 class="mc-page-title">
-                <i class="bi bi-heart-pulse-fill text-danger me-2"></i>Bàn Khám Bác Sĩ & Hàng Chờ Hôm Nay
+                <i class="bi bi-heart-pulse-fill text-danger me-2"></i><span th:text="${clinicalDemoMode == true ? 'Bàn Khám Bác Sĩ & Hàng Chờ Demo' : 'Bàn Khám Bác Sĩ & Hàng Chờ Hôm Nay'}">Bàn Khám Bác Sĩ & Hàng Chờ Hôm Nay</span>
             </h1>
             <div class="mc-page-subtitle">
                 Bác sĩ: <strong class="text-dark" th:text="${doctorProfile.title + ' ' + doctorProfile.user.fullName}">BS. Nguyễn Văn A</strong>
@@ -31,6 +31,7 @@
     </div>
 
     <!-- Metric Bar -->
+    <p th:if="${clinicalDemoMode == true}" class="small text-muted">Demo cho phép khám ngay lịch hẹn từ hôm nay đến 14 ngày tới. Ngày hẹn gốc và số thứ tự theo từng ngày được giữ nguyên.</p>
     <div class="row g-3 mb-4 mc-queue-stats">
         <div class="col-6 col-lg-3">
             <div class="mc-kpi-card">
@@ -96,7 +97,7 @@
     <div class="mc-data-card">
         <div class="mc-data-toolbar">
             <h2 class="mc-data-title">
-                <i class="bi bi-list-ol text-primary me-2"></i>Hàng Chờ Khám Lâm Sàng Hôm Nay
+                <i class="bi bi-list-ol text-primary me-2"></i><span th:text="${clinicalDemoMode == true ? 'Hàng Chờ Khám Demo' : 'Hàng Chờ Khám Lâm Sàng Hôm Nay'}">Hàng Chờ Khám Lâm Sàng Hôm Nay</span>
             </h2>
             <div class="d-flex align-items-center gap-2">
                 <span id="doctorQueueRealtimeStatus" class="badge text-bg-light border" role="status" aria-live="polite">
@@ -115,21 +116,21 @@
             <select id="queueViewFilter" class="form-select">
                 <option value="active">Cần khám</option>
                 <option value="completed">Đã hoàn tất</option>
-                <option value="all">Tất cả hôm nay</option>
+                <option value="all" th:text="${clinicalDemoMode == true ? 'Tất cả ca demo' : 'Tất cả hôm nay'}">Tất cả hôm nay</option>
             </select>
         </div>
         <div class="mc-queue-updated">
             Dữ liệu lúc <time th:text="${#temporals.format(#temporals.createNow(), 'HH:mm:ss')}">08:00:00</time>
             <span id="queueResultCount" role="status" aria-live="polite"></span>
         </div>
-        <div id="queueFilteredEmpty" hidden class="p-4 text-center text-muted">Không có bệnh nhân phù hợp. Chọn “Tất cả hôm nay” hoặc xóa từ khóa để xem lại.</div>
+        <div id="queueFilteredEmpty" hidden class="p-4 text-center text-muted">Không có bệnh nhân phù hợp. Chọn tất cả ca hoặc xóa từ khóa để xem lại.</div>
 
         <div class="card-body p-0">
             <!-- Empty State -->
             <div th:if="${#lists.isEmpty(todayQueue)}" class="p-5 text-center text-muted">
                 <i class="bi bi-inbox fs-1 d-block mb-2 text-secondary"></i>
                 <h3 class="h6 fw-bold text-dark">Hàng Chờ Đang Trống</h3>
-                <p class="small mb-0">Chưa có bệnh nhân nào check-in vào phòng khám của bạn hôm nay.</p>
+                <p class="small mb-0" th:text="${clinicalDemoMode == true ? 'Chưa có lịch hẹn nào được tiếp nhận trong khoảng ngày demo.' : 'Chưa có bệnh nhân nào check-in vào phòng khám của bạn hôm nay.'}">Chưa có bệnh nhân nào check-in vào phòng khám của bạn hôm nay.</p>
             </div>
 
             <!-- Table -->
@@ -160,6 +161,7 @@
                             <!-- Time Slot -->
                             <td>
                                 <span class="fw-semibold text-dark" th:text="${apt.timeSlot.timeRangeFormatted}">08:00 - 08:30</span>
+                                <div th:if="${clinicalDemoMode == true}" class="mc-cell-meta" th:text="${#temporals.format(apt.appointmentDate, 'dd/MM/yyyy')}">06/10/2026</div>
                                 <div class="mc-cell-meta" th:text="${apt.bookingCode}">MED-xxxx</div>
                             </td>
 
@@ -221,8 +223,8 @@
 
 <div layout:fragment="scripts">
 <script th:src="@{/js/doctor-queue.js(v=4.0)}"></script>
-<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.6.1/dist/sockjs.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.2.1/bundles/stomp.umd.min.js"></script>
+<script th:src="@{/vendor/ui/sockjs.min.js}"></script>
+<script th:src="@{/vendor/ui/stomp.umd.min.js}"></script>
 <script>
 const refreshDoctorQueueButton = document.getElementById('refreshDoctorQueueBtn');
 const doctorQueueRealtimeStatus = document.getElementById('doctorQueueRealtimeStatus');

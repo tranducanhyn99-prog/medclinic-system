@@ -1,6 +1,6 @@
 package com.medclinic;
 
-import com.medclinic.service.impl.AvatarStorageServiceImpl;
+import com.medclinic.service.AvatarStorageService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.springframework.mock.web.MockMultipartFile;
@@ -15,7 +15,7 @@ class AvatarStorageServiceImplTest {
 
     @Test
     void previousAvatarRemainsUntilProfileUpdateSucceeds() throws Exception {
-        AvatarStorageServiceImpl storage = new AvatarStorageServiceImpl(directory.toString());
+        AvatarStorageService storage = new AvatarStorageService(directory.toString());
         var image = new MockMultipartFile("avatar", "avatar.png", "image/png", new byte[] {1, 2, 3});
 
         String oldUrl = storage.storeAvatar(image, null);

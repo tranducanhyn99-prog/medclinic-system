@@ -57,6 +57,7 @@ services:
         condition: service_started
     environment:
       SPRING_PROFILES_ACTIVE: sqlserver,demo
+      DEMO_EARLY_CLINICAL_PROCESSING: ${DEMO_EARLY_CLINICAL_PROCESSING:-true}
       TZ: Asia/Ho_Chi_Minh
       SPRING_FLYWAY_BASELINE_ON_MIGRATE: "true"
       DB_URL: jdbc:sqlserver://sqlserver:1433;databaseName=medclinic_db;encrypt=true;trustServerCertificate=true;sendStringParametersAsUnicode=true
@@ -80,6 +81,7 @@ services:
       BANK_PAYMENT_CALLBACK_SECRET: ${BANK_PAYMENT_CALLBACK_SECRET:-}
       BANK_PAYMENT_EXPIRY_MINUTES: ${BANK_PAYMENT_EXPIRY_MINUTES:-30}
       MAIL_USERNAME: ${MAIL_USERNAME:-}
+      MAIL_FROM: ${MAIL_FROM:-no-reply@medclinic.test}
       MAIL_PASSWORD: ${MAIL_PASSWORD:-}
       SPRING_MAIL_HOST: mailpit
       SPRING_MAIL_PORT: "1025"

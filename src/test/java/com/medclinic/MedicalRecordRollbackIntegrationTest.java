@@ -42,9 +42,10 @@ class MedicalRecordRollbackIntegrationTest {
     void invoiceFailureRollsBackRecordAppointmentAndMedicineStock() {
         DoctorProfile doctor = doctorProfiles.findByUserId(users.findByUsername("doctor").orElseThrow().getId()).orElseThrow();
         User patient = users.findByUsername("patient").orElseThrow();
-        LocalDate date = LocalDate.now().plusDays(70);
-        DoctorSchedule schedule = schedules.save(DoctorSchedule.builder().doctor(doctor).workDate(date)
-                .shift(ShiftType.MORNING).maxPatients(8).build());
+        LocalDate date = LocalDate.now(java.time.ZoneId.of("Asia/Ho_Chi_Minh"));
+        DoctorSchedule schedule = schedules.findByDoctorIdAndWorkDateAndShift(doctor.getId(), date, ShiftType.MORNING)
+                .orElseGet(() -> schedules.save(DoctorSchedule.builder().doctor(doctor).workDate(date)
+                        .shift(ShiftType.MORNING).maxPatients(8).build()));
         TimeSlot slot = slots.save(TimeSlot.builder().schedule(schedule).startTime(LocalTime.of(8, 0))
                 .endTime(LocalTime.of(8, 30)).status(SlotStatus.BOOKED).build());
         Appointment appointment = appointments.save(Appointment.builder().patient(patient).doctor(doctor).appointmentDate(date)
@@ -54,10 +55,11 @@ class MedicalRecordRollbackIntegrationTest {
         int initialStock = medicine.getStockQuantity();
         doThrow(new BusinessLogicException("invoice failure")).when(invoiceService).createInvoiceForAppointment(any(), any());
 
-        assertThrows(BusinessLogicException.class, () -> medicalRecordService.saveMedicalRecordAndPrescription(
+        var failure = assertThrows(BusinessLogicException.class, () -> medicalRecordService.saveMedicalRecordAndPrescription(
                 appointment.getId(), doctor.getUser().getId(), "S", "D", null, null,
                 List.of(PrescriptionItemDto.builder().medicineId(medicine.getId()).quantity(1)
                         .dosage("1").frequency("1").instructions("").build())));
+        assertEquals("invoice failure", failure.getMessage());
 
         assertTrue(records.findByAppointmentId(appointment.getId()).isEmpty());
         assertEquals(AppointmentStatus.IN_PROGRESS, appointments.findById(appointment.getId()).orElseThrow().getStatus());

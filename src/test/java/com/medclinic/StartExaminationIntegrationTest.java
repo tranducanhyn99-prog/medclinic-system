@@ -60,9 +60,10 @@ public class StartExaminationIntegrationTest {
     void postWithCsrfStartsCheckedInAppointment() throws Exception {
         var doctor = doctorProfileRepository.findByUserId(userRepository.findByUsername("doctor").orElseThrow().getId()).orElseThrow();
         User patient = userRepository.findByUsername("patient").orElseThrow();
-        LocalDate date = LocalDate.now().plusDays(60);
-        DoctorSchedule schedule = doctorScheduleRepository.save(DoctorSchedule.builder().doctor(doctor)
-                .workDate(date).shift(ShiftType.MORNING).maxPatients(8).build());
+        LocalDate date = LocalDate.now(java.time.ZoneId.of("Asia/Ho_Chi_Minh"));
+        DoctorSchedule schedule = doctorScheduleRepository.findByDoctorIdAndWorkDateAndShift(doctor.getId(), date, ShiftType.MORNING)
+                .orElseGet(() -> doctorScheduleRepository.save(DoctorSchedule.builder().doctor(doctor)
+                        .workDate(date).shift(ShiftType.MORNING).maxPatients(8).build()));
         TimeSlot slot = timeSlotRepository.save(TimeSlot.builder().schedule(schedule)
                 .startTime(LocalTime.of(8, 0)).endTime(LocalTime.of(8, 30)).status(SlotStatus.BOOKED).build());
         Appointment appointment = appointmentRepository.save(Appointment.builder().patient(patient).doctor(doctor)

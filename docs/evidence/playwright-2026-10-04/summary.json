@@ -1,0 +1,17 @@
+{
+  "date": "2026-10-04",
+  "cli": "@playwright/cli 0.1.22",
+  "browser": "Microsoft Edge 154.0.4258.53 (Chromium, headless)",
+  "origin": "http://127.0.0.1:8080",
+  "fixtureOrigin": "http://127.0.0.1:18090",
+  "checks": 152,
+  "passed": 149,
+  "failed": 3,
+  "matrixChecks": 115,
+  "pageErrors": 0,
+  "httpErrors": 0,
+  "consoleErrors": 1,
+  "realPayments": 0,
+  "clinicalRecordsSaved": 0,
+  "invoicesCreated": 0
+}

@@ -27,28 +27,17 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
 
 
     List<Appointment> findByDoctorIdAndAppointmentDateAndStatusInOrderByQueueSequenceAsc(Long doctorId, LocalDate appointmentDate, List<AppointmentStatus> statuses);
-    /** Retained for compatibility with older callers; production queue reads use queueSequence. */
-    List<Appointment> findByDoctorIdAndAppointmentDateAndStatusInOrderByQueueNumberAsc(Long doctorId, LocalDate appointmentDate, List<AppointmentStatus> statuses);
-    List<Appointment> findByDoctorIdAndAppointmentDateOrderByTimeSlot_StartTimeAsc(Long doctorId, LocalDate appointmentDate);
-
     List<Appointment> findByAppointmentDateOrderByTimeSlot_StartTimeAsc(LocalDate appointmentDate);
 
-    List<Appointment> findByDoctorIdAndStatus(Long doctorId, AppointmentStatus status);
+    @EntityGraph(attributePaths = {"patient", "doctor", "doctor.user", "doctor.specialty", "timeSlot"})
+    List<Appointment> findByAppointmentDateBetweenOrderByAppointmentDateAscTimeSlot_StartTimeAsc(
+            LocalDate firstDate, LocalDate lastDate);
+
+    @EntityGraph(attributePaths = {"patient", "doctor", "doctor.user", "doctor.specialty", "timeSlot"})
+    List<Appointment> findByDoctorIdAndAppointmentDateBetweenAndStatusInOrderByAppointmentDateAscQueueSequenceAsc(
+            Long doctorId, LocalDate firstDate, LocalDate lastDate, List<AppointmentStatus> statuses);
 
     long countByAppointmentDate(LocalDate appointmentDate);
-
-    @Query("SELECT a FROM Appointment a " +
-           "WHERE a.appointmentDate = :date " +
-           "AND a.status IN :statuses " +
-           "ORDER BY a.timeSlot.startTime ASC")
-    List<Appointment> findTodayQueue(@Param("date") LocalDate date,
-                                     @Param("statuses") List<AppointmentStatus> statuses);
-
-    @Query("SELECT COUNT(a) FROM Appointment a WHERE a.appointmentDate = :date AND a.queueNumber IS NOT NULL")
-    long countQueueForDate(@Param("date") LocalDate date);
-
-    @Query("SELECT COALESCE(MAX(a.queueSequence), 0) FROM Appointment a WHERE a.appointmentDate = :date")
-    long maxQueueSequenceForDate(@Param("date") LocalDate date);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT a FROM Appointment a WHERE a.id = :id")
@@ -59,6 +48,14 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
            "OR a.patient.phone = :keyword " +
            "OR LOWER(a.patient.fullName) LIKE LOWER(CONCAT('%', :keyword, '%')))")
     List<Appointment> searchForReception(@Param("keyword") String keyword, @Param("date") LocalDate date);
+
+    @EntityGraph(attributePaths = {"patient", "doctor", "doctor.user", "doctor.specialty", "timeSlot"})
+    @Query("SELECT a FROM Appointment a WHERE a.appointmentDate BETWEEN :firstDate AND :lastDate " +
+           "AND (LOWER(a.bookingCode) = LOWER(:keyword) OR a.patient.phone = :keyword " +
+           "OR LOWER(a.patient.fullName) LIKE LOWER(CONCAT('%', :keyword, '%'))) " +
+           "ORDER BY a.appointmentDate ASC, a.timeSlot.startTime ASC")
+    List<Appointment> searchForReceptionBetween(@Param("keyword") String keyword,
+            @Param("firstDate") LocalDate firstDate, @Param("lastDate") LocalDate lastDate);
 
     @Query("SELECT a.status, COUNT(a) FROM Appointment a GROUP BY a.status")
     List<Object[]> countAppointmentsByStatusGroup();

@@ -23,6 +23,4 @@ public interface MedicineRepository extends JpaRepository<Medicine, Long> {
     @Query("SELECT COUNT(m) FROM Medicine m WHERE m.isActive = true AND m.stockQuantity <= m.reorderLevel")
     long countLowStock();
 
-    @Query("SELECT m FROM Medicine m WHERE m.isActive = true AND LOWER(m.name) LIKE LOWER(CONCAT('%', :keyword, '%'))")
-    List<Medicine> searchMedicines(@Param("keyword") String keyword);
 }

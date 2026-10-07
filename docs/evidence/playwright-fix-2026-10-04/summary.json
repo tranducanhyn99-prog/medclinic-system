@@ -1,0 +1,21 @@
+{
+  "cliVersion": "0.1.22",
+  "withFixture": true,
+  "checks": 154,
+  "passed": 154,
+  "failed": 0,
+  "failedGroups": 0,
+  "realPayments": 0,
+  "date": "2026-10-04",
+  "browser": "Microsoft Edge 154.0.4258.53 (Chromium, headless)",
+  "origin": "http://127.0.0.1:8080",
+  "fixtureOrigin": "http://127.0.0.1:18090",
+  "matrixChecks": 115,
+  "pageErrors": 0,
+  "consoleErrors": 0,
+  "httpErrors": 0,
+  "requestFailures": 0,
+  "clinicalRecordsSaved": 0,
+  "invoicesCreated": 0,
+  "fixtureRemoved": true
+}

@@ -12,7 +12,7 @@ import com.medclinic.repository.BankTransferPaymentRepository;
 import com.medclinic.repository.InvoiceRepository;
 import com.medclinic.security.HmacSignatureVerifier;
 import com.medclinic.service.BusinessAuditService;
-import com.medclinic.service.impl.BankTransferPaymentServiceImpl;
+import com.medclinic.service.BankTransferPaymentService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -33,7 +33,7 @@ class BankTransferPaymentServiceTest {
     @Mock BankTransferPaymentRepository payments;
     @Mock InvoiceRepository invoices;
     @Mock BusinessAuditService audit;
-    private BankTransferPaymentServiceImpl service;
+    private BankTransferPaymentService service;
 
     @BeforeEach
     void setUp() {
@@ -44,7 +44,7 @@ class BankTransferPaymentServiceTest {
         properties.setAccountNo("0123456789");
         properties.setAccountName("MEDCLINIC TEST");
         properties.setCallbackSecret(SECRET);
-        service = new BankTransferPaymentServiceImpl(payments, invoices, properties, audit);
+        service = new BankTransferPaymentService(payments, invoices, properties, audit);
     }
 
     @Test
@@ -79,7 +79,7 @@ class BankTransferPaymentServiceTest {
         when(payments.findByProviderEventId("evt-1")).thenReturn(Optional.empty());
         when(payments.findByTransferCodeForUpdate("MC7ABCDEFGH")).thenReturn(Optional.of(payment));
         String signature = HmacSignatureVerifier.signSha256(
-                SECRET, BankTransferPaymentServiceImpl.canonical(callback));
+                SECRET, BankTransferPaymentService.canonical(callback));
 
         assertThrows(BusinessLogicException.class, () -> service.confirmCallback(callback, signature));
         assertEquals(BankTransferStatus.PENDING, payment.getStatus());
@@ -99,7 +99,7 @@ class BankTransferPaymentServiceTest {
         when(payments.existsByBankTransactionId("txn-123456")).thenReturn(false);
         when(invoices.findByIdForUpdate(7L)).thenReturn(Optional.of(invoice));
         String signature = HmacSignatureVerifier.signSha256(
-                SECRET, BankTransferPaymentServiceImpl.canonical(callback));
+                SECRET, BankTransferPaymentService.canonical(callback));
 
         var confirmed = service.confirmCallback(callback, signature);
         var retry = service.confirmCallback(callback, signature);

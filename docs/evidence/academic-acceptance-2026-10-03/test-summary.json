@@ -1,0 +1,17 @@
+{
+  "suites": 73,
+  "tests": 218.0,
+  "failures": 0.0,
+  "errors": 0.0,
+  "skipped": 0.0,
+  "sqlTests": 32.0,
+  "BRANCH": 67.64,
+  "LINE": 84.73,
+  "sqlIntegrationTests": 26,
+  "sqlArtifactAndSchemaTests": 6,
+  "frontendTests": 25,
+  "sourceBase": "fa56618",
+  "sourceBranch": "codex/completion-runtime-ci",
+  "sourceState": "uncommitted working tree",
+  "verifiedAt": "2026-10-03T13:44:30+07:00"
+}

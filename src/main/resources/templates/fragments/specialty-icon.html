@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<!-- Shared outline icons; the specialty label on the link supplies the accessible name. -->
+<span th:fragment="icon(specialty)" class="mc-specialty-link-icon" aria-hidden="true"
+      th:with="name=${#strings.toLowerCase(specialty.name)},
+               kind=${#strings.contains(name, 'tim mạch') ? 'heart' :
+                       #strings.contains(name, 'răng hàm mặt') ? 'tooth' :
+                       #strings.contains(name, 'da liễu') ? 'skin' :
+                       #strings.contains(name, 'nhi') ? 'baby' :
+                       #strings.contains(name, 'tai mũi họng') ? 'ear' :
+                       #strings.contains(name, 'cơ xương khớp') ? 'bone' : 'other'}"
+      th:switch="${kind}">
+    <svg th:case="'heart'" viewBox="0 0 24 24" fill="none" focusable="false">
+        <path d="M20.6 13.2 12 21l-8.6-7.8A5.5 5.5 0 0 1 12 5.9a5.5 5.5 0 0 1 8.6 7.3Z"/>
+        <path d="M3 12h4l2-4 3 8 2-4h7"/>
+    </svg>
+    <svg th:case="'tooth'" viewBox="0 0 24 24" fill="none" focusable="false">
+        <path d="M12 4.5C9.5 4.5 8.7 3 6.5 3 4 3 3 5.2 3 7.6c0 3.4 1.5 4.7 2 7.4.5 2.5.5 6 2.5 6 2.2 0 1.5-7 4.5-7s2.3 7 4.5 7c2 0 2-3.5 2.5-6 .5-2.7 2-4 2-7.4C21 5.2 20 3 17.5 3 15.3 3 14.5 4.5 12 4.5Z"/>
+        <path d="M9 4c1.3 1.5 2.8 2 4.5 2"/>
+    </svg>
+    <svg th:case="'skin'" viewBox="0 0 24 24" fill="none" focusable="false">
+        <path d="M16 2.5s-3 3.1-3 5a3 3 0 0 0 6 0c0-1.9-3-5-3-5Z"/>
+        <path d="M3 12c2-2 4 2 6 0s4 2 6 0 4 2 6 0M3 16h18M3 20h18"/>
+        <path d="M5 8h.01M8 6h.01M9 9h.01"/>
+    </svg>
+    <svg th:case="'baby'" viewBox="0 0 24 24" fill="none" focusable="false">
+        <path d="M9 3.5a8 8 0 0 0-5 6 2.5 2.5 0 0 0 0 5 8.2 8.2 0 0 0 16 0 2.5 2.5 0 0 0 0-5 8 8 0 0 0-5-6"/>
+        <path d="M9 3.5C9 1.5 15 1.5 15 4a2 2 0 0 1-2 2h-1M8 11h.01M16 11h.01M9 15a3.8 3.8 0 0 0 6 0"/>
+    </svg>
+    <svg th:case="'ear'" viewBox="0 0 24 24" fill="none" focusable="false">
+        <path d="M6 9a7 7 0 1 1 13 3.6c-1.1 1.7-3 2.1-3.5 4.4-.5 2.4-1.9 4-4 4a4 4 0 0 1-4-4"/>
+        <path d="M10 9a3 3 0 1 1 6 0c0 1.7-1.5 2.2-2.5 3.1M10 9v4h2"/>
+    </svg>
+    <svg th:case="'bone'" viewBox="0 0 24 24" fill="none" focusable="false">
+        <path transform="rotate(45 12 12)" d="M9 7a3 3 0 1 1 3-4 3 3 0 1 1 3 4v10a3 3 0 1 1-3 4 3 3 0 1 1-3-4V7Z"/>
+    </svg>
+    <i th:case="*" class="bi" th:classappend="${#strings.isEmpty(specialty.icon) ? 'bi-hospital' : specialty.icon}"></i>
+</span>
+</body>
+</html>

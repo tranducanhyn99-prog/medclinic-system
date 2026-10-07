@@ -4,7 +4,7 @@ import com.medclinic.entity.Specialty;
 import com.medclinic.exception.BusinessLogicException;
 import com.medclinic.exception.ResourceNotFoundException;
 import com.medclinic.repository.SpecialtyRepository;
-import com.medclinic.service.impl.SpecialtyServiceImpl;
+import com.medclinic.service.SpecialtyService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -21,7 +21,7 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class SpecialtyServiceTest {
     @Mock SpecialtyRepository specialtyRepository;
-    @InjectMocks SpecialtyServiceImpl service;
+    @InjectMocks SpecialtyService service;
 
     private Specialty specialty(long id, String name, Boolean active) {
         Specialty specialty = new Specialty();

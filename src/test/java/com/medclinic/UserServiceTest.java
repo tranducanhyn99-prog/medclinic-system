@@ -8,7 +8,7 @@ import com.medclinic.enums.RoleType;
 import com.medclinic.exception.BusinessLogicException;
 import com.medclinic.repository.RoleRepository;
 import com.medclinic.repository.UserRepository;
-import com.medclinic.service.impl.UserServiceImpl;
+import com.medclinic.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -38,7 +38,7 @@ class UserServiceTest {
     private PasswordEncoder passwordEncoder;
 
     @InjectMocks
-    private UserServiceImpl userService;
+    private UserService userService;
 
     private Role patientRole;
     private UserRegisterDto registerDto;

@@ -1,6 +1,6 @@
 # Kịch bản demo Lập trình Web — MedClinic
 
-**Ngày chốt:** 23/09/2026<br>
+**Ngày tạo:** 23/09/2026; **cập nhật bản demo:** 03/10/2026<br>
 **Thời lượng mục tiêu:** 10–15 phút<br>
 **Trọng tâm:** trải nghiệm web, MVC, form/validation, session, phân quyền, AJAX, WebSocket, responsive và tích hợp dịch vụ web
 
@@ -21,7 +21,7 @@ SQL Server, Flyway, transaction và locking vẫn là nền tảng của hệ th
 ## 2. Chuẩn bị trước khi demo
 
 ```powershell
-docker compose up -d
+docker compose up --build -d
 docker compose ps -a
 ```
 
@@ -32,6 +32,7 @@ Chuẩn bị trình duyệt:
 - Chuẩn bị bốn cửa sổ hoặc browser profile tách session cho Patient, Staff, Doctor và Admin.
 - Giữ DevTools đóng trong luồng chính để giao diện dễ nhìn; chỉ mở Network/Responsive Mode khi giảng viên hỏi về request AJAX hoặc responsive.
 - Dùng ngày hiện tại hoặc một ngày trong 14 ngày tiếp theo và chọn **PGS.TS Nguyễn Văn Hùng** để tài khoản `doctor` nhận đúng hàng chờ.
+- Profile `dev` hoặc `sqlserver,demo` mặc định bật `app.demo.early-clinical-processing`: lịch trong khoảng trên có thể check-in, khám, thu tiền và xuất PDF ngay. Ngày hẹn được giữ nguyên; danh sách lễ tân và bàn khám hiển thị các ngày demo. Khi đặt `DEMO_EARLY_CLINICAL_PROCESSING=false` hoặc chạy ngoài `dev`/`demo`, tiếp nhận và khám chỉ được thực hiện đúng ngày. Vãng lai vẫn chọn hôm nay.
 
 Tài khoản demo dùng mật khẩu `123456`, chỉ dành cho profile `dev`/`demo`:
 
@@ -55,7 +56,7 @@ Tài khoản demo dùng mật khẩu `123456`, chỉ dành cho profile `dev`/`de
 ### 1:30–3:00 — Đăng nhập, session và phân quyền
 
 1. Mở trang đăng nhập; thử bấm **Đăng nhập** khi để trống để trình diễn validation bắt buộc của trình duyệt.
-2. Dùng nút điền nhanh tài khoản `patient`, sau đó đăng nhập.
+2. Nhập tài khoản `patient` / `123456`, sau đó đăng nhập. Shortcut điền nhanh chỉ hiện ở profile `dev`; Docker dùng `sqlserver,demo`.
 3. Cho xem navbar đã đổi theo trạng thái session và chuyển đúng Patient Portal.
 4. Nếu cần minh họa RBAC, nhập trực tiếp `/admin/dashboard` khi đang là Patient: server phải từ chối hoặc điều hướng theo cấu hình bảo mật.
 
@@ -121,7 +122,7 @@ Phần này có thể làm trước Admin nếu giảng viên quan tâm xác th�
 3. Thu hẹp cửa sổ để cho thấy sidebar đổi thành drawer mobile và card/bảng vẫn sử dụng được.
 4. Kết luận: một codebase phục vụ public site và bốn portal, có MVC, security, AJAX, realtime, email, file upload, PDF và responsive UI.
 
-Nếu còn 20–30 giây mới nêu bằng chứng: `139/139` test PASS khi bật SQL Server integration; UI đã kiểm tra tại 1440, 768 và 390 px.
+Nếu còn 20–30 giây mới nêu bằng chứng: kết quả build/test cuối trong [biên bản nghiệm thu đồ án](ACADEMIC_ACCEPTANCE_2026-10-03.md); UI đã kiểm tra tại 1440, 768 và 390 px.
 
 ## 4. Câu hỏi web thường gặp
 
@@ -156,7 +157,7 @@ Nếu còn 20–30 giây mới nêu bằng chứng: `139/139` test PASS khi bậ
 | WebSocket không cập nhật ngay | Bấm **Làm mới danh sách**; giải thích WebSocket là lớp cập nhật realtime, request HTTP thông thường vẫn là fallback. |
 | Không có lịch hẹn phù hợp | Tạo walk-in bằng Staff hoặc đặt một slot mới; dùng cùng bác sĩ `doctor`. |
 | Dữ liệu demo đã bẩn | Chọn slot/ngày khác. Không sửa trực tiếp SQL trong lúc demo web. |
-| Mạng Internet mất | Ứng dụng và dữ liệu chạy local, nhưng Bootstrap/Icons/Google Fonts/SweetAlert/Chart.js đang dùng CDN. Dùng cache trình duyệt hoặc ảnh UI acceptance; backlog nên bundle asset local. |
+| Mạng Internet mất | App, Bootstrap, icons, font, SweetAlert và Chart.js đều chạy local sau build. Tiếp tục luồng tiền mặt; ảnh VietQR tùy chọn vẫn cần dịch vụ bên ngoài. |
 | Docker Desktop tái lỗi socket | Dùng ảnh và biên bản UI/runtime để tiếp tục thuyết trình; không biến phần sửa Docker thành nội dung chính của bài Lập trình Web. |
 
 ## 7. Tài liệu hỗ trợ

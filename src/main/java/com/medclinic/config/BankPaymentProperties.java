@@ -2,8 +2,12 @@ package com.medclinic.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
+import lombok.Getter;
+import lombok.Setter;
 
 @Component
+@Getter
+@Setter
 @ConfigurationProperties(prefix = "app.payment.bank")
 public class BankPaymentProperties {
     private boolean enabled;
@@ -15,22 +19,6 @@ public class BankPaymentProperties {
     private String callbackSecret = "";
     private long expiryMinutes = 30;
 
-    public boolean isEnabled() { return enabled; }
-    public void setEnabled(boolean enabled) { this.enabled = enabled; }
-    public String getBankId() { return bankId; }
-    public void setBankId(String bankId) { this.bankId = bankId; }
-    public String getBankName() { return bankName; }
-    public void setBankName(String bankName) { this.bankName = bankName; }
-    public String getAccountNo() { return accountNo; }
-    public void setAccountNo(String accountNo) { this.accountNo = accountNo; }
-    public String getAccountName() { return accountName; }
-    public void setAccountName(String accountName) { this.accountName = accountName; }
-    public String getQrTemplate() { return qrTemplate; }
-    public void setQrTemplate(String qrTemplate) { this.qrTemplate = qrTemplate; }
-    public String getCallbackSecret() { return callbackSecret; }
-    public void setCallbackSecret(String callbackSecret) { this.callbackSecret = callbackSecret; }
-    public long getExpiryMinutes() { return expiryMinutes; }
-    public void setExpiryMinutes(long expiryMinutes) { this.expiryMinutes = expiryMinutes; }
 
     public boolean isReady() {
         return enabled

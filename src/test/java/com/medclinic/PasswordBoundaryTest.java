@@ -6,6 +6,9 @@ import com.medclinic.dto.UserRegisterDto;
 import com.medclinic.exception.BusinessLogicException;
 import com.medclinic.repository.*;
 import com.medclinic.service.EmailService;
+import com.medclinic.service.DoctorService;
+import com.medclinic.service.PasswordResetService;
+import com.medclinic.service.UserService;
 import com.medclinic.service.impl.*;
 import com.medclinic.util.PasswordPolicy;
 import jakarta.validation.Validation;
@@ -64,13 +67,13 @@ class PasswordBoundaryTest {
         var patientDto = new UserRegisterDto();
         patientDto.setPassword(password); patientDto.setConfirmPassword(password);
         var doctorDto = new AdminDoctorCreateDto(); doctorDto.setPassword(password);
-        var patientService = new UserServiceImpl(users, roles, encoder);
+        var patientService = new UserService(users, roles, encoder);
         assertEquals(PasswordPolicy.MESSAGE, assertThrows(BusinessLogicException.class,
                 () -> patientService.registerPatient(patientDto)).getMessage());
         assertThrows(BusinessLogicException.class, () -> patientService.changePassword(1L, "old-password", password));
-        assertThrows(BusinessLogicException.class, () -> new PasswordResetServiceImpl(users, tokens, encoder, mock(EmailService.class))
+        assertThrows(BusinessLogicException.class, () -> new PasswordResetService(users, tokens, encoder, mock(EmailService.class))
                 .resetPassword("test-token", password, password));
-        assertThrows(BusinessLogicException.class, () -> new DoctorServiceImpl(profiles, users, specialties, roles, encoder)
+        assertThrows(BusinessLogicException.class, () -> new DoctorService(profiles, users, specialties, roles, encoder)
                 .registerDoctor(doctorDto));
         verifyNoInteractions(users, roles, profiles, specialties, tokens, encoder);
     }

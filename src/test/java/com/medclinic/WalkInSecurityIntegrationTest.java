@@ -26,6 +26,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest
 @ActiveProfiles("dev")
 class WalkInSecurityIntegrationTest {
+    @Autowired private com.medclinic.service.AppointmentService appointmentService;
     @Autowired private AppointmentService appointments;
     @Autowired private DoctorProfileRepository doctors;
     @Autowired private DoctorScheduleRepository schedules;
@@ -33,11 +34,19 @@ class WalkInSecurityIntegrationTest {
     @Autowired private UserRepository users;
     @Autowired private PasswordEncoder passwordEncoder;
 
+    @org.junit.jupiter.api.AfterEach
+    void restoreBusinessClock() {
+        appointmentService.setBusinessClock(java.time.Clock.system(java.time.ZoneId.of("Asia/Ho_Chi_Minh")));
+    }
+
     @Test
     @WithMockUser(roles = "STAFF")
     void newWalkInIsDisabledAndNeverUsesTheDefaultCredential() {
         DoctorProfile doctor = doctors.findAll().getFirst();
         LocalDate date = LocalDate.now().plusDays(14);
+        // Simulate arrival on the appointment day before the afternoon slot.
+        appointmentService.setBusinessClock(java.time.Clock.fixed(date.atTime(8, 0)
+                .atZone(java.time.ZoneId.of("Asia/Ho_Chi_Minh")).toInstant(), java.time.ZoneId.of("Asia/Ho_Chi_Minh")));
         DoctorSchedule schedule = schedules.save(DoctorSchedule.builder().doctor(doctor).workDate(date)
                 .shift(ShiftType.AFTERNOON).maxPatients(8).build());
         TimeSlot slot = slots.save(TimeSlot.builder().schedule(schedule).startTime(LocalTime.of(13, 0))

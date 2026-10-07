@@ -1,19 +1,185 @@
 package com.medclinic.service;
 
+import com.medclinic.util.Sha256;
+import com.medclinic.entity.AuthVerificationChallenge;
 import com.medclinic.entity.User;
 import com.medclinic.enums.AuthChallengeType;
+import com.medclinic.exception.BusinessLogicException;
+import com.medclinic.repository.AuthVerificationChallengeRepository;
+import com.medclinic.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
+import java.security.SecureRandom;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
-public interface AuthVerificationService {
-    ChallengeIssued issueChallenge(Long userId, AuthChallengeType type);
-    ChallengeIssued resendChallenge(Long challengeId);
-    VerificationResult verifyCode(Long challengeId, String code);
-    VerificationResult verifyMagicToken(String rawToken);
-    ChallengeIssued getChallengeInfo(Long challengeId);
+@Service
+@RequiredArgsConstructor
+public class AuthVerificationService {
+    private static final int MAX_ATTEMPTS = 5;
+    private static final int MAX_CHALLENGES_PER_WINDOW = 3;
+    private static final SecureRandom RANDOM = new SecureRandom();
 
-    record ChallengeIssued(Long challengeId, String maskedEmail,
+    private final AuthVerificationChallengeRepository challengeRepository;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final EmailService emailService;
+
+    @Value("${app.auth.otp-validity-seconds:300}")
+    private long validitySeconds;
+
+    @Value("${app.website:http://localhost:8080}")
+    private String applicationUrl;
+
+    @Transactional
+    public ChallengeIssued issueChallenge(Long userId, AuthChallengeType type) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessLogicException("Không tìm thấy tài khoản cần xác thực."));
+        if (Boolean.TRUE.equals(user.getOtpBypass())) {
+            throw new BusinessLogicException("Tài khoản này không yêu cầu OTP.");
+        }
+        return createChallenge(user, type);
+    }
+
+    @Transactional
+    public ChallengeIssued resendChallenge(Long challengeId) {
+        AuthVerificationChallenge current = challengeRepository.findByIdForUpdate(challengeId)
+                .orElseThrow(() -> new BusinessLogicException("Phiên xác thực không tồn tại."));
+        if (current.getConsumedAt() != null) {
+            throw new BusinessLogicException("Phiên xác thực này đã được sử dụng.");
+        }
+        long recentChallenges = challengeRepository.countByUserIdAndTypeAndCreatedAtAfter(
+                current.getUser().getId(), current.getType(), LocalDateTime.now().minusSeconds(validitySeconds));
+        if (recentChallenges >= MAX_CHALLENGES_PER_WINDOW) {
+            throw new BusinessLogicException("Bạn đã gửi lại OTP quá nhiều lần. Vui lòng thử lại sau.");
+        }
+        current.setConsumedAt(LocalDateTime.now());
+        challengeRepository.save(current);
+        return createChallenge(current.getUser(), current.getType());
+    }
+
+    @Transactional(readOnly = true)
+    public ChallengeIssued getChallengeInfo(Long challengeId) {
+        AuthVerificationChallenge challenge = challengeRepository.findById(challengeId)
+                .orElseThrow(() -> new BusinessLogicException("Phiên xác thực không tồn tại."));
+        validateUsable(challenge);
+        return toIssued(challenge);
+    }
+
+    @Transactional(noRollbackFor = BusinessLogicException.class)
+    public VerificationResult verifyCode(Long challengeId, String code) {
+        AuthVerificationChallenge challenge = challengeRepository.findByIdForUpdate(challengeId)
+                .orElseThrow(() -> new BusinessLogicException("Phiên xác thực không tồn tại."));
+        validateUsable(challenge);
+        int attempts = challenge.getAttempts() == null ? 0 : challenge.getAttempts();
+        if (attempts >= MAX_ATTEMPTS) {
+            throw new BusinessLogicException("Bạn đã nhập sai OTP quá nhiều lần. Vui lòng gửi lại mã mới.");
+        }
+        if (code == null || !code.matches("\\d{6}") || !passwordEncoder.matches(code, challenge.getCodeHash())) {
+            challenge.setAttempts(attempts + 1);
+            challengeRepository.save(challenge);
+            throw new BusinessLogicException("Mã OTP không chính xác.");
+        }
+        return consume(challenge);
+    }
+
+    @Transactional
+    public VerificationResult verifyMagicToken(String rawToken) {
+        if (rawToken == null || rawToken.isBlank()) {
+            throw new BusinessLogicException("Liên kết xác thực không hợp lệ.");
+        }
+        AuthVerificationChallenge challenge = challengeRepository
+                .findByMagicTokenHashForUpdate(Sha256.hex(rawToken))
+                .orElseThrow(() -> new BusinessLogicException("Liên kết xác thực không hợp lệ hoặc đã hết hạn."));
+        validateUsable(challenge);
+        return consume(challenge);
+    }
+
+    private VerificationResult consume(AuthVerificationChallenge challenge) {
+        User user = challenge.getUser();
+        if (challenge.getType() == AuthChallengeType.LOGIN && !Boolean.TRUE.equals(user.getIsActive())) {
+            throw new BusinessLogicException("Tài khoản đã bị khóa. Vui lòng liên hệ phòng khám.");
+        }
+        challenge.setConsumedAt(LocalDateTime.now());
+        if (challenge.getType() == AuthChallengeType.REGISTRATION) {
+            user.setEmailVerified(true);
+            user.setIsActive(true);
+            userRepository.save(user);
+        }
+        challengeRepository.save(challenge);
+        return new VerificationResult(user, challenge.getType());
+    }
+
+    private ChallengeIssued createChallenge(User user, AuthChallengeType type) {
+        if (type == AuthChallengeType.LOGIN && !Boolean.TRUE.equals(user.getIsActive())) {
+            throw new BusinessLogicException("Tài khoản đã bị khóa. Vui lòng liên hệ phòng khám.");
+        }
+        LocalDateTime now = LocalDateTime.now();
+        for (AuthVerificationChallenge open : challengeRepository
+                .findByUserIdAndTypeAndConsumedAtIsNull(user.getId(), type)) {
+            open.setConsumedAt(now);
+            challengeRepository.save(open);
+        }
+
+        String rawCode = String.format("%06d", RANDOM.nextInt(1_000_000));
+        String rawToken = UUID.randomUUID() + "-" + UUID.randomUUID();
+        AuthVerificationChallenge challenge = AuthVerificationChallenge.builder()
+                .user(user)
+                .type(type)
+                .codeHash(passwordEncoder.encode(rawCode))
+                .magicTokenHash(Sha256.hex(rawToken))
+                .expiresAt(now.plusSeconds(validitySeconds))
+                .attempts(0)
+                .build();
+        challenge = challengeRepository.save(challenge);
+        String confirmUrl = applicationUrl + "/auth/verify-email?token=" + rawToken;
+        scheduleEmail(user, type, rawCode, confirmUrl);
+        return toIssued(challenge);
+    }
+
+    private void validateUsable(AuthVerificationChallenge challenge) {
+        if (challenge.getConsumedAt() != null || challenge.getExpiresAt().isBefore(LocalDateTime.now())) {
+            throw new BusinessLogicException("Mã xác thực không hợp lệ hoặc đã hết hạn. Vui lòng gửi lại OTP.");
+        }
+    }
+
+    private void scheduleEmail(User user, AuthChallengeType type, String rawCode, String confirmUrl) {
+        Runnable action = () -> emailService.sendAuthenticationOtpEmail(
+                user.getEmail(), user.getFullName(), rawCode, confirmUrl,
+                Math.max(1L, validitySeconds / 60L), type.getDisplayName());
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    action.run();
+                }
+            });
+        } else {
+            action.run();
+        }
+    }
+
+    private ChallengeIssued toIssued(AuthVerificationChallenge challenge) {
+        return new ChallengeIssued(challenge.getId(), maskEmail(challenge.getUser().getEmail()),
+                challenge.getExpiresAt(), challenge.getType());
+    }
+
+    private String maskEmail(String email) {
+        int at = email.indexOf('@');
+        if (at <= 1) {
+            return "***" + email.substring(Math.max(0, at));
+        }
+        return email.substring(0, 1) + "***" + email.substring(at);
+    }
+
+    public record ChallengeIssued(Long challengeId, String maskedEmail,
                            LocalDateTime expiresAt, AuthChallengeType type) {}
 
-    record VerificationResult(User user, AuthChallengeType type) {}
+    public record VerificationResult(User user, AuthChallengeType type) {}
 }

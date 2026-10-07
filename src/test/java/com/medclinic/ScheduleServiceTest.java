@@ -9,7 +9,7 @@ import com.medclinic.exception.ResourceNotFoundException;
 import com.medclinic.repository.DoctorProfileRepository;
 import com.medclinic.repository.DoctorScheduleRepository;
 import com.medclinic.repository.TimeSlotRepository;
-import com.medclinic.service.impl.ScheduleServiceImpl;
+import com.medclinic.service.ScheduleService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -29,7 +29,7 @@ class ScheduleServiceTest {
     @Mock DoctorScheduleRepository scheduleRepository;
     @Mock TimeSlotRepository timeSlotRepository;
     @Mock DoctorProfileRepository doctorRepository;
-    @InjectMocks ScheduleServiceImpl service;
+    @InjectMocks ScheduleService service;
     @Test
     void returnsExistingScheduleWithoutCreatingAnother() {
         LocalDate date = LocalDate.of(2026, 9, 20);
@@ -86,10 +86,8 @@ class ScheduleServiceTest {
                 .thenReturn(List.of(schedule));
         when(timeSlotRepository.findAvailableSlotsByDoctorAndDate(1L, from, SlotStatus.AVAILABLE))
                 .thenReturn(List.of(slot));
-        when(timeSlotRepository.findAllSlotsByDoctorAndDate(1L, from)).thenReturn(List.of(slot));
 
         assertEquals(List.of(schedule), service.findByDoctorAndDateRange(1L, from, to));
         assertEquals(List.of(slot), service.getAvailableSlots(1L, from));
-        assertEquals(List.of(slot), service.getAllSlots(1L, from));
     }
 }
