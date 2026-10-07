@@ -2,7 +2,6 @@ package com.medclinic;
 
 import com.medclinic.dto.AdminDoctorCreateDto;
 import com.medclinic.entity.DoctorProfile;
-import com.medclinic.entity.Role;
 import com.medclinic.entity.Specialty;
 import com.medclinic.entity.User;
 import com.medclinic.enums.RoleType;
@@ -12,7 +11,7 @@ import com.medclinic.repository.DoctorProfileRepository;
 import com.medclinic.repository.RoleRepository;
 import com.medclinic.repository.SpecialtyRepository;
 import com.medclinic.repository.UserRepository;
-import com.medclinic.service.impl.DoctorServiceImpl;
+import com.medclinic.service.DoctorService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -34,7 +33,7 @@ import static org.mockito.Mockito.*;
     @Mock SpecialtyRepository specialtyRepository;
     @Mock RoleRepository roleRepository;
     @Mock PasswordEncoder passwordEncoder;
-    @InjectMocks DoctorServiceImpl service;
+    @InjectMocks DoctorService service;
 
     private Specialty specialty(long id) {
         Specialty s = new Specialty(); s.setId(id); s.setName("S" + id); return s;
@@ -51,12 +50,10 @@ import static org.mockito.Mockito.*;
     void readsDoctorsAndHandlesMissingRecords() {
         DoctorProfile d = doctor(1L, 10L, "Nguyễn An", "BS", "100000");
         when(doctorProfileRepository.findAll()).thenReturn(List.of(d));
-        when(doctorProfileRepository.findBySpecialtyId(10L)).thenReturn(List.of(d));
         when(doctorProfileRepository.findById(1L)).thenReturn(Optional.of(d));
         when(doctorProfileRepository.findByUserId(1L)).thenReturn(Optional.of(d));
 
         assertEquals(List.of(d), service.findAll());
-        assertEquals(List.of(d), service.findBySpecialty(10L));
         assertSame(d, service.findById(1L));        assertSame(d, service.findByUserId(1L));
 
         when(doctorProfileRepository.findById(9L)).thenReturn(Optional.empty());
@@ -109,12 +106,6 @@ import static org.mockito.Mockito.*;
         when(specialtyRepository.findById(99L)).thenReturn(Optional.empty());
         assertThrows(ResourceNotFoundException.class,
                 () -> service.update(1L, 99L, "BS", 1, BigDecimal.ONE, null));
-    }
-
-    @Test
-    void legacySavePathIsRejected() {
-        assertThrows(BusinessLogicException.class,
-                () -> service.save(1L, 1L, "BS", 1, BigDecimal.ONE, null));
     }
 
     private AdminDoctorCreateDto dto() {

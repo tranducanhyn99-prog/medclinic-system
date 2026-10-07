@@ -606,7 +606,7 @@
             </div>
             <div class="mc-specialty-grid">
                 <a th:each="specialty : ${specialties}" th:href="@{/doctors(specialtyId=${specialty.id})}" class="mc-specialty-link">
-                    <span class="mc-specialty-link-icon"><i class="bi bi-heart-pulse" aria-hidden="true"></i></span>
+                    <span th:replace="~{fragments/specialty-icon :: icon(${specialty})}"></span>
                     <span th:text="${#strings.replace(specialty.name, 'Chuyên Khoa ', '')}">Chuyên khoa</span>
                     <i class="bi bi-arrow-up-right ms-auto" aria-hidden="true"></i>
                 </a>

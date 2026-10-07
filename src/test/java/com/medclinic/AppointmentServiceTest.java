@@ -2,12 +2,11 @@ package com.medclinic;
 
 import com.medclinic.entity.*;
 import com.medclinic.enums.AppointmentStatus;
-import com.medclinic.enums.RoleType;
 import com.medclinic.enums.SlotStatus;
 import com.medclinic.exception.BusinessLogicException;
 import com.medclinic.event.DoctorQueueChangedEvent;
 import com.medclinic.repository.*;
-import com.medclinic.service.impl.AppointmentServiceImpl;
+import com.medclinic.service.AppointmentService;
 import com.medclinic.service.impl.DailyQueueCounterAllocator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -55,7 +54,7 @@ class AppointmentServiceTest {
     private ApplicationEventPublisher applicationEventPublisher;
 
     @InjectMocks
-    private AppointmentServiceImpl appointmentService;
+    private AppointmentService appointmentService;
 
     private User patient;
     private DoctorProfile doctor;

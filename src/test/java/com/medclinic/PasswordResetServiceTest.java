@@ -6,7 +6,7 @@ import com.medclinic.exception.BusinessLogicException;
 import com.medclinic.repository.PasswordResetTokenRepository;
 import com.medclinic.repository.UserRepository;
 import com.medclinic.service.EmailService;
-import com.medclinic.service.impl.PasswordResetServiceImpl;
+import com.medclinic.service.PasswordResetService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -39,14 +39,14 @@ class PasswordResetServiceTest {
     @Mock private PasswordResetTokenRepository passwordResetTokenRepository;
     @Mock private PasswordEncoder passwordEncoder;
     @Mock private EmailService emailService;
-    @InjectMocks private PasswordResetServiceImpl passwordResetService;
+    @InjectMocks private PasswordResetService passwordResetService;
 
     private User user;
 
     @BeforeEach
     void setUp() throws Exception {
         user = User.builder().id(7L).email("patient@example.com").fullName("Bệnh nhân A").build();
-        Field website = PasswordResetServiceImpl.class.getDeclaredField("applicationUrl");
+        Field website = PasswordResetService.class.getDeclaredField("applicationUrl");
         website.setAccessible(true);
         website.set(passwordResetService, "http://localhost:8080");
     }

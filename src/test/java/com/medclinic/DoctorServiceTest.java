@@ -9,7 +9,7 @@ import com.medclinic.repository.DoctorProfileRepository;
 import com.medclinic.repository.RoleRepository;
 import com.medclinic.repository.SpecialtyRepository;
 import com.medclinic.repository.UserRepository;
-import com.medclinic.service.impl.DoctorServiceImpl;
+import com.medclinic.service.DoctorService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -32,7 +32,7 @@ class DoctorServiceTest {
     @Mock private SpecialtyRepository specialtyRepository;
     @Mock private RoleRepository roleRepository;
     @Mock private PasswordEncoder passwordEncoder;
-    @InjectMocks private DoctorServiceImpl doctorService;
+    @InjectMocks private DoctorService doctorService;
 
     @Test
     void registersDoctorWithEncodedPasswordAndLicense() {

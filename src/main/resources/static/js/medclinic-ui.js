@@ -36,6 +36,19 @@
         });
     };
     function ready() {
+        document.querySelectorAll('.nav-link-med[href], .sidebar-link[href]').forEach(function (link) {
+            var path = new URL(link.href, window.location.origin).pathname;
+            var current = window.location.pathname;
+            if (current === path || (path !== '/' && current.startsWith(path + '/'))) {
+                link.classList.add('active');
+                link.setAttribute('aria-current', 'page');
+            }
+        });
+        if (window.navigator && 'serviceWorker' in window.navigator) {
+            window.addEventListener('load', function () {
+                window.navigator.serviceWorker.register('/sw.js').catch(function () {});
+            }, {once: true});
+        }
         document.querySelectorAll('.mc-data-table').forEach(ui.prepareTable);
         document.querySelectorAll('.table-responsive').forEach(function (region) {
             var title = region.closest('.mc-data-card, .mc-workflow-card, .card')?.querySelector('h2, h3');

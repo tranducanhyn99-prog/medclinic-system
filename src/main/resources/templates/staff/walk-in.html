@@ -95,7 +95,9 @@
 
                         <div class="col-md-6">
                             <label for="appointmentDate" class="form-label fw-semibold small">Ngày khám <span class="text-danger">*</span></label>
-                            <input type="date" class="form-control" id="appointmentDate" name="date" required>
+                            <input type="date" class="form-control" id="appointmentDate" name="date" required
+                                   th:value="${today}" th:min="${today}" th:max="${today}" aria-describedby="walkInDateHelp">
+                            <p id="walkInDateHelp" class="form-text mb-0">Vãng lai chỉ tiếp nhận và cấp số thứ tự trong hôm nay. Lịch ngày khác cần đặt trước.</p>
                         </div>
 
                         <div class="col-md-6">
@@ -165,14 +167,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const slotStateEmpty = document.getElementById('slotStateEmpty');
     const slotStateError = document.getElementById('slotStateError');
 
-    // Default date = today
-    const today = new Date();
-    const yyyy = today.getFullYear();
-    const mm = String(today.getMonth() + 1).padStart(2, '0');
-    const dd = String(today.getDate()).padStart(2, '0');
-    appointmentDate.value = `${yyyy}-${mm}-${dd}`;
-    appointmentDate.min = `${yyyy}-${mm}-${dd}`;
-
     const allDoctorOptions = Array.from(doctorSelect.querySelectorAll('option[data-specialty-id]'));
 
     specialtySelect.addEventListener('change', function () {
@@ -198,7 +192,10 @@ document.addEventListener('DOMContentLoaded', function () {
         onReset: () => { document.getElementById('slotSelectionStatus').textContent = ''; }
     });
     function clearSlots() { picker.clear(); }
-    function loadTimeSlots() { picker.load(doctorSelect.value, appointmentDate.value); }
+    function loadTimeSlots() {
+        if (!appointmentDate.checkValidity()) { clearSlots(); appointmentDate.reportValidity(); return; }
+        picker.load(doctorSelect.value, appointmentDate.value);
+    }
     document.getElementById('retrySlots').addEventListener('click', loadTimeSlots);
 });
 </script>

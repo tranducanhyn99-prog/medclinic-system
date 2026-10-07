@@ -13,7 +13,6 @@ import java.time.LocalDateTime;
 
 @Repository
 public interface PasswordResetTokenRepository extends JpaRepository<PasswordResetToken, Long> {
-    Optional<PasswordResetToken> findByTokenHash(String tokenHash);
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select t from PasswordResetToken t join fetch t.user where t.tokenHash = :hash")
     Optional<PasswordResetToken> findByTokenHashForUpdate(@Param("hash") String hash);

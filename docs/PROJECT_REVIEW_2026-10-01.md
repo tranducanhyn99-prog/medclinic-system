@@ -29,7 +29,7 @@ Bằng chứng tại [log build sạch — bằng chứng local, xem tóm tắt]
 
 ### 1. P1 — Mã chuyển khoản mới không qua được validation của callback
 
-Vị trí: [BankTransferPaymentServiceImpl.java:181](../src/main/java/com/medclinic/service/impl/BankTransferPaymentServiceImpl.java), [BankTransferCallbackDto.java:11](../src/main/java/com/medclinic/dto/BankTransferCallbackDto.java).
+Vị trí: [BankTransferPaymentServiceImpl.java:181](../src/main/java/com/medclinic/service/BankTransferPaymentService.java), [BankTransferCallbackDto.java:11](../src/main/java/com/medclinic/dto/BankTransferCallbackDto.java).
 
 `nextTransferCode()` hiện tạo `Thanh toan hoa don <6 ký tự>`, chứa dấu cách và chữ thường. DTO callback áp dụng `[A-Z0-9]{6,25}`. Vì vậy mã mà ứng dụng tự tạo luôn bị `@Valid` từ chối trước khi kiểm tra HMAC. Đây là regression trong thay đổi chưa commit; mã cũ dạng `MC...` phù hợp regex.
 
@@ -39,7 +39,7 @@ Vị trí: [BankTransferPaymentServiceImpl.java:181](../src/main/java/com/medcli
 
 ### 2. P1 — Tài khoản bị khóa vẫn đăng nhập qua challenge OTP đang còn hạn
 
-Vị trí: [AuthVerificationServiceImpl.java:114](../src/main/java/com/medclinic/service/impl/AuthVerificationServiceImpl.java), [AuthController.java:291](../src/main/java/com/medclinic/controller/AuthController.java).
+Vị trí: [AuthVerificationServiceImpl.java:114](../src/main/java/com/medclinic/service/AuthVerificationService.java), [AuthController.java:291](../src/main/java/com/medclinic/controller/AuthController.java).
 
 Sau bước xác thực mật khẩu, quản trị viên có thể khóa tài khoản trong khi người dùng đang chờ OTP. `consume()` không kiểm tra lại `isActive` đối với challenge LOGIN; `establishSession()` tạo authentication đã xác thực trực tiếp, bỏ qua kiểm tra trạng thái tài khoản của authentication provider.
 
@@ -49,7 +49,7 @@ Sau bước xác thực mật khẩu, quản trị viên có thể khóa tài kh
 
 ### 3. P1 — Lưu được bệnh án có triệu chứng và chẩn đoán rỗng
 
-Vị trí: [DoctorDeskController.java:75](../src/main/java/com/medclinic/controller/DoctorDeskController.java), [MedicalRecordServiceImpl.java:70](../src/main/java/com/medclinic/service/impl/MedicalRecordServiceImpl.java).
+Vị trí: [DoctorDeskController.java:75](../src/main/java/com/medclinic/controller/DoctorDeskController.java), [MedicalRecordServiceImpl.java:70](../src/main/java/com/medclinic/service/MedicalRecordService.java).
 
 Controller nhận `ExaminationFormDto` không có `@Valid`; DTO không có constraint cho các trường bắt buộc. Service gán nguyên giá trị vào entity, chỉ kiểm tra quyền, trạng thái cuộc hẹn và thuốc. `nullable=false` không ngăn chuỗi rỗng.
 
@@ -89,7 +89,7 @@ Controller lấy index theo `medicineIds` rồi truy cập `quantities`, `dosage
 
 ### 7. P2 — Bác sĩ bị khóa vẫn được hiển thị và nhận lịch mới
 
-Vị trí: [AppointmentServiceImpl.java:49](../src/main/java/com/medclinic/service/impl/AppointmentServiceImpl.java), [DoctorServiceImpl.java:39](../src/main/java/com/medclinic/service/impl/DoctorServiceImpl.java).
+Vị trí: [AppointmentServiceImpl.java:49](../src/main/java/com/medclinic/service/AppointmentService.java), [DoctorServiceImpl.java:39](../src/main/java/com/medclinic/service/DoctorService.java).
 
 Danh sách công khai lấy toàn bộ doctor profile; luồng booking không kiểm tra tài khoản bác sĩ hoặc chuyên khoa có active hay không. Khóa tài khoản bác sĩ không ngăn đặt lịch vào các slot còn sẵn.
 

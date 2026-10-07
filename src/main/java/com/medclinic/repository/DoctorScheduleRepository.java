@@ -13,8 +13,6 @@ import java.util.Optional;
 
 @Repository
 public interface DoctorScheduleRepository extends JpaRepository<DoctorSchedule, Long> {
-    List<DoctorSchedule> findByDoctorIdAndWorkDateBetween(Long doctorId, LocalDate startDate, LocalDate endDate);
-    List<DoctorSchedule> findByDoctorIdAndWorkDate(Long doctorId, LocalDate workDate);
     Optional<DoctorSchedule> findByDoctorIdAndWorkDateAndShift(Long doctorId, LocalDate workDate, ShiftType shift);
 
     @EntityGraph(attributePaths = "timeSlots")

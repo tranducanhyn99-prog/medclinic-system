@@ -11,7 +11,7 @@ import com.medclinic.repository.MedicalRecordRepository;
 import com.medclinic.repository.InventoryTransactionRepository;
 import com.medclinic.repository.MedicineRepository;
 import com.medclinic.service.InvoiceService;
-import com.medclinic.service.impl.MedicalRecordServiceImpl;
+import com.medclinic.service.MedicalRecordService;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.context.ApplicationEventPublisher;
@@ -68,20 +68,21 @@ class MedicalRecordQueueEventTest {
         InventoryTransactionRepository inventoryTransactionRepository = mock(InventoryTransactionRepository.class);
         InvoiceService invoiceService = mock(InvoiceService.class);
         ApplicationEventPublisher eventPublisher = mock(ApplicationEventPublisher.class);
-        MedicalRecordServiceImpl service = new MedicalRecordServiceImpl(
+        MedicalRecordService service = new MedicalRecordService(
                 medicalRecordRepository, appointmentRepository, medicineRepository, inventoryTransactionRepository, invoiceService, eventPublisher);
 
         User doctorUser = User.builder().id(10L).username("doctor1").build();
         DoctorProfile doctor = DoctorProfile.builder().id(20L).user(doctorUser).build();
         Appointment appointment = Appointment.builder()
-                .id(1L).doctor(doctor).status(status).build();
+                .id(1L).doctor(doctor).status(status)
+                .appointmentDate(java.time.LocalDate.now(java.time.ZoneId.of("Asia/Ho_Chi_Minh"))).build();
 
         return new Fixture(service, medicalRecordRepository, appointmentRepository,
                 invoiceService, eventPublisher, appointment);
     }
 
     private record Fixture(
-            MedicalRecordServiceImpl service,
+            MedicalRecordService service,
             MedicalRecordRepository medicalRecordRepository,
             AppointmentRepository appointmentRepository,
             InvoiceService invoiceService,

@@ -7,7 +7,7 @@ import com.medclinic.enums.PaymentStatus;
 import com.medclinic.exception.BusinessLogicException;
 import com.medclinic.repository.AppointmentRepository;
 import com.medclinic.repository.InvoiceRepository;
-import com.medclinic.service.impl.PdfExportServiceImpl;
+import com.medclinic.service.PdfExportService;
 import com.medclinic.util.InvoiceMoneyFormat;
 import org.junit.jupiter.api.Test;
 
@@ -100,7 +100,7 @@ class InvoicePdfPresentationTest {
     private byte[] export(Invoice invoice, Long requester) {
         InvoiceRepository invoices = mock(InvoiceRepository.class);
         when(invoices.findById(4L)).thenReturn(Optional.of(invoice));
-        return new PdfExportServiceImpl(mock(AppointmentRepository.class), invoices)
+        return new PdfExportService(mock(AppointmentRepository.class), invoices)
                 .exportInvoicePdf(4L, requester, "ROLE_PATIENT");
     }
 

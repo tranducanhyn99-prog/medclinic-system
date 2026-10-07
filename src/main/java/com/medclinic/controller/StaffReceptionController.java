@@ -22,6 +22,10 @@ import java.time.LocalDate;
 @RequiredArgsConstructor
 public class StaffReceptionController {
 
+    private java.time.Clock businessClock = java.time.Clock.system(java.time.ZoneId.of("Asia/Ho_Chi_Minh"));
+    @org.springframework.beans.factory.annotation.Autowired
+    public void setBusinessClock(java.time.Clock clock) { this.businessClock = clock; }
+
     private final AppointmentService appointmentService;
     private final DoctorService doctorService;
     private final SpecialtyService specialtyService;
@@ -38,7 +42,7 @@ public class StaffReceptionController {
 
         if (keyword != null && !keyword.isBlank()) {
             String normalizedKeyword = keyword.trim();
-            appointments = appointmentService.searchForReception(normalizedKeyword, LocalDate.now());
+            appointments = appointmentService.searchForReception(normalizedKeyword, LocalDate.now(businessClock));
             model.addAttribute("keyword", normalizedKeyword);
         }
 
@@ -77,7 +81,7 @@ public class StaffReceptionController {
     }
     @GetMapping("/reception/search")
     public String searchAppointments(@RequestParam("keyword") String keyword, Model model) {
-        model.addAttribute("appointments", appointmentService.searchForReception(keyword, LocalDate.now()));
+        model.addAttribute("appointments", appointmentService.searchForReception(keyword, LocalDate.now(businessClock)));
         model.addAttribute("keyword", keyword);
         return "staff/reception";
     }
@@ -91,6 +95,7 @@ public class StaffReceptionController {
 
     @GetMapping("/walk-in")
     public String walkInForm(Model model) {
+        model.addAttribute("today", LocalDate.now(businessClock));
         model.addAttribute("doctors", doctorService.filterDoctors(null, null, null));
         model.addAttribute("specialties", specialtyService.findAllActive());
         return "staff/walk-in";

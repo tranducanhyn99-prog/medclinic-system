@@ -8,7 +8,7 @@ import com.medclinic.exception.BusinessLogicException;
 import com.medclinic.repository.*;
 import com.medclinic.security.HmacSignatureVerifier;
 import com.medclinic.service.*;
-import com.medclinic.service.impl.BankTransferPaymentServiceImpl;
+import com.medclinic.service.BankTransferPaymentService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -370,8 +370,9 @@ class BackendAcceptanceIntegrationTest {
     private Appointment appointment(AppointmentStatus status) {
         User doctorUser = users.findByUsername("doctor").orElseThrow();
         DoctorProfile doctor = doctors.findByUserId(doctorUser.getId()).orElseThrow();
-        LocalDate date = LocalDate.now().plusDays(80 + schedules.count());
-        var schedule = schedules.save(DoctorSchedule.builder().doctor(doctor).workDate(date).shift(ShiftType.MORNING).maxPatients(8).build());
+        LocalDate date = LocalDate.now(ZoneId.of("Asia/Ho_Chi_Minh"));
+        var schedule = schedules.findByDoctorIdAndWorkDateAndShift(doctor.getId(), date, ShiftType.MORNING)
+                .orElseGet(() -> schedules.save(DoctorSchedule.builder().doctor(doctor).workDate(date).shift(ShiftType.MORNING).maxPatients(8).build()));
         var slot = slots.save(TimeSlot.builder().schedule(schedule).startTime(LocalTime.of(8, 0)).endTime(LocalTime.of(8, 30)).status(SlotStatus.BOOKED).build());
         return appointments.save(Appointment.builder().patient(patient()).doctor(doctor).appointmentDate(date).timeSlot(slot)
                 .bookingCode("AC-" + UUID.randomUUID().toString().substring(0, 8)).reason("Acceptance demo").status(status).build());
@@ -387,7 +388,7 @@ class BackendAcceptanceIntegrationTest {
         return new BankTransferCallbackDto("event-" + UUID.randomUUID(), "txn-" + UUID.randomUUID(), code, amount, null);
     }
 
-    private String signature(BankTransferCallbackDto callback) { return HmacSignatureVerifier.signSha256(SECRET, BankTransferPaymentServiceImpl.canonical(callback)); }
+    private String signature(BankTransferCallbackDto callback) { return HmacSignatureVerifier.signSha256(SECRET, BankTransferPaymentService.canonical(callback)); }
     private org.springframework.test.web.servlet.ResultActions postCallback(BankTransferCallbackDto callback, String signature) throws Exception {
         return mvc.perform(post("/api/payments/bank/callback").header("X-MedClinic-Signature", signature)
                 .contentType("application/json").content(json.writeValueAsString(callback)));

@@ -50,6 +50,15 @@ import static org.mockito.Mockito.verify;
 @SpringBootTest(properties = {"spring.jpa.hibernate.ddl-auto=create-drop", "spring.flyway.enabled=false"})
 @ActiveProfiles(profiles = {"dev", "sqlserver"}, inheritProfiles = false)
 class SqlServerReleaseAcceptanceEndToEndIntegrationTest {
+    @Autowired private com.medclinic.service.AppointmentService bookingService;
+    @Autowired private com.medclinic.service.MedicalRecordService examinationService;
+
+    @org.junit.jupiter.api.AfterEach
+    void restoreBusinessClocks() {
+        var clock = java.time.Clock.system(java.time.ZoneId.of("Asia/Ho_Chi_Minh"));
+        bookingService.setBusinessClock(clock);
+        examinationService.setBusinessClock(clock);
+    }
     @Autowired private AppointmentService appointmentService;
     @Autowired private MedicalRecordService medicalRecordService;
     @Autowired private InvoiceService invoiceService;
@@ -63,7 +72,7 @@ class SqlServerReleaseAcceptanceEndToEndIntegrationTest {
 
     @Test
     @WithUserDetails("admin")
-    void completeOutpatientJourneyPersistsEveryInvariantAndExportsDocuments() {
+    void completeOutpatientJourneyPersistsEveryInvariantAndExportsDocuments() throws Exception {
         clearInvocations(messagingTemplate);
         User patient = users.findByUsername("patient").orElseThrow();
         User doctorUser = users.findByUsername("doctor").orElseThrow();
@@ -83,6 +92,11 @@ class SqlServerReleaseAcceptanceEndToEndIntegrationTest {
         assertTrue(booked.getBookingCode().startsWith("MED-"));
         assertEquals(AppointmentStatus.CONFIRMED, booked.getStatus());
 
+        // Booking ahead is valid; reception and examination occur on the booked day.
+        var arrivalClock = java.time.Clock.fixed(appointmentDate.atTime(8, 0)
+                .atZone(java.time.ZoneId.of("Asia/Ho_Chi_Minh")).toInstant(), java.time.ZoneId.of("Asia/Ho_Chi_Minh"));
+        bookingService.setBusinessClock(arrivalClock);
+        examinationService.setBusinessClock(arrivalClock);
         Appointment checkedIn = appointmentService.checkInAppointment(booked.getId());
         assertEquals(AppointmentStatus.CHECKED_IN, checkedIn.getStatus());
         assertNotNull(checkedIn.getQueueSequence());
@@ -121,6 +135,12 @@ class SqlServerReleaseAcceptanceEndToEndIntegrationTest {
 
         byte[] prescriptionPdf = pdfExportService.exportPrescriptionPdf(
                 booked.getId(), admin.getId(), "ROLE_ADMIN");
+        try (var reader = new com.lowagie.text.pdf.PdfReader(prescriptionPdf)) {
+            String text = new com.lowagie.text.pdf.parser.PdfTextExtractor(reader).getTextFromPage(1);
+            assertTrue(text.contains("2 lần/ngày"));
+            assertTrue(text.contains("Uống sau ăn"));
+            assertTrue(text.contains("Nghỉ ngơi và uống đủ nước"));
+        }
         byte[] invoicePdf = pdfExportService.exportInvoicePdf(
                 invoice.getId(), admin.getId(), "ROLE_ADMIN");
         assertPdf(prescriptionPdf);

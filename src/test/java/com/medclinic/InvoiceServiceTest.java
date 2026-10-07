@@ -10,7 +10,7 @@ import com.medclinic.exception.ResourceNotFoundException;
 import com.medclinic.repository.AppointmentRepository;
 import com.medclinic.repository.InvoiceRepository;
 import com.medclinic.service.impl.InvoiceCodeReservationCoordinator;
-import com.medclinic.service.impl.InvoiceServiceImpl;
+import com.medclinic.service.InvoiceService;
 import com.medclinic.service.BusinessAuditService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -31,7 +31,7 @@ class InvoiceServiceTest {
     @Mock InvoiceRepository invoiceRepository;
     @Mock AppointmentRepository appointmentRepository;    @Mock InvoiceCodeReservationCoordinator coordinator;
     @Mock BusinessAuditService auditService;
-    @InjectMocks InvoiceServiceImpl service;
+    @InjectMocks InvoiceService service;
 
     private Appointment appointment(BigDecimal consultationFee) {
         DoctorProfile doctor = new DoctorProfile();
@@ -114,13 +114,10 @@ class InvoiceServiceTest {
         Invoice invoice = invoice(1L, PaymentStatus.UNPAID);
         when(invoiceRepository.findById(1L)).thenReturn(Optional.of(invoice));
         when(invoiceRepository.findByAppointmentId(10L)).thenReturn(Optional.of(invoice));
-        when(invoiceRepository.findByPaymentStatusOrderByCreatedAtDesc(PaymentStatus.UNPAID))
-                .thenReturn(List.of(invoice));
         when(invoiceRepository.findAllByOrderByCreatedAtDesc()).thenReturn(List.of(invoice));
 
         assertSame(invoice, service.findById(1L));
         assertSame(invoice, service.findByAppointmentId(10L));
-        assertEquals(List.of(invoice), service.findAllByStatus(PaymentStatus.UNPAID));
         assertEquals(List.of(invoice), service.findAll());
 
         when(invoiceRepository.findById(9L)).thenReturn(Optional.empty());

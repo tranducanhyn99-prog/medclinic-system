@@ -6,7 +6,6 @@ import com.medclinic.security.SensitiveEndpointRateLimitFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.http.HttpMethod;
@@ -17,8 +16,6 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.AuthenticationFailureHandler;
-import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
@@ -33,12 +30,6 @@ public class SecurityConfig {
     private final CustomUserDetailsService userDetailsService;
     private final SensitiveEndpointRateLimitFilter rateLimitFilter;
     private final SecurityAuditService securityAuditService;
-
-    @Value("${app.security.remember-me-key}")
-    private String rememberMeKey;
-
-    @Value("${server.servlet.session.cookie.secure:false}")
-    private boolean secureCookie;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -74,42 +65,6 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationSuccessHandler customAuthenticationSuccessHandler() {
-        return (request, response, authentication) -> {
-            securityAuditService.authenticationSuccess(authentication.getName(), request.getRemoteAddr());
-            var authorities = authentication.getAuthorities();
-            String redirectUrl = "/";
-            for (var authority : authorities) {
-                String role = authority.getAuthority();
-                if (role.equals("ROLE_ADMIN")) {
-                    redirectUrl = "/admin/dashboard";
-                    break;
-                } else if (role.equals("ROLE_DOCTOR")) {
-                    redirectUrl = "/doctor/desk";
-                    break;
-                } else if (role.equals("ROLE_STAFF")) {
-                    redirectUrl = "/staff/reception";
-                    break;
-                } else if (role.equals("ROLE_PATIENT")) {
-                    redirectUrl = "/patient/appointments";
-                    break;
-                }
-            }
-            response.sendRedirect(redirectUrl);
-        };
-    }
-
-    @Bean
-    public AuthenticationFailureHandler customAuthenticationFailureHandler() {
-        return (request, response, exception) -> {
-            securityAuditService.authenticationFailure(
-                    request.getParameter("username"), request.getRemoteAddr(),
-                    exception.getClass().getSimpleName());
-            response.sendRedirect("/login?error=true");
-        };
-    }
-
-    @Bean
     public LogoutSuccessHandler customLogoutSuccessHandler() {
         return (request, response, authentication) -> {
             String principal = authentication == null ? "unknown" : authentication.getName();
@@ -126,7 +81,7 @@ public class SecurityConfig {
                 .requestMatchers(
                     "/", "/home", "/about", "/specialties/**", "/doctors/**",
                     "/login", "/register", "/auth/**", "/forgot-password", "/reset-password", "/css/**", "/js/**", "/images/**",
-                    "/manifest.json", "/sw.js", "/offline.html", "/favicon.ico",
+                    "/manifest.json", "/sw.js", "/offline.html", "/favicon.ico", "/vendor/ui/**",
                     "/webjars/**", "/h2-console/**", "/error", "/error/**", "/api/public/**"
                 ).permitAll()
                 .requestMatchers("/api/payments/bank/callback").permitAll()

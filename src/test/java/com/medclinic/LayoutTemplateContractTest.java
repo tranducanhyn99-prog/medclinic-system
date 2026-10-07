@@ -36,6 +36,7 @@ class LayoutTemplateContractTest {
         String styles = Files.readString(Path.of("src/main/resources/static/css/medclinic-portal-shell.css"));
 
         assertTrue(dashboard.contains("id=\"sidebarToggle\""));
+        assertTrue(dashboard.contains("rel=\"icon\" type=\"image/svg+xml\" th:href=\"@{/images/logo.svg}\""));
         assertTrue(dashboard.contains("aria-controls=\"sidebar-wrapper\""));
         assertTrue(dashboard.contains("id=\"sidebarOverlay\""));
         assertTrue(dashboard.contains("function setSidebar(open)"));
@@ -135,8 +136,8 @@ class LayoutTemplateContractTest {
     @Test
     void doctorDeskSubscribesToAuthenticatedRealtimeQueue() throws IOException {
         String desk = read("doctor/desk.html");
-        assertTrue(desk.contains("sockjs-client@1.6.1"));
-        assertTrue(desk.contains("@stomp/stompjs@7.2.1"));
+        assertTrue(desk.contains("th:src=\"@{/vendor/ui/sockjs.min.js}\""));
+        assertTrue(desk.contains("th:src=\"@{/vendor/ui/stomp.umd.min.js}\""));
         assertTrue(desk.contains("/user/queue/doctor"));
         assertTrue(desk.contains("doctorQueueRealtimeStatus"));
         assertBalancedScriptTags(desk);

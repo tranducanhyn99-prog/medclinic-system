@@ -1,5 +1,6 @@
 package com.medclinic.security;
 
+import com.medclinic.util.Sha256;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -10,10 +11,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.HexFormat;
 import java.util.function.LongSupplier;
 
 @Component
@@ -78,7 +75,7 @@ public class SensitiveEndpointRateLimitFilter extends OncePerRequestFilter {
         }
         long now = clock.getAsLong();
         String remoteIp = request.getRemoteAddr();
-        String key = hashBucketKey(remoteIp + '|' + endpoint);
+        String key = Sha256.hex(remoteIp + '|' + endpoint);
         int limit = switch (endpoint) {
             case "/auth/login" -> loginMaxRequests;
             case "/api/payments/bank/callback" -> paymentCallbackMaxRequests;
@@ -114,13 +111,4 @@ public class SensitiveEndpointRateLimitFilter extends OncePerRequestFilter {
         return null;
     }
 
-    private String hashBucketKey(String raw) {
-        try {
-            byte[] digest = MessageDigest.getInstance("SHA-256")
-                    .digest(raw.getBytes(StandardCharsets.UTF_8));
-            return HexFormat.of().formatHex(digest);
-        } catch (NoSuchAlgorithmException exception) {
-            throw new IllegalStateException("SHA-256 không khả dụng", exception);
-        }
-    }
 }

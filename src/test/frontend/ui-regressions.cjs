@@ -32,6 +32,24 @@ function submissionFixture() {
     return {form, button, businessDisabled, window, submit};
 }
 
+test('shared layout marks exact and child navigation paths and registers the service worker', () => {
+    for (const current of ['/patient/appointments', '/patient/appointments/42']) {
+        const window = Object.assign(new Element(), {location: {origin: 'https://clinic.example', pathname: current}});
+        const links = ['/', '/patient/appointments', '/patient/appointment', '/doctor/queue'].map(path =>
+            Object.assign(new Element(), {href: 'https://clinic.example' + path}));
+        const registrations = [];
+        window.navigator = {serviceWorker: {register: path => { registrations.push(path); return Promise.resolve(); }}};
+        const document = Object.assign(new Element(), {readyState: 'complete', querySelector: () => null,
+            querySelectorAll: selector => selector === '.nav-link-med[href], .sidebar-link[href]' ? links : []});
+        vm.runInNewContext(source('js/medclinic-ui.js'), {document, window, URL, setTimeout});
+        assert.deepEqual(links.map(link => link.classList.contains('active')), [false, true, false, false]);
+        assert.equal(links[1].getAttribute('aria-current'), 'page');
+        assert.equal(registrations.length, 0);
+        window.fire('load');
+        assert.deepEqual(registrations, ['/sw.js']);
+    }
+});
+
 test('VND formatting preserves decimal strings and large values across UI surfaces', () => {
     const f = submissionFixture();
     const money = f.window.MedClinic.money;
@@ -356,4 +374,38 @@ test('bank timeout and hide/resume abort requests without stranding the monitor'
     assert.equal([...f.timers.values()].some(t => t.delay === 3000), true);
     pending = f.monitor.check(); f.answer(2, 'PENDING'); await pending;
     assert.match(f.nodes.status.textContent, /Đang chờ/);
+});
+
+
+test('all templates resolve UI, QR scanner and realtime libraries locally without CDN requests', () => {
+    const path = require('node:path');
+    const staticRoot = path.resolve('src/main/resources/static');
+    const visited = new Set();
+    function verifyAsset(relative) {
+        const absolute = path.resolve(staticRoot, relative);
+        assert.ok(absolute.startsWith(staticRoot + path.sep), 'Asset must stay under static root');
+        assert.ok(fs.existsSync(absolute), 'Missing asset: ' + relative);
+        assert.ok(fs.statSync(absolute).size > 0, 'Empty asset: ' + relative);
+        if (visited.has(absolute)) return;
+        visited.add(absolute);
+        if (relative.endsWith('.css')) {
+            const css = fs.readFileSync(absolute, 'utf8');
+            for (const match of css.matchAll(/url\(\s*['"]?([^)'"\s]+)['"]?\s*\)/g)) {
+                const url = match[1];
+                if (url.startsWith('data:') || url.startsWith('#')) continue;
+                assert.ok(!/^https?:|^\/\//.test(url), 'External CSS resource: ' + url);
+                verifyAsset(path.join(path.dirname(relative), url.split(/[?#]/)[0]));
+            }
+        }
+    }
+    const templateRoot = 'src/main/resources/templates';
+    for (const template of fs.readdirSync(templateRoot, {recursive:true}).filter(p => p.endsWith('.html'))) {
+        const html = fs.readFileSync(path.join(templateRoot, template), 'utf8');
+        assert.equal(/(?:src|href)="https?:[^"\n]+(?:cdn\.|fonts\.google)/.test(html), false);
+        const references = [...html.matchAll(/th:(?:href|src)="@\{\/([^{}]+\.(?:css|js))\}"/g)];
+        if (template.startsWith('layout')) assert.ok(references.length >= 6, 'Layout must load local libraries');
+        for (const match of references) verifyAsset(match[1]);
+    }
+    assert.ok([...visited].some(p => p.endsWith('Geist-Variable.woff2')));
+    assert.ok([...visited].some(p => p.endsWith('bootstrap-icons.woff2')));
 });

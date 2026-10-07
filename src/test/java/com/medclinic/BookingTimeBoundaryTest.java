@@ -3,7 +3,7 @@ package com.medclinic;
 import com.medclinic.entity.*;
 import com.medclinic.enums.SlotStatus;
 import com.medclinic.repository.*;
-import com.medclinic.service.impl.ScheduleServiceImpl;
+import com.medclinic.service.ScheduleService;
 import org.junit.jupiter.api.Test;
 import java.time.*;
 import java.util.*;
@@ -15,7 +15,7 @@ class BookingTimeBoundaryTest {
     void businessDateMovesToTomorrowAtVietnamMidnightWhileUtcIsStillYesterday() {
         var doctorRepo = mock(DoctorProfileRepository.class);
         var slotRepo = mock(TimeSlotRepository.class);
-        var service = new ScheduleServiceImpl(mock(DoctorScheduleRepository.class), slotRepo, doctorRepo);
+        var service = new ScheduleService(mock(DoctorScheduleRepository.class), slotRepo, doctorRepo);
         service.setBusinessClock(Clock.fixed(Instant.parse("2026-10-01T17:00:01Z"), ZoneId.of("Asia/Ho_Chi_Minh")));
         var doctor = DoctorProfile.builder().user(User.builder().build()).specialty(Specialty.builder().build()).build();
         when(doctorRepo.findById(1L)).thenReturn(Optional.of(doctor));
@@ -30,7 +30,7 @@ class BookingTimeBoundaryTest {
     void availableSlotsExcludeStartedAndPastTimesInVietnam() {
         var doctorRepo = mock(DoctorProfileRepository.class);
         var slotRepo = mock(TimeSlotRepository.class);
-        var service = new ScheduleServiceImpl(mock(DoctorScheduleRepository.class), slotRepo, doctorRepo);
+        var service = new ScheduleService(mock(DoctorScheduleRepository.class), slotRepo, doctorRepo);
         service.setBusinessClock(Clock.fixed(Instant.parse("2026-10-01T03:00:00Z"), ZoneId.of("Asia/Ho_Chi_Minh")));
         when(doctorRepo.findById(1L)).thenReturn(Optional.of(DoctorProfile.builder()
                 .user(User.builder().build()).specialty(Specialty.builder().build()).build()));

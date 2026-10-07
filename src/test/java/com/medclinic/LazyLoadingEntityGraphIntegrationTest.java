@@ -72,6 +72,10 @@ class LazyLoadingEntityGraphIntegrationTest {
 
         assertEquals(patient.getFullName(), detachedRecord.getPatient().getFullName());
         assertEquals(doctor.getUser().getFullName(), detachedRecord.getDoctor().getUser().getFullName());
+        assertEquals(doctor.getSpecialty().getName(), detachedRecord.getDoctor().getSpecialty().getName());
+        assertEquals(doctor.getSpecialty().getName(), records.findByPatientIdOrderByCreatedAtDesc(patient.getId())
+                .stream().filter(candidate -> candidate.getId().equals(record.getId())).findFirst().orElseThrow()
+                .getDoctor().getSpecialty().getName());
         assertEquals(medicine.getName(), detachedRecord.getPrescription().getItems().getFirst().getMedicine().getName());
         assertEquals(patient.getFullName(), detachedInvoice.getAppointment().getPatient().getFullName());
         assertEquals(doctor.getUser().getFullName(), detachedInvoice.getAppointment().getDoctor().getUser().getFullName());
@@ -80,6 +84,13 @@ class LazyLoadingEntityGraphIntegrationTest {
         assertEquals(0, detachedInvoice.getMedicineFee().compareTo(medicine.getUnitPrice()));
         assertEquals(0, detachedInvoice.getTotalAmount().compareTo(medicine.getUnitPrice()));
         assertEquals(PaymentStatus.UNPAID, detachedInvoice.getPaymentStatus());
+
+        mockMvc.perform(get("/patient/medical-history")
+                        .with(SecurityMockMvcRequestPostProcessors.user(new com.medclinic.security.CustomUserDetails(patient))))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString(appointment.getBookingCode())))
+                .andExpect(content().string(containsString(doctor.getSpecialty().getName())))
+                .andExpect(content().string(containsString(medicine.getName())));
 
         mockMvc.perform(get("/staff/billing")
                         .with(SecurityMockMvcRequestPostProcessors.user("staff-billing-test").roles("STAFF")))

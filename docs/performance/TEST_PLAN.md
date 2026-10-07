@@ -1,7 +1,7 @@
 # Kế hoạch baseline hiệu năng
 
-**Trạng thái:** kế hoạch đo; không phải kết quả đạt NFR.<br>
-**Mục tiêu liên quan:** `NFR-PERF-01` trong SRS đặt mục tiêu thời gian tải trang trung bình dưới 1,5 giây.
+**Trạng thái:** kế hoạch và lịch sử baseline. Lượt nghiệm thu đồ án mới nhất: [03/10/2026](../ACADEMIC_ACCEPTANCE_2026-10-03.md). Chỉ áp dụng kết luận cho đúng môi trường, dữ liệu và kịch bản đã đo.<br>
+**Mục tiêu liên quan:** `NFR-PERF-01` trong SRS đặt mục tiêu p95 thời gian tải tài liệu HTML sau warm-up dưới 1,5 giây.
 
 ## Môi trường cần ghi nhận
 
@@ -54,3 +54,18 @@ Các số đo ngày 17/09 chỉ là thăm dò. Đã xác định nguyên nhân `
 p50 là trung vị của mẫu thứ 5 và 6 sau khi sắp xếp; p95 là nearest-rank (mẫu thứ 10 trong 10 mẫu). Đây chỉ là thời gian tải HTML local, không gồm CDN font/CSS/JS hay rendering của trình duyệt.
 
 PERF-02 đến PERF-04 đã có baseline MockMvc với principal phù hợp và HTTP 200. Các số này không đo TCP, tải tài nguyên CDN, layout hay tương tác trình duyệt; vì thế vẫn chưa thể công bố `NFR-PERF-01` đạt cho toàn hệ thống. Kế hoạch này không đo CDN, email, QR hoặc PDF như một bằng chứng cho NFR-PERF-02; các luồng đó cần benchmark riêng cùng dữ liệu kích thước lớn.
+
+## Baseline đồ án 03/10/2026
+
+Lượt mới dùng HTTP loopback đọc hết HTML của image working tree `codex/completion-runtime-ci` trên nền `fa56618`, Windows 10.0.26200, Docker 12 CPU / 7 925 800 960 byte RAM, SQL Server 2022, profile `sqlserver,demo`, Node 22. Database seed nhỏ: 1 bệnh nhân, 6 bác sĩ, 3 lịch hẹn lịch sử; hàng chờ hiện tại trống. Harness H2 khác chạy song song trên cùng máy; mỗi harness gửi tuần tự. Đây không phải benchmark tải đồng thời có kiểm soát.
+
+| Trang | Mẫu sau warm-up | p50 ms | p95 ms | Max ms | Lỗi |
+|---|---:|---:|---:|---:|---:|
+| `/` | 30 | 79,31 | 136,06 | 166,40 | 0 |
+| `/patient/booking` | 30 | 59,98 | 74,38 | 76,99 | 0 |
+| `/staff/reception` | 30 | 27,86 | 35,56 | 37,50 | 0 |
+| `/doctor/desk` | 30 | 33,98 | 38,65 | 68,03 | 0 |
+| `/staff/billing` | 30 | 27,46 | 44,64 | 63,67 | 0 |
+| `/admin/dashboard` | 30 | 38,50 | 77,10 | 89,38 | 0 |
+
+Hai warm-up mỗi trang. Percentile nearest-rank: p50 mẫu 15, p95 mẫu 29 trong 30 mẫu; quy tắc ở mục lịch sử trên chỉ áp dụng các lượt cũ 10 mẫu. PERF-01–04 đạt ngưỡng HTML <1,5 giây trong môi trường này. PERF-05/06 chưa đo. Không kết luận LCP, rendering, dữ liệu lớn, nhiều người dùng hoặc toàn bộ NFR hiệu năng. [JSON runtime](../evidence/academic-acceptance-2026-10-03/runtime-sql.json) và [biên bản/lệnh tái chạy](../ACADEMIC_ACCEPTANCE_2026-10-03.md) lưu bằng chứng.

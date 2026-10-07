@@ -5,6 +5,12 @@ import com.medclinic.service.EmailDeliveryMonitor;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import jakarta.mail.Session;
 import jakarta.mail.Multipart;
+import jakarta.mail.Part;
+import com.google.zxing.BinaryBitmap;
+import com.google.zxing.MultiFormatReader;
+import com.google.zxing.client.j2se.BufferedImageLuminanceSource;
+import com.google.zxing.common.HybridBinarizer;
+import javax.imageio.ImageIO;
 import jakarta.mail.internet.MimeMessage;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -32,15 +38,27 @@ class EmailServiceImplTest {
         return new EmailServiceImpl(javaMailSender);
     }
     @Test
-    void sendsBookingConfirmationEmail() {
+    void sendsBookingConfirmationEmail() throws Exception {
         MimeMessage message = message();
         when(javaMailSender.createMimeMessage()).thenReturn(message);
 
         service().sendBookingConfirmationEmail(
-                "patient@example.com", "Nguyễn Văn A", "MED-001",
+                "patient@example.com", "<b>Nguyễn Văn A</b>", "MED-001",
                 "BS Nguyễn", LocalDate.of(2026, 9, 20), "08:00 - 08:30");
 
         verify(javaMailSender).send(message);
+        message.saveChanges();
+        assertEquals("no-reply@medclinic.test", message.getFrom()[0].toString());
+        String body = extractText(message.getContent());
+        assertTrue(body.contains("cid:booking-qr"));
+        assertTrue(body.contains("&lt;b&gt;Nguyễn Văn A&lt;/b&gt;"));
+        Part qr = findQr(message);
+        assertTrue(qr != null, "Booking email must include its CID image");
+        assertTrue(qr.getHeader("Content-ID")[0].contains("booking-qr"));
+        var image = ImageIO.read(qr.getInputStream());
+        String decoded = new MultiFormatReader().decode(new BinaryBitmap(
+                new HybridBinarizer(new BufferedImageLuminanceSource(image)))).getText();
+        assertEquals("MED-001", decoded);
     }
 
     @Test
@@ -122,6 +140,17 @@ class EmailServiceImplTest {
             return out.toString();
         }
         return "";
+    }
+
+    private Part findQr(Part part) throws Exception {
+        if (part.isMimeType("image/png")) return part;
+        if (part.getContent() instanceof Multipart multipart) {
+            for (int i = 0; i < multipart.getCount(); i++) {
+                Part found = findQr(multipart.getBodyPart(i));
+                if (found != null) return found;
+            }
+        }
+        return null;
     }
 
 }

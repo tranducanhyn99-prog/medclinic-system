@@ -1,0 +1,84 @@
+{
+  "date": "2026-10-03",
+  "origin": "http://127.0.0.1:18090",
+  "fixture": true,
+  "checks": [
+    "health-and-anonymous-route-protection",
+    "login-staff",
+    "login-patient",
+    "login-doctor",
+    "login-admin",
+    "four-role-pages-local-assets-and-HTML-p95",
+    "registration-and-Mailpit-OTP",
+    "patient-RBAC-denied-admin",
+    "booking-and-Mailpit-inline-QR",
+    "check-in-examination-history-completed-redirect-prescription-invoice-PDF",
+    "Mailpit-password-reset-delivery-no-password-change",
+    "cancellation-and-Mailpit-delivery"
+  ],
+  "timings": [
+    {
+      "route": "/",
+      "samples": 30,
+      "warmup": 2,
+      "p50_ms": 51.82,
+      "p95_ms": 94.69,
+      "max_ms": 125.31,
+      "errors": 0
+    },
+    {
+      "route": "/patient/booking",
+      "samples": 30,
+      "warmup": 2,
+      "p50_ms": 34.19,
+      "p95_ms": 44.78,
+      "max_ms": 51.97,
+      "errors": 0
+    },
+    {
+      "route": "/staff/reception",
+      "samples": 30,
+      "warmup": 2,
+      "p50_ms": 24.67,
+      "p95_ms": 34.16,
+      "max_ms": 38.09,
+      "errors": 0
+    },
+    {
+      "route": "/doctor/desk",
+      "samples": 30,
+      "warmup": 2,
+      "p50_ms": 24.14,
+      "p95_ms": 27.44,
+      "max_ms": 58.85,
+      "errors": 0
+    },
+    {
+      "route": "/staff/billing",
+      "samples": 30,
+      "warmup": 2,
+      "p50_ms": 23.09,
+      "p95_ms": 34.19,
+      "max_ms": 57.89,
+      "errors": 0
+    },
+    {
+      "route": "/admin/dashboard",
+      "samples": 30,
+      "warmup": 2,
+      "p50_ms": 23.12,
+      "p95_ms": 36.45,
+      "max_ms": 38.07,
+      "errors": 0
+    }
+  ],
+  "assetCount": 25,
+  "fixtureData": {
+    "patientsCreated": 1,
+    "appointmentsCreated": 2,
+    "clinicalCasesSaved": 1,
+    "invoicesUnpaid": 1,
+    "realPayments": 0
+  },
+  "passed": true
+}

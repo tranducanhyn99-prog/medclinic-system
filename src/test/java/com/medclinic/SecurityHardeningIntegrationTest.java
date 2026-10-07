@@ -25,6 +25,20 @@ import org.springframework.http.MediaType;
 @AutoConfigureMockMvc
 @ActiveProfiles("dev")
 class SecurityHardeningIntegrationTest {
+    @Test
+    void anonymousBrowserCanLoadBundledUiWithoutAuthenticationRedirects() throws Exception {
+        for (String file : new String[]{"bootstrap.min.css", "bootstrap-icons.css", "geist.css", "sweetalert2.min.css"}) {
+            mockMvc.perform(get("/vendor/ui/" + file)).andExpect(status().isOk())
+                    .andExpect(content().contentTypeCompatibleWith("text/css"));
+        }
+        for (String file : new String[]{"bootstrap.bundle.min.js", "sweetalert2.all.min.js",
+                "html5-qrcode.min.js", "sockjs.min.js", "stomp.umd.min.js",
+                "fonts/Geist-Variable.woff2", "fonts/GeistMono-Variable.woff2", "fonts/bootstrap-icons.woff2"}) {
+            mockMvc.perform(get("/vendor/ui/" + file)).andExpect(status().isOk());
+        }
+        mockMvc.perform(get("/doctor/desk")).andExpect(status().is3xxRedirection());
+        mockMvc.perform(get("/actuator/metrics")).andExpect(status().is3xxRedirection());
+    }
     @Autowired private MockMvc mockMvc;
     @Autowired private MeterRegistry meterRegistry;
 

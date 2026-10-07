@@ -18,6 +18,15 @@ class PublicPageRenderIntegrationTest {
     @Autowired private MockMvc mockMvc;
 
     @Test
+    void anonymousFaviconUsesTheExistingLogoWithCorrectMimeAndCaching() throws Exception {
+        byte[] logo = new org.springframework.core.io.ClassPathResource("static/images/logo.svg").getContentAsByteArray();
+        mockMvc.perform(get("/favicon.ico")).andExpect(status().isOk())
+                .andExpect(content().contentType("image/svg+xml"))
+                .andExpect(content().bytes(logo))
+                .andExpect(header().string("Cache-Control", "max-age=86400, public"));
+    }
+
+    @Test
     void publicPagesRenderTheirCompleteBodiesWithDevBootstrap() throws Exception {
         mockMvc.perform(get("/")).andExpect(status().isOk()).andExpect(view().name("home/index"));
         mockMvc.perform(get("/login"))

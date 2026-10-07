@@ -4,8 +4,8 @@ import com.medclinic.entity.*;
 import com.medclinic.enums.Gender;
 import com.medclinic.enums.RoleType;
 import com.medclinic.enums.ShiftType;
-import com.medclinic.enums.SlotStatus;
 import com.medclinic.repository.*;
+import com.medclinic.service.ScheduleService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
@@ -16,8 +16,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -30,7 +28,7 @@ public class DataInitializer implements CommandLineRunner {
     private final UserRepository userRepository;
     private final SpecialtyRepository specialtyRepository;
     private final DoctorProfileRepository doctorProfileRepository;
-    private final DoctorScheduleRepository doctorScheduleRepository;
+    private final ScheduleService scheduleService;
     private final MedicineRepository medicineRepository;
     private final PasswordEncoder passwordEncoder;
 
@@ -97,8 +95,8 @@ public class DataInitializer implements CommandLineRunner {
         for (DoctorProfile doc : allDoctors) {
             for (int i = 0; i < 14; i++) {
                 LocalDate workDate = today.plusDays(i);
-                initScheduleWithSlots(doc, workDate, ShiftType.MORNING);
-                initScheduleWithSlots(doc, workDate, ShiftType.AFTERNOON);
+                scheduleService.createOrGetSchedule(doc.getId(), workDate, ShiftType.MORNING);
+                scheduleService.createOrGetSchedule(doc.getId(), workDate, ShiftType.AFTERNOON);
             }
         }
 
@@ -213,40 +211,6 @@ public class DataInitializer implements CommandLineRunner {
                         .bio(bio)
                         .build())
         );
-    }
-
-    private void initScheduleWithSlots(DoctorProfile doc, LocalDate date, ShiftType shift) {
-        if (doctorScheduleRepository.findByDoctorIdAndWorkDateAndShift(doc.getId(), date, shift).isPresent()) {
-            return;
-        }
-
-        DoctorSchedule schedule = DoctorSchedule.builder()
-                .doctor(doc)
-                .workDate(date)
-                .shift(shift)
-                .maxPatients(8)
-                .timeSlots(new ArrayList<>())
-                .build();
-
-        LocalTime startTime = shift == ShiftType.MORNING ? LocalTime.of(8, 0) : LocalTime.of(13, 30);
-        int slotCount = 8; // 8 slots per shift (30 mins each)
-
-        for (int i = 0; i < slotCount; i++) {
-            LocalTime slotStart = startTime.plusMinutes(i * 30L);
-            LocalTime slotEnd = slotStart.plusMinutes(30L);
-
-            TimeSlot slot = TimeSlot.builder()
-                    .schedule(schedule)
-                    .startTime(slotStart)
-                    .endTime(slotEnd)
-                    .status(SlotStatus.AVAILABLE)
-                    .version(0L)
-                    .build();
-
-            schedule.getTimeSlots().add(slot);
-        }
-
-        doctorScheduleRepository.save(schedule);
     }
 
     private void initMedicines() {

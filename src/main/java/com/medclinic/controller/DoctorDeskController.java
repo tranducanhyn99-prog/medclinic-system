@@ -93,6 +93,12 @@ public class DoctorDeskController {
         }
     }
 
+    @ExceptionHandler(BusinessLogicException.class)
+    public String invalidExamination(BusinessLogicException ex, RedirectAttributes redirectAttributes) {
+        redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
+        return "redirect:/doctor/desk";
+    }
+
     @PostMapping("/examine/{appointmentId}")
     public String processExaminationForm(@PathVariable Long appointmentId,
                                          @Valid @ModelAttribute("examinationForm") ExaminationFormDto formDto,
