@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/dashboard}">
+<head><title>Chi tiết bệnh án - MedClinic</title></head>
+<body>
+<div layout:fragment="content">
+    <div class="mc-page-header">
+        <div>
+            <h1 class="mc-page-title">Bệnh án đã hoàn tất</h1>
+            <p class="mc-page-subtitle">Kết quả đã lưu của ca khám. Hồ sơ này chỉ dùng để xem lại.</p>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+            <a th:href="@{/doctor/records}" class="btn btn-outline-primary">Danh sách bệnh án</a>
+            <a th:if="${record.prescription != null}" th:href="@{/export/prescription/{id}(id=${record.appointment.id})}" class="btn btn-primary">Tải đơn thuốc PDF</a>
+        </div>
+    </div>
+    <article class="mc-data-card p-4">
+        <h2 class="h4 mb-3 text-break" th:text="${record.patient.fullName}"></h2>
+        <dl class="row mb-4">
+            <dt class="col-sm-3">Ngày khám</dt><dd class="col-sm-9" th:text="${#temporals.format(record.appointment.appointmentDate, 'dd/MM/yyyy')}"></dd>
+            <dt class="col-sm-3">Mã hẹn</dt><dd class="col-sm-9 text-break" th:text="${record.appointment.bookingCode}"></dd>
+            <dt class="col-sm-3">Bác sĩ phụ trách</dt><dd class="col-sm-9" th:text="${record.doctor.user.fullName}"></dd>
+            <dt th:if="${record.reExamDate != null}" class="col-sm-3">Hẹn tái khám dự kiến</dt><dd th:if="${record.reExamDate != null}" class="col-sm-9" th:text="${#temporals.format(record.reExamDate, 'dd/MM/yyyy')}"></dd>
+        </dl>
+        <section class="border-top pt-4 mb-4"><h2 class="h5">Triệu chứng</h2><p class="text-break" style="white-space: pre-wrap; max-width: 70ch" th:text="${record.symptoms}"></p></section>
+        <section class="border-top pt-4 mb-4"><h2 class="h5">Chẩn đoán</h2><p class="text-break" style="white-space: pre-wrap; max-width: 70ch" th:text="${record.diagnosis}"></p></section>
+        <section class="border-top pt-4 mb-4"><h2 class="h5">Lời dặn của bác sĩ</h2><p class="text-break" style="white-space: pre-wrap; max-width: 70ch" th:text="${#strings.isEmpty(record.doctorNotes) ? 'Không có lời dặn bổ sung.' : record.doctorNotes}"></p></section>
+        <section class="border-top pt-4">
+            <h2 class="h5">Đơn thuốc đã kê</h2>
+            <p class="text-secondary small">Đơn giá được lưu tại thời điểm kê đơn.</p>
+            <p th:if="${record.prescription == null or #lists.isEmpty(record.prescription.items)}" class="text-secondary">Ca khám này không kê thuốc.</p>
+            <div th:if="${record.prescription != null and not #lists.isEmpty(record.prescription.items)}" class="table-responsive">
+                <table class="table mc-data-table align-middle">
+                    <caption class="visually-hidden">Thuốc và hướng dẫn sử dụng đã lưu trong bệnh án</caption>
+                    <thead><tr><th scope="col">Thuốc</th><th scope="col">Số lượng</th><th scope="col">Cách dùng</th><th scope="col" class="text-end">Đơn giá</th></tr></thead>
+                    <tbody><tr th:each="item : ${record.prescription.items}">
+                        <td th:text="${item.medicine.name}"></td><td th:text="${item.quantity + ' ' + item.medicine.unit}"></td>
+                        <td><div th:text="${item.dosage}"></div><div th:text="${item.frequency}"></div><div class="small text-secondary text-break" th:text="${item.instructions}"></div></td>
+                        <td class="text-end text-nowrap" th:text="${@money.vnd(item.unitPriceAtTime)}"></td>
+                    </tr></tbody>
+                </table>
+            </div>
+        </section>
+    </article>
+</div>
+</body></html>

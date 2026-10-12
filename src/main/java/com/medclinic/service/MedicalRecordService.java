@@ -17,6 +17,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 
 import java.time.LocalDate;
 import java.time.Instant;
@@ -175,6 +178,25 @@ public class MedicalRecordService {
     public MedicalRecord findByAppointmentId(Long appointmentId) {
         return medicalRecordRepository.findByAppointmentId(appointmentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy hồ sơ bệnh án cho cuộc hẹn này"));
+    }
+
+    @PreAuthorize("hasRole('DOCTOR')")
+    @Transactional(readOnly = true)
+    public Page<MedicalRecord> getCompletedRecords(Long doctorUserId, int page) {
+        return medicalRecordRepository.findByDoctor_User_IdAndAppointment_Status(doctorUserId, AppointmentStatus.COMPLETED,
+                PageRequest.of(Math.max(0, Math.min(1_000_000, page)), 25,
+                        Sort.by(Sort.Direction.DESC, "appointment.appointmentDate", "id")));
+    }
+
+    @PreAuthorize("hasRole('DOCTOR')")
+    @Transactional(readOnly = true)
+    public MedicalRecord getCompletedRecordForDoctor(Long appointmentId, Long doctorUserId) {
+        MedicalRecord record = findByAppointmentId(appointmentId);
+        verifyDoctor(record.getAppointment(), doctorUserId);
+        if (record.getAppointment().getStatus() != AppointmentStatus.COMPLETED) {
+            throw new BusinessLogicException("Ca khám chưa hoàn tất. Hãy tiếp tục tại bàn khám.");
+        }
+        return record;
     }
 
     private void publishQueueChange(Appointment appointment, DoctorQueueChangedEvent.ChangeType changeType) {

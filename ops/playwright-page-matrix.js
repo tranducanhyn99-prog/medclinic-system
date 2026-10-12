@@ -6,7 +6,7 @@ async page => {
         public: ['/', '/doctors', '/doctors/1', '/login', '/register', '/forgot-password'],
         patient: ['/patient/booking?doctorId=1', '/patient/appointments', '/patient/medical-history', '/profile'],
         staff: ['/staff/reception', '/staff/walk-in', '/staff/billing', '/profile'],
-        doctor: ['/doctor/desk', '/doctor/schedule', '/profile'],
+        doctor: ['/doctor/desk', '/doctor/schedule', '/doctor/records', '/profile'],
         admin: ['/admin/dashboard', '/admin/users', '/admin/doctors', '/admin/specialties', '/admin/medicines', '/profile']
     };
     const browser = page.context().browser();
@@ -85,9 +85,10 @@ async page => {
             await checkPage.keyboard.press('Enter');
             result.checks.push({test:'keyboard-skip-link-target',passed:await checkPage.evaluate(()=>document.activeElement?.id==='main-content')});
             await checkPage.goto(origin+'/register');
-            await checkPage.locator('button[type=submit]').click();
-            await checkPage.locator('.invalid-feedback').filter({hasText:/\S/}).first().waitFor();
-            result.checks.push({test:'empty-registration-validation',passed:new URL(checkPage.url()).pathname==='/register' && await checkPage.locator('.is-invalid').count()>0});
+            await checkPage.locator('.mc-auth-form button[type=submit]').click();
+            const invalid = await checkPage.locator('.mc-auth-form').evaluate(form=>!form.checkValidity());
+            result.checks.push({test:'empty-registration-validation',passed:new URL(checkPage.url()).pathname==='/register'
+                && (invalid || await checkPage.locator('.is-invalid').count()>0)});
         } else {
             const denied = role==='admin'?null:'/admin/dashboard';
             if(denied) {

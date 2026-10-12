@@ -4,7 +4,7 @@ Bạn trình bày một mình. Bản này mặc định 15 phút vì chưa có t
 
 **Cập nhật 12/10:** đã có đăng ký/đăng nhập Google cho bệnh nhân, sau đó xác nhận OTP email trước khi vào tài khoản. Muốn demo cần OAuth Client, cấu hình gửi thư và rehearsal theo [hướng dẫn Google](GOOGLE_LOGIN_SETUP.md) và [Gmail OTP](GMAIL_OTP_SETUP.md). Nếu chưa cấu hình, tiếp tục dùng tài khoản demo; không bấm Google lần đầu trong buổi bảo vệ.
 
-Lời thoại dùng “em”. Trước buổi bảo vệ, thay tên/MSSV/link GitHub bằng thông tin thật và chỉ giữ những câu bạn hiểu, có thể giải thích tiếp. “Một người trình bày” không tự chứng minh một người viết toàn bộ code; phần đóng góp phải đúng với thực tế.
+Lời thoại dùng “em”. Trước buổi bảo vệ, thay tên/MSSV/link GitHub bằng thông tin thật và chỉ giữ những câu bạn hiểu, có thể giải thích tiếp. Bạn đã xác nhận đồ án làm một mình. Trình bày quản lý phiên bản và các giai đoạn công việc cá nhân, không tạo phân công hoặc cộng tác nhóm giả. Xem [hồ sơ minh chứng](DEFENSE_EVIDENCE_2026-10-12.md) để chuẩn bị code và câu hỏi phản biện.
 
 ## Bám rubric môn học
 
@@ -27,7 +27,7 @@ Không cần nhồi đủ “7–8 nội dung” để hứa mức điểm tối
 3. Dùng tài khoản seed `patient`, `staff`, `doctor`, `admin`, mật khẩu `123456`. Tài khoản seed bypass OTP; đây không phải chứng minh OTP đã gửi. `dev` không gửi mail.
 4. Chọn bác sĩ **Nguyễn Văn Hùng**, tương ứng tài khoản `doctor`; tránh đặt bác sĩ khác rồi đăng nhập `doctor` không thấy ca.
 5. Chọn ngày mai, khung giờ còn trống. Dev/demo cho xử lý sớm lịch tới +14; giữ nguyên ngày hẹn và STT theo ngày. Nói rõ chế độ demo, không giải thích như quy tắc khám ngoài môi trường demo.
-6. Mở sẵn README, review và các file code trong danh sách cuối tài liệu. Chuẩn bị kết quả test ngày 10/10, không chạy toàn bộ Maven trong 15 phút.
+6. Mở sẵn README, review và các file code trong danh sách cuối tài liệu. Chuẩn bị kết quả test được ghi trong hồ sơ minh chứng hiện tại, không chạy toàn bộ Maven trong 15 phút.
 7. Dùng light mode, zoom khoảng 90–100%, đóng tab không liên quan. Bốn tab cùng browser chia sẻ session; **logout/login khi đổi vai trò**. Nếu muốn giữ bác sĩ đăng nhập để minh họa realtime, dùng browser/profile khác, đã thử trước buổi.
 8. Đặt dữ liệu “Demo môn Lập trình Web”; không dùng hồ sơ bệnh nhân thật. Nhập mã hẹn thay cho camera trong demo chính để thời gian ổn định. QR camera có thể trình bày thêm khi được hỏi và thiết bị đã sẵn sàng.
 9. Nếu dữ liệu seed chưa bị thay đổi: phí bác sĩ Hùng **350.000 đ**, Paracetamol **1.500 đ/viên**; hai viên làm tổng **353.000 đ**. Nếu dữ liệu đã đổi, đọc tổng thực tế và giải thích công thức, không cố khớp con số.
@@ -112,6 +112,8 @@ Không kể tên tất cả thư viện ở phần mở đầu. Chuyển ngay sa
 > Sau khi thành công, ca chuyển sang hoàn tất. Hóa đơn lúc này mới ở trạng thái chưa thanh toán; khám xong không đồng nghĩa thu ngân đã nhận tiền.
 
 **Mốc kiểm tra:** `COMPLETED`, có hồ sơ và Invoice `UNPAID`. Nếu thầy/cô muốn xem lỗi thiếu thuốc, dùng một ca phụ đã chuẩn bị; không phá ca chính ngay trên sân khấu.
+
+**Sau khi lưu bệnh án:** mở “Bệnh án đã hoàn tất” → chọn đúng mã hẹn vừa khám → đọc lại chẩn đoán, lời dặn và đơn giá đã lưu. Nói: “Đây là hồ sơ chỉ đọc của bác sĩ phụ trách. Mở lại không kê đơn, xuất kho hoặc tạo hóa đơn lần nữa.” Sau đó tiếp tục thu ngân.
 
 ### 08:00–09:15 — Thu ngân, hồ sơ và PDF
 

@@ -1,6 +1,6 @@
 # TÀI LIỆU KIẾN TRÚC HỆ THỐNG (SYSTEM ARCHITECTURE DOCUMENT)
 **Dự án:** MedClinic - Phòng Khám Tư Nhân  
-**Phiên bản:** 1.0  
+**Phiên bản:** 1.1 (12/10/2026)
 **Học phần:** Lập trình Web & Công nghệ Phần mềm  
 
 ---
@@ -17,7 +17,7 @@ graph TD
 
     subgraph Security ["Tầng Bảo Mật (Security Layer)"]
         Filter[Spring Security 7 FilterChain]
-        CSRF[CSRF Protection & Remember-Me]
+        CSRF[CSRF Protection & OTP Session]
         RBAC[Role-Based Access Control]
     end
 
@@ -30,7 +30,7 @@ graph TD
 
     subgraph Service ["Tầng Nghiệp Vụ (Business Logic Layer)"]
         AppSvc[Appointment Booking Engine]
-        LockMgr[Concurrency Lock Manager - @Version]
+        LockMgr[Pessimistic Row Locks + @Version]
         MedSvc[Medical Record & Prescription Service]
         InvSvc[Billing & Invoice Service]
         MailSvc[Async Email Service - @Async]
@@ -114,3 +114,10 @@ graph TD
 - **Micrometer:** Theo dõi JVM/HTTP metrics mặc định và hai metric custom: `medclinic.security.authentication{outcome=...}` và `medclinic.security.rate_limit.rejected{endpoint=...}`.
 - **Security audit log:** Login success/failure, logout và rate-limit rejection ghi log dạng key=value; không log password, reset token hoặc secret.
 - **Giới hạn hiện tại:** Rate limiter là in-memory per JVM. Khi scale nhiều instance cần chuyển enforcement lên trusted gateway hoặc shared store như Redis; không tin trực tiếp `X-Forwarded-For` nếu proxy chưa được trust-configure.
+
+
+## Luồng xác thực và đọc hồ sơ hiện tại
+
+GoogleLoginConfig và GoogleAccountService xử lý OIDC, định danh sub và liên kết bệnh nhân. Callback không lưu SecurityContext đăng nhập; AuthVerificationService phát challenge và AuthController chỉ tạo phiên sau OTP/magic link hợp lệ thuộc phiên trình duyệt đang giữ challenge. Bí mật OAuth/SMTP nằm trong .env local, không có trong Git.
+
+DoctorDeskController đưa user ID từ CustomUserDetails vào MedicalRecordService. Danh sách bệnh án lọc bác sĩ và trạng thái tại database, PageRequest cố định 25; EntityGraph chỉ gồm quan hệ to-one để không phân trang trong bộ nhớ vì join collection. Chi tiết dùng graph tải đơn thuốc, kiểm tra sở hữu và trạng thái COMPLETED trong transaction readOnly. Không có endpoint chỉnh sửa bệnh án hoàn tất.

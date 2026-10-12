@@ -155,4 +155,18 @@ public class DoctorDeskController {
         model.addAttribute("schedules", scheduleService.findByDoctorAndDateRange(doctorProfile.getId(), today, today.plusDays(14)));
         return "doctor/schedule";
     }
+
+    @GetMapping("/records")
+    public String completedRecords(@RequestParam(defaultValue = "0") int page,
+                                   @AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
+        model.addAttribute("records", medicalRecordService.getCompletedRecords(userDetails.getId(), page));
+        return "doctor/records";
+    }
+
+    @GetMapping("/records/{appointmentId}")
+    public String completedRecord(@PathVariable Long appointmentId,
+                                  @AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
+        model.addAttribute("record", medicalRecordService.getCompletedRecordForDoctor(appointmentId, userDetails.getId()));
+        return "doctor/record-detail";
+    }
 }

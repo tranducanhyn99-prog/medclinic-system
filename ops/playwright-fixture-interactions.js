@@ -17,6 +17,10 @@ async page => {
   }throw new Error('Confirmation did not reach Mailpit');
  }
  try {
+  const {p:doctorEmpty}=await login('doctor');
+  await doctorEmpty.goto(origin+'/doctor/records');
+  record('doctor-record-empty-state',await doctorEmpty.getByRole('heading',{name:'Chưa có bệnh án đã hoàn tất'}).isVisible());
+  await doctorEmpty.screenshot({path:'output/playwright-check/artifacts/doctor-records-empty-mobile.png',fullPage:true});
   const {ctx,p}=await login('patient');
   await p.goto(origin+'/');await p.keyboard.press('Tab');await p.keyboard.press('Enter');
   record('skip-link-focus',await p.evaluate(()=>document.activeElement.id==='main-content'));

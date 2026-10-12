@@ -2,7 +2,7 @@
 **Tên dự án:** Hệ thống Quản lý và Đặt lịch khám Phòng khám Tư nhân (MedClinic)  
 **Tiêu chuẩn áp dụng:** IEEE Std 830-1998  
 **Học phần:** Lập trình Web & Công nghệ Phần mềm  
-**Phiên bản:** 1.1 (Đồng bộ implementation - 19/09/2026)<br>
+**Phiên bản:** 1.2 (Đồng bộ implementation - 12/10/2026)<br>
 
 ---
 
@@ -54,11 +54,13 @@ Hệ thống được phát triển theo mô hình kiến trúc phân tầng chu
 
 ### 3.1. Phân hệ Xác thực & Phân quyền (Authentication & Authorization)
 - **FR-AUTH-01 (Đăng ký tài khoản):** Khách hàng đăng ký tài khoản bệnh nhân với Họ tên, Tên đăng nhập, Mật khẩu, Email, SĐT, Ngày sinh, Giới tính, Địa chỉ. Tài khoản mới ở trạng thái chưa kích hoạt cho đến khi xác thực email thành công.
-- **FR-AUTH-02 (Đăng nhập & RBAC):** Hệ thống kiểm tra tên đăng nhập/email + mật khẩu bằng Spring Security 7 và BCrypt; tài khoản thường phải hoàn tất OTP email trước khi tạo session đăng nhập. Sau xác thực, hệ thống chuyển hướng đúng portal theo vai trò. Seed/test account được đánh dấu `otp_bypass` và không yêu cầu OTP.
+- **FR-AUTH-02 (Đăng nhập & RBAC):** Hệ thống kiểm tra tên đăng nhập/email + mật khẩu bằng Spring Security 7 và BCrypt; tài khoản thường phải hoàn tất OTP email trước khi tạo session đăng nhập. Sau xác thực, hệ thống chuyển hướng đúng portal theo vai trò. Seed/test account được đánh dấu `otp_bypass` chỉ bỏ qua OTP khi đăng nhập mật khẩu; Google luôn yêu cầu OTP.
 - **FR-AUTH-03 (Quản lý Hồ sơ cá nhân):** Người dùng có thể cập nhật Họ tên, SĐT, Giới tính, Ngày sinh, Địa chỉ, thay đổi ảnh đại diện JPG/PNG/WebP tối đa 5 MB và đổi mật khẩu. Username/email là định danh tài khoản và không sửa trực tiếp tại form Profile.
 - **FR-AUTH-04 (Quản lý Tài khoản người dùng):** Quản trị viên có thể xem danh sách tài khoản, tìm kiếm theo từ khóa và thực hiện khóa / mở khóa tài khoản người dùng.
 - **FR-AUTH-05 (Khôi phục mật khẩu):** Người dùng yêu cầu đặt lại mật khẩu qua email. Hệ thống chỉ lưu SHA-256 hash của token, token hết hạn sau 24 giờ, chỉ dùng một lần và phản hồi theo cách không tiết lộ email có tồn tại hay không.
-- **FR-AUTH-06 (OTP email & Magic Link):** Với đăng ký và đăng nhập tài khoản thường, hệ thống phát OTP 6 số và magic link qua email, cùng hết hạn sau 5 phút và chỉ dùng một lần. Chỉ lưu BCrypt hash OTP và SHA-256 hash magic token; tối đa 5 lần nhập sai. Người dùng có thể gửi lại OTP trong đúng phiên đang giữ challenge, giới hạn 3 challenge cho mỗi tài khoản/loại trong cửa sổ hiệu lực; challenge cũ bị vô hiệu hóa sau khi resend thành công. Bấm nút xác nhận trong email sẽ tự xác thực, tạo session và chuyển về portal với thông báo đăng nhập thành công.
+- **FR-AUTH-06 (OTP email & Magic Link):** Với đăng ký và đăng nhập tài khoản thường, hệ thống phát OTP 6 số và magic link qua email, cùng hết hạn sau 5 phút và chỉ dùng một lần. Chỉ lưu BCrypt hash OTP và SHA-256 hash magic token; tối đa 5 lần nhập sai. Người dùng có thể gửi lại OTP trong đúng phiên đang giữ challenge, khi resend, kiểm tra ngưỡng 3 challenge cho mỗi tài khoản/loại trong cửa sổ hiệu lực; không suy diễn thành giới hạn chung cho mọi lần khởi tạo đăng nhập; challenge cũ bị vô hiệu hóa sau khi resend thành công. Bấm nút xác nhận trong email sẽ tự xác thực, tạo session và chuyển về portal với thông báo đăng nhập thành công.
+
+- **FR-AUTH-07 (Google OIDC + OTP):** Khi bật cấu hình OAuth, bệnh nhân đăng ký/đăng nhập qua Google với email đã xác thực thuộc Gmail hoặc Google Workspace. Liên kết theo Google subject; chỉ liên kết email với bệnh nhân active đủ điều kiện, không tự nâng quyền thành bác sĩ/lễ tân/admin. Callback hợp lệ vẫn chưa lưu phiên đăng nhập; chỉ OTP/magic link hợp lệ trong phiên giữ challenge mới mở tài khoản. Secret giữ trong cấu hình local. OTP gửi cùng Gmail không được trình bày như hai yếu tố độc lập.
 
 ### 3.2. Phân hệ Quản lý Chuyên khoa & Hồ sơ Bác sĩ (Doctor & Specialty Management)
 - **FR-SPEC-01 (Quản lý Chuyên khoa):** Quản trị viên có thể thêm mới, sửa, bật/tắt trạng thái hoạt động của chuyên khoa (Tim mạch, Răng hàm mặt, Da liễu, Nhi khoa, Tai mũi họng, Cơ xương khớp).
@@ -85,6 +87,8 @@ Hệ thống được phát triển theo mô hình kiến trúc phân tầng chu
 - **FR-EXAM-03 (Kê đơn thuốc động & Quản lý tồn kho):** Bác sĩ kê đơn thuốc: chọn thuốc từ kho dược, nhập số lượng, liều dùng, cách dùng. Hệ thống tự động kiểm tra và trừ số lượng tồn kho dược phẩm.
 - **FR-EXAM-04 (Xuất Đơn thuốc PDF):** Hệ thống tạo file PDF đơn thuốc và phiếu khám bệnh chuẩn y tế có thể in hoặc tải về trực tuyến.
 - **FR-EXAM-05 (Hàng chờ realtime):** Doctor Desk kết nối Spring WebSocket/STOMP qua endpoint `/ws`, subscribe user destination `/user/queue/doctor` và tự làm mới khi trạng thái hàng chờ thay đổi `CHECKED_IN`, `IN_PROGRESS` hoặc `COMPLETED`. Sự kiện chỉ được broadcast ở pha `AFTER_COMMIT`; payload không chứa tên bệnh nhân, chẩn đoán hay dữ liệu bệnh án.
+
+- **FR-EXAM-06 (Xem lại bệnh án hoàn tất):** `/doctor/records` liệt kê riêng các ca `COMPLETED` do bác sĩ đang đăng nhập phụ trách, 25 hồ sơ mỗi trang, ngày khám giảm dần. `/doctor/records/{appointmentId}` kiểm tra bác sĩ sở hữu, hiển thị triệu chứng, chẩn đoán, lời dặn, tái khám dự kiến và đơn thuốc với giá tại thời điểm kê. Ca quá khứ vẫn đọc được; không sửa kết quả, trừ kho hoặc tạo hóa đơn khi đọc. Vai trò khác bị từ chối.
 
 ### 3.6. Phân hệ Hóa đơn & Thu viện phí (Billing & Invoice)
 - **FR-BILL-01 (Tự động sinh Hóa đơn):** Khi bác sĩ hoàn tất khám, hệ thống tự động tính tổng tiền (Tiền công khám + Tiền thuốc trong đơn) và tạo Hóa đơn viện phí (`Invoice`).

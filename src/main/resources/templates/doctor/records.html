@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/dashboard}">
+<head><title>Bệnh án đã hoàn tất - MedClinic</title></head>
+<body>
+<div layout:fragment="content">
+    <div class="mc-page-header">
+        <div>
+            <h1 class="mc-page-title">Bệnh án đã hoàn tất</h1>
+            <p class="mc-page-subtitle">Xem lại kết quả các ca bạn phụ trách, theo ngày khám gần nhất.</p>
+        </div>
+        <a th:href="@{/doctor/desk}" class="btn btn-outline-primary">Về bàn khám</a>
+    </div>
+    <div class="mc-data-card">
+        <div class="mc-data-toolbar"><span th:text="${records.totalElements + ' bệnh án'}">0 bệnh án</span></div>
+        <div th:if="${records.empty}" class="mc-empty-state p-4">
+            <h2 class="h5" th:text="${records.totalElements == 0 ? 'Chưa có bệnh án đã hoàn tất' : 'Trang này không có bệnh án'}">Chưa có bệnh án đã hoàn tất</h2>
+            <p class="text-secondary">Sau khi lưu kết quả khám, bạn có thể xem lại hồ sơ tại đây.</p>
+            <a th:if="${records.totalElements > 0}" th:href="@{/doctor/records}" class="btn btn-outline-primary">Về trang đầu</a>
+        </div>
+        <div th:unless="${records.empty}" class="table-responsive">
+            <table class="table mc-data-table align-middle mb-0">
+                <caption class="visually-hidden">Danh sách bệnh án đã hoàn tất của bác sĩ đang đăng nhập</caption>
+                <thead><tr><th scope="col">Ngày khám</th><th scope="col">Bệnh nhân</th><th scope="col">Mã hẹn</th><th scope="col" class="text-end">Bệnh án</th></tr></thead>
+                <tbody><tr th:each="record : ${records.content}">
+                    <td class="text-nowrap" th:text="${#temporals.format(record.appointment.appointmentDate, 'dd/MM/yyyy')}"></td>
+                    <td class="mc-cell-title" th:text="${record.patient.fullName}"></td>
+                    <td th:text="${record.appointment.bookingCode}"></td>
+                    <td class="text-end"><a class="btn btn-sm btn-outline-primary text-nowrap" th:href="@{/doctor/records/{id}(id=${record.appointment.id})}" th:aria-label="${'Xem bệnh án của ' + record.patient.fullName + ', mã hẹn ' + record.appointment.bookingCode}">Xem bệnh án</a></td>
+                </tr></tbody>
+            </table>
+        </div>
+        <nav th:if="${not records.empty and records.totalPages > 1}" aria-label="Phân trang bệnh án" class="d-flex flex-wrap align-items-center justify-content-between gap-3 p-3 border-top">
+            <span th:text="${'Trang ' + (records.number + 1) + ' / ' + records.totalPages}"></span>
+            <div class="d-flex gap-2">
+                <a th:if="${records.hasPrevious()}" th:href="@{/doctor/records(page=${records.number - 1})}" class="btn btn-sm btn-outline-primary">Trang trước</a>
+                <a th:if="${records.hasNext()}" th:href="@{/doctor/records(page=${records.number + 1})}" class="btn btn-sm btn-outline-primary">Trang sau</a>
+            </div>
+        </nav>
+    </div>
+</div>
+</body></html>

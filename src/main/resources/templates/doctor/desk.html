@@ -196,9 +196,8 @@
                                     <span>Tiếp tục khám</span>
                                 </a>
 
-                                <span th:if="${apt.status.name() == 'COMPLETED'}" class="small text-muted">
-                                    Bệnh án đã lưu
-                                </span>
+                                <a th:if="${apt.status.name() == 'COMPLETED'}"
+                                   th:href="@{/doctor/records/{id}(id=${apt.id})}" class="btn btn-sm btn-outline-primary">Xem bệnh án</a>
                             </td>
                         </tr>
                     </tbody>

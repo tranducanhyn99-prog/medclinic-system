@@ -32,6 +32,7 @@ graph TD
         UC15[Quản lý Kho thuốc]
         UC16[Quản lý Tài khoản Người dùng]
         UC17[Xem Dashboard Thống kê Doanh thu]
+        UC18[Xem lại bệnh án hoàn tất của mình]
     end
 
     Patient((Bệnh nhân)) --> UC1
@@ -50,6 +51,7 @@ graph TD
     Doctor --> UC10
     Doctor --> UC11
     Doctor --> UC12
+    Doctor --> UC18
 
     Admin((Quản trị viên)) --> UC1
     Admin --> UC13
@@ -66,7 +68,7 @@ graph TD
 ### 2.0. Đặc tả Use Case UC1: Đăng ký, Đăng nhập & Xác thực OTP email
 - **Actor:** Khách/Bệnh nhân và các tài khoản hệ thống.
 - **Main Flow - Đăng ký:** Người dùng nhập thông tin tài khoản; hệ thống tạo user `is_active=false`, `email_verified=false`, phát OTP 6 số và magic link qua email. Khi OTP/link hợp lệ, user được kích hoạt, tạo session và chuyển vào Patient Portal.
-- **Main Flow - Đăng nhập:** Hệ thống kiểm tra username/email + mật khẩu trước. Với tài khoản thường, chưa tạo SecurityContext mà phát challenge `LOGIN`; chỉ sau OTP/magic link hợp lệ mới tạo session. Seed/test account có `otp_bypass=true` được vào trực tiếp.
+- **Main Flow - Đăng nhập:** Hệ thống kiểm tra username/email + mật khẩu trước. Với tài khoản thường, chưa tạo SecurityContext mà phát challenge `LOGIN`; chỉ sau OTP/magic link hợp lệ mới tạo session. Seed/test account có `otp_bypass=true` được vào trực tiếp khi dùng mật khẩu. Nhánh Google luôn yêu cầu OTP, kể cả tài khoản có cờ bypass.
 - **OTP/Magic Link:** Cùng hạn 5 phút, dùng một lần; OTP lưu BCrypt hash, magic token lưu SHA-256 hash; tối đa 5 lần nhập sai. `Gửi lại OTP` vô hiệu challenge cũ và tạo challenge mới.
 - **Email CTA:** Nút `Xác nhận và đăng nhập` gọi `/auth/verify-email?token=...`; xác thực thành công tự chuyển về portal đúng role và hiện trạng thái đăng nhập thành công.
 - **Security:** Không dùng Remember-me cho luồng đăng nhập mới để tránh bỏ qua OTP. Challenge được ghi database và khóa pessimistic khi consume để hạn chế dùng đồng thời.
@@ -83,14 +85,14 @@ graph TD
   4. Hệ thống tự động gửi yêu cầu AJAX lấy danh sách các khung giờ 30 phút còn khả dụng (`status = AVAILABLE`) của bác sĩ trong ngày đó.
   5. Bệnh nhân chọn một khung giờ (Slot) phù hợp và nhập lý do/triệu chứng bệnh.
   6. Bệnh nhân bấm nút "Xác nhận đặt lịch".
-  7. Hệ thống thực hiện kiểm tra khóa đồng thời (Optimistic Lock):
+  7. Trong transaction, hệ thống khóa ghi bản ghi TimeSlot (`PESSIMISTIC_WRITE`) và kiểm tra lại `AVAILABLE`; `@Version` vẫn bảo vệ cập nhật cạnh tranh:
      - Chuyển trạng thái Slot sang `BOOKED` (tăng `@Version`).
      - Tạo bản ghi `Appointment` với trạng thái `CONFIRMED` và sinh Mã đặt lịch duy nhất (`MED-YYMMDD-XXXX`).
      - Sinh mã QR Base64.
   8. Hệ thống kích hoạt gửi email xác nhận ngầm (`@Async`).
   9. Hệ thống chuyển hướng bệnh nhân tới trang Chi tiết lịch hẹn kèm mã QR.
 - **Alternate Flows (Luồng ngoại lệ):**
-  - *7a. Khung giờ vừa bị người khác đặt trước:* Hệ thống phát hiện xung đột dữ liệu (OptimisticLockingFailure hoặc Slot khác AVAILABLE) $\rightarrow$ Ném ngoại lệ `SlotAlreadyBookedException` $\rightarrow$ Thông báo người bệnh chọn lại khung giờ khác mà không gây lỗi dữ liệu.
+  - *7a. Khung giờ vừa bị người khác đặt trước:* Hệ thống phát hiện xung đột dữ liệu (Slot khác AVAILABLE sau khi lấy khóa) $\rightarrow$ Ném ngoại lệ `BusinessLogicException` $\rightarrow$ Thông báo người bệnh chọn lại khung giờ khác mà không gây lỗi dữ liệu.
 - **Post-conditions (Hậu điều kiện):** Lịch hẹn được lưu vào CSDL, slot chuyển sang `BOOKED`, email xác nhận được gửi đi.
 
 ---
@@ -164,7 +166,7 @@ stateDiagram-v2
     KiemTraSlot --> ChonSlotVaNhapTrieuChung: Còn Slot trống
     ChonSlotVaNhapTrieuChung --> BamXacNhan: Nhập triệu chứng & Bấm Đặt lịch
     
-    BamXacNhan --> KiemTraConcurrencyLock: Giao dịch (@Transactional & Optimistic Lock)
+    BamXacNhan --> KiemTraConcurrencyLock: Giao dịch (@Transactional & PESSIMISTIC_WRITE)
     
     state KiemTraConcurrencyLock {
         [*] --> DocSlot
@@ -174,7 +176,7 @@ stateDiagram-v2
         KhoaThanhCong --> CapNhatSlotBooked: Set status = BOOKED, tăng Version
     }
     
-    XungDotKhoa --> BaoLoiTrunLich: Ném SlotAlreadyBookedException
+    XungDotKhoa --> BaoLoiTrunLich: Ném BusinessLogicException
     BaoLoiTrunLich --> TaiSlotTuDong: Tải lại danh sách Slot mới nhất
     
     CapNhatSlotBooked --> TaoAppointment: Lưu Appointment (CONFIRMED)
@@ -205,14 +207,14 @@ sequenceDiagram
 
     Patient->>UI: Chọn Bác sĩ ID=10 & Ngày 2026-09-01
     UI->>ApiCtrl: GET /api/public/doctors/10/slots?date=2026-09-01
-    ApiCtrl->>SlotRepo: findAvailableSlotsByDoctorAndDate(10, date, AVAILABLE)
+    ApiCtrl->>SlotRepo: Truy vấn slot AVAILABLE qua ScheduleService
     SlotRepo-->>ApiCtrl: Trả về danh sách Slot [08:00, 08:30, 09:00...]
     ApiCtrl-->>UI: JSON danh sách Slot trống
     
     Patient->>UI: Chọn Slot 08:30 (ID=100) & Nhập triệu chứng
     Patient->>UI: Bấm "Xác nhận đặt lịch"
     UI->>AppCtrl: POST /patient/booking (doctorId, date, slotId=100, reason)
-    AppCtrl->>AppSvc: bookAppointment(patientId, bookingRequest)
+    AppCtrl->>AppSvc: bookAppointment(patientId, doctorId, date, slotId, reason)
     
     rect rgb(230, 245, 255)
         note over AppSvc,SlotRepo: Bắt đầu Giao dịch (@Transactional Isolation.READ_COMMITTED)
@@ -220,9 +222,9 @@ sequenceDiagram
         SlotRepo-->>AppSvc: Trả về TimeSlot (status=AVAILABLE, version=0)
         
         alt Khung giờ đã bị người khác đặt trước
-            AppSvc-->>AppCtrl: Ném SlotAlreadyBookedException
+            AppSvc-->>AppCtrl: Ném BusinessLogicException
             AppCtrl-->>UI: Báo lỗi "Khung giờ này vừa có người đặt trước!"
-            UI-->>Patient: SweetAlert thông báo lỗi & tải lại Slot
+            UI-->>Patient: Hiển thị lỗi đặt lịch
         else Khung giờ hợp lệ
             AppSvc->>SlotRepo: saveAndFlush(TimeSlot status=BOOKED, version=1)
             AppSvc->>AppRepo: save(Appointment status=CONFIRMED, code=MED-xxx)
@@ -472,3 +474,24 @@ classDiagram
     PrescriptionItem "*" *-- "1" Medicine : refers_to
     Invoice "1" *-- "1" Appointment : billed_for
 ```
+
+
+## 4. Luồng Google và bệnh án chỉ đọc (12/10/2026)
+
+```mermaid
+sequenceDiagram
+    actor Patient as Bệnh nhân
+    participant Google
+    participant Config as GoogleLoginConfig
+    participant Auth as AuthController / AuthVerificationService
+    Patient->>Google: Đồng ý đăng nhập OIDC
+    Google->>Config: Callback code, ID token
+    Config->>Config: Kiểm tra giao thức và định danh bệnh nhân
+    Config->>Auth: Tạo challenge OTP; chưa lưu SecurityContext
+    Auth-->>Patient: Gửi OTP / magic link email
+    Patient->>Auth: Xác nhận trong phiên giữ challenge
+    Auth->>Auth: Consume challenge hợp lệ một lần
+    Auth-->>Patient: Tạo session và chuyển Patient Portal
+```
+
+**UC18:** Bác sĩ đăng nhập mở danh sách bệnh án hoàn tất. Backend lọc theo user ID của bác sĩ, trạng thái COMPLETED và phân trang tại database. Khi mở chi tiết, service kiểm tra lại bác sĩ phụ trách trước khi trả hồ sơ. Bệnh án cũ chỉ đọc, không gọi saveMedicalRecordAndPrescription; giá thuốc lấy unitPriceAtTime. Bác sĩ khác nhận thông báo từ chối; vai trò ngoài bác sĩ bị chặn.

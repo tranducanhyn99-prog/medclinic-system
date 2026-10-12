@@ -32,11 +32,11 @@
 
     <!-- Schedule Grid -->
     <div th:unless="${#lists.isEmpty(schedules)}" class="row g-4">
-        <div th:each="sch : ${schedules}" class="col-md-6 col-xl-4">
+        <div th:each="sch : ${schedules}" class="col-lg-6 col-xl-4">
             <div class="mc-schedule-card">
 
                 <!-- Card Header: Date & Shift -->
-                <div class="card-header bg-white py-3 border-bottom d-flex align-items-center justify-content-between">
+                <div class="card-header bg-white py-3 border-bottom d-flex flex-wrap gap-2 align-items-center justify-content-between">
                     <div>
                         <h2 class="h6 fw-bold text-dark mb-0" th:text="${(sch.workDate.dayOfWeek.value == 7 ? 'Chủ nhật' : 'Thứ ' + (sch.workDate.dayOfWeek.value + 1)) + ', ' + #temporals.format(sch.workDate, 'dd/MM/yyyy')}">Thứ Hai, 16/09/2026</h2>
                         <span class="badge bg-light text-primary border small" th:text="${'Ca: ' + sch.shift.displayName}">Ca Sáng</span>

@@ -9,6 +9,8 @@ Chọn bác sĩ và giờ khám → Nhận phiếu hẹn QR → Tiếp nhận, c
 
 Đây là ứng dụng học tập và demo. [Nghiệm thu sửa review](docs/PROJECT_REVIEW_FIX_ACCEPTANCE_2026-10-10.md) ghi kết quả xử lý chín vấn đề; [review ban đầu](docs/PROJECT_REVIEW_2026-10-10.md) giữ bằng chứng trước sửa. [Kịch bản thuyết trình](docs/PRESENTATION_SCRIPT_2026-10-10.md) dành cho một người trình bày trong khoảng 15 phút.
 
+Đồ án do **một người thực hiện**. [Hồ sơ minh chứng bảo vệ](docs/DEFENSE_EVIDENCE_2026-10-12.md) đối chiếu rubric, chỉ vị trí code cho 8 nội dung mở rộng và hai ví dụ sửa/kiểm thử code có AI hỗ trợ.
+
 ## Giao diện
 
 Xanh lam y khoa, nền trắng sạch, font Geist local và chế độ sáng/tối. Ảnh chụp ở lượt thiết kế ngày 09/10/2026.
@@ -23,7 +25,7 @@ Xanh lam y khoa, nền trắng sạch, font Geist local và chế độ sáng/t�
 | --- | --- |
 | Bệnh nhân | Tìm bác sĩ theo chuyên khoa, mức phí và từ khóa; đặt/hủy lịch; xem phiếu hẹn QR, trạng thái, hồ sơ; tải đơn thuốc/hóa đơn PDF. |
 | Lễ tân | Tra cứu lịch, quét QR bằng camera hoặc nhập mã; cấp STT; đăng ký vãng lai; thu tiền mặt; tạo chuyển khoản và đối soát khi đã cấu hình. |
-| Bác sĩ | Xem hàng chờ và cập nhật WebSocket; bắt đầu khám; xem lịch sử bệnh nhân; ghi kết quả, kê thuốc, hoàn tất ca; xem lịch trực. |
+| Bác sĩ | Xem hàng chờ và cập nhật WebSocket; bắt đầu khám; xem lịch sử bệnh nhân; ghi kết quả, kê thuốc, hoàn tất ca; xem lịch trực; xem lại bệnh án hoàn tất của mình, phân trang và tải đơn thuốc. |
 | Quản trị viên | Quản lý chuyên khoa, bác sĩ, tài khoản, thuốc; nhập kho và xem lịch sử tồn kho; xem thống kê lịch hẹn/doanh thu. |
 
 Backend khóa khung giờ để tránh đặt trùng, kiểm tra bác sĩ phụ trách và trạng thái ca khám. Khi hoàn tất khám, bệnh án, đơn thuốc, xuất kho và hóa đơn được ghi trong cùng transaction. Spring Security bảo vệ route; service và luồng đọc phiếu hẹn/PDF có thêm kiểm tra quyền.
@@ -112,7 +114,7 @@ node --test src/test/frontend/ui-regressions.cjs
 node ops/check-doc-links.cjs
 ```
 
-Kết quả working tree ngày **10/10/2026** nằm trong [báo cáo nghiệm thu](docs/PROJECT_REVIEW_FIX_ACCEPTANCE_2026-10-10.md). Suite mặc định và lượt SQL Server riêng được ghi tách biệt; test skipped không tính thành pass.
+Kết quả ngày **12/10/2026** nằm trong [hồ sơ minh chứng](docs/DEFENSE_EVIDENCE_2026-10-12.md): 282 test Java thực thi đạt, 50 SQL test skipped trong suite mặc định; 4 test bệnh án chạy riêng trên SQL Server đạt, 26 regression frontend và 176 kiểm tra trình duyệt đạt. [Báo cáo nghiệm thu 10/10](docs/PROJECT_REVIEW_FIX_ACCEPTANCE_2026-10-10.md) giữ kết quả lịch sử. Test skipped không tính thành pass.
 
 Gate JaCoCo: LINE ≥70%, BRANCH ≥50%. Test SQL Server cần environment guard và **database kiểm thử riêng, có thể hủy**, theo [SQL Server runbook](docs/database/SQLSERVER_RUNBOOK.md). Không trỏ test vào database cần giữ.
 
