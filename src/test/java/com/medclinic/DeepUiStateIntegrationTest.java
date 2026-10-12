@@ -41,11 +41,13 @@ class DeepUiStateIntegrationTest {
                 "000000", "DEMO", "MCDEMO", new BigDecimal("353000.00"), "/images/logo.svg",
                 state, LocalDateTime.of(2026, 10, 2, 12, 0), state == BankTransferStatus.CONFIRMED ? LocalDateTime.now() : null);
         when(bank.findInstruction(99L)).thenReturn(instruction);
-        String html = mvc.perform(get("/staff/billing/bank/payment/99").with(user("staff").roles("STAFF")))
+        var staff = new CustomUserDetails(users.findByUsername("staff").orElseThrow());
+        String html = mvc.perform(get("/staff/billing/bank/payment/99").with(user(staff)))
                 .andExpect(status().isOk())
                 .andDo(result -> UxReviewFixture.write("bank-" + state.name().toLowerCase(java.util.Locale.ROOT), result.getResponse()))
                 .andReturn().getResponse().getContentAsString(java.nio.charset.StandardCharsets.UTF_8);
         assertTrue(html.contains("353 000 đ"));
+        assertTrue(html.contains(staff.getFullName()));
         assertTrue(html.contains("data-initial-status=\"" + state.name() + "\""));
         assertEquals(state == BankTransferStatus.PENDING || state == BankTransferStatus.EXPIRED, html.contains("id=\"paymentManual\""));
         if (state == BankTransferStatus.EXPIRED) assertTrue(html.contains("Mã chuyển khoản đã hết hạn"));
@@ -57,7 +59,8 @@ class DeepUiStateIntegrationTest {
     @ParameterizedTest
     @ValueSource(strings = {"", "42"})
     void invalidMedicineHasLinkedLabelsAndRetainsEditIdentityWithoutPersisting(String id) throws Exception {
-        String html = mvc.perform(post("/admin/medicines").with(user("admin").roles("ADMIN")).with(csrf())
+        var admin = new CustomUserDetails(users.findByUsername("admin").orElseThrow());
+        String html = mvc.perform(post("/admin/medicines").with(user(admin)).with(csrf())
                         .param("id", id).param("name", "").param("unit", "viên").param("stockQuantity", "-1"))
                 .andExpect(status().isOk()).andExpect(view().name("admin/medicines"))
                 .andReturn().getResponse().getContentAsString(java.nio.charset.StandardCharsets.UTF_8);

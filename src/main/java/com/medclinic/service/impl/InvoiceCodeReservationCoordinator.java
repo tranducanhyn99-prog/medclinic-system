@@ -19,9 +19,10 @@ import java.util.function.Supplier;
 public class InvoiceCodeReservationCoordinator {
     public static final int MAX_ATTEMPTS = 8;
     private final InvoiceCodeReservationWriter writer;
+    private final java.time.Clock businessClock;
 
     public String reserveUniqueCode() {
-        String prefix = "INV-" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")) + "-";
+        String prefix = "INV-" + LocalDate.now(businessClock).format(DateTimeFormatter.ofPattern("yyyyMMdd")) + "-";
         return reserveUniqueCode(() -> prefix + UUID.randomUUID().toString().replace("-", "").substring(0, 16).toUpperCase());
     }
 

@@ -47,10 +47,13 @@ class WalkInSecurityIntegrationTest {
         // Simulate arrival on the appointment day before the afternoon slot.
         appointmentService.setBusinessClock(java.time.Clock.fixed(date.atTime(8, 0)
                 .atZone(java.time.ZoneId.of("Asia/Ho_Chi_Minh")).toInstant(), java.time.ZoneId.of("Asia/Ho_Chi_Minh")));
-        DoctorSchedule schedule = schedules.save(DoctorSchedule.builder().doctor(doctor).workDate(date)
-                .shift(ShiftType.AFTERNOON).maxPatients(8).build());
-        TimeSlot slot = slots.save(TimeSlot.builder().schedule(schedule).startTime(LocalTime.of(13, 0))
-                .endTime(LocalTime.of(13, 30)).status(SlotStatus.AVAILABLE).build());
+        DoctorSchedule schedule = schedules.findByDoctorIdAndWorkDateAndShift(doctor.getId(), date, ShiftType.AFTERNOON)
+                .orElseGet(() -> schedules.save(DoctorSchedule.builder().doctor(doctor).workDate(date)
+                        .shift(ShiftType.AFTERNOON).maxPatients(8).build()));
+        TimeSlot slot = slots.findAvailableSlotsByDoctorAndDate(doctor.getId(), date, SlotStatus.AVAILABLE).stream()
+                .filter(candidate -> candidate.getSchedule().getId().equals(schedule.getId())).findFirst()
+                .orElseGet(() -> slots.save(TimeSlot.builder().schedule(schedule).startTime(LocalTime.of(13, 0))
+                        .endTime(LocalTime.of(13, 30)).status(SlotStatus.AVAILABLE).build()));
         String phone = "099" + Long.toUnsignedString(System.nanoTime()).substring(0, 7);
 
         appointments.bookWalkInAppointment("Walk in", phone, LocalDate.of(1990, 1, 1), Gender.MALE,

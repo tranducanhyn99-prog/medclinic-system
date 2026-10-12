@@ -10,10 +10,10 @@
      th:attr="data-initial-status=${payment.status.name()},data-status-url=@{/staff/billing/bank/payment/{id}/status(id=${payment.paymentId})}">
     <div class="mc-page-header border-bottom pb-3">
         <div>
-            <h1 class="mc-page-title"><i class="bi bi-qr-code text-primary me-2"></i>Thanh Toán Chuyển Khoản</h1>
+            <h1 class="mc-page-title">Thanh toán chuyển khoản</h1>
             <p class="mc-page-subtitle">Quét VietQR và giữ nguyên số tiền cùng nội dung chuyển khoản.</p>
         </div>
-        <a th:href="@{/staff/billing}" class="btn btn-sm btn-outline-secondary">Về danh sách hóa đơn</a>
+        <a th:href="${billingReturnUrl}" class="btn btn-sm btn-outline-secondary">Về danh sách hóa đơn</a>
     </div>
 
     <div class="row g-4 justify-content-center">
@@ -54,6 +54,7 @@
                     <summary class="fw-semibold">Đối soát thủ công tại quầy</summary>
                     <p class="small text-muted mt-2">Chỉ dùng sau khi lễ tân đã kiểm tra giao dịch trong tài khoản ngân hàng.</p>
                     <form th:action="@{/staff/billing/bank/payment/{id}/confirm(id=${payment.paymentId})}" method="post">
+                        <input th:each="filter : ${billingFilters}" type="hidden" th:name="${filter.key}" th:value="${filter.value}">
                         <label for="bankTransactionId" class="form-label">Mã giao dịch ngân hàng</label>
                         <input id="bankTransactionId" name="bankTransactionId" class="form-control mb-2"
                                minlength="6" maxlength="100" pattern="[A-Za-z0-9._-]{6,100}" required>

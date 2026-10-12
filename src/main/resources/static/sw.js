@@ -1,5 +1,5 @@
 /* Public static assets only. Never persist authenticated HTML or API responses. */
-const CACHE_NAME = 'medclinic-static-v2';
+const CACHE_NAME = 'medclinic-static-v3';
 const STATIC_ASSETS = ['/offline.html', '/images/logo.svg'];
 self.addEventListener('install', event => {
     event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(STATIC_ASSETS)));

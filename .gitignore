@@ -64,6 +64,7 @@ Mau_Thiet_Ke_Du_Lieu/
 /.codex/
 /.impeccable/
 /output/
+/tmp/
 # Private raw evidence stays local; curated public summaries are committed.
 /docs/evidence/private/
 /docs/evidence/backend-2026-10-01/camera-scan-result.png

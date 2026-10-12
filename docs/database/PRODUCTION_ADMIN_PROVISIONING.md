@@ -5,7 +5,7 @@
 Với database mới, quy trình production là:
 
 1. DBA tạo database rỗng và cấu hình principal/secret kết nối.
-2. Khởi động release với profile `sqlserver`: Flyway chạy `V1__baseline_schema.sql` rồi `V2__reference_roles.sql`; Hibernate `validate` sau migration.
+2. Khởi động release với profile `sqlserver`: Flyway chạy V1–V10, trong đó V2 tạo role hệ thống; Hibernate `validate` sau migration.
 3. Chạy `SQLSERVER_ADMIN_PROVISIONING_TEMPLATE.sql` để tạo quản trị viên đầu tiên bằng BCrypt hash đã sinh ngoài script.
 
 Với database legacy 16 bảng, phải backup + pre-check trước. Production mặc định không tự baseline; chỉ bật `SPRING_FLYWAY_BASELINE_ON_MIGRATE=true` cho lần adoption đầu tiên để Flyway ghi baseline version 1 và áp dụng V2 trở đi, sau đó bỏ opt-in. Không baseline schema dở dang hoặc không rõ nguồn gốc.

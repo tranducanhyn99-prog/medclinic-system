@@ -3,7 +3,7 @@
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout/dashboard}">
 <head>
-    <title>Bảng Điều Khiển Quản Trị KPI - MedClinic</title>
+    <title>Tổng quan phòng khám - MedClinic</title>
 </head>
 <body>
 <div layout:fragment="content">
@@ -12,7 +12,7 @@
     <div class="mc-page-header align-items-end border-bottom pb-3">
         <div>
             <h1 class="mc-page-title">
-                <i class="bi bi-speedometer2 text-danger me-2"></i>Tổng Quan Vận Hành
+                Tổng quan vận hành
             </h1>
             <p class="text-secondary small mb-0">Theo dõi nhanh quy mô, lịch khám và doanh thu của phòng khám.</p>
         </div>
@@ -29,16 +29,13 @@
     </div>
 
     <!-- 4 KPI Metrics -->
-    <div class="row g-3 mb-4">
+    <div class="row g-3 mb-4 mc-stat-strip">
         <div class="col-sm-6 col-xl-3">
             <div class="mc-kpi-card">
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
                         <div class="mc-kpi-label">Bệnh nhân</div>
                         <div class="mc-kpi-value" th:text="${totalPatients}">0</div>
-                    </div>
-                    <div class="mc-kpi-icon">
-                        <i class="bi bi-people-fill fs-3"></i>
                     </div>
                 </div>
             </div>
@@ -51,9 +48,6 @@
                         <div class="mc-kpi-label">Bác sĩ</div>
                         <div class="mc-kpi-value" th:text="${totalDoctors}">0</div>
                     </div>
-                    <div class="mc-kpi-icon">
-                        <i class="bi bi-person-badge-fill fs-3"></i>
-                    </div>
                 </div>
             </div>
         </div>
@@ -64,9 +58,6 @@
                     <div>
                         <div class="mc-kpi-label">Lịch khám hôm nay</div>
                         <div class="mc-kpi-value" th:text="${todayAppointments}">0</div>
-                    </div>
-                    <div class="mc-kpi-icon">
-                        <i class="bi bi-calendar2-check-fill fs-3"></i>
                     </div>
                 </div>
             </div>
@@ -80,9 +71,6 @@
                         <div class="mc-kpi-value"
                             th:text="${@money.vnd(totalRevenue)}">0 đ</div>
                     </div>
-                    <div class="mc-kpi-icon">
-                        <i class="bi bi-cash-coin fs-3"></i>
-                    </div>
                 </div>
             </div>
         </div>
@@ -94,7 +82,7 @@
         <div class="col-lg-5">
             <div class="mc-chart-card">
                 <h2 class="h6 fw-bold text-dark mb-3">
-                    <i class="bi bi-pie-chart-fill text-primary me-2"></i>Trạng thái lịch hẹn
+                    Trạng thái lịch hẹn
                 </h2>
                 <div th:if="${!#maps.isEmpty(statusSummary)}" class="chart-container" style="position: relative; height: 260px;">
                     <canvas id="statusChart" role="img" aria-label="Trạng thái lịch hẹn" aria-describedby="statusData"></canvas>
@@ -115,7 +103,7 @@
         <div class="col-lg-7">
             <div class="mc-chart-card">
                 <h2 class="h6 fw-bold text-dark mb-3">
-                    <i class="bi bi-bar-chart-fill text-success me-2"></i>Lượt đặt khám theo chuyên khoa
+                    Lượt đặt khám theo chuyên khoa
                 </h2>
                 <div th:if="${!#maps.isEmpty(specialtySummary)}" class="chart-container" style="position: relative; height: 260px;">
                     <canvas id="specialtyChart" role="img" aria-label="Lượt đặt khám theo chuyên khoa" aria-describedby="specialtyData"></canvas>
@@ -136,34 +124,30 @@
     <!-- Quick Management Hub -->
     <div class="mc-chart-card">
         <h2 class="h6 fw-bold text-dark mb-3">
-            <i class="bi bi-grid-fill text-secondary me-2"></i>Quản trị nhanh
+            Quản trị nhanh
         </h2>
         <div class="row g-3">
             <div class="col-sm-6 col-md-3">
                 <a th:href="@{/admin/specialties}" class="mc-admin-link flex-column align-items-start gap-1">
-                    <i class="bi bi-diagram-3-fill fs-2 text-primary mb-2"></i>
-                    <h3 class="h6 fw-bold text-dark mb-1">Chuyên Khoa</h3>
+                    <h3 class="h6 fw-bold text-dark mb-1">Chuyên khoa</h3>
                     <small class="text-secondary">Cấu hình danh mục khoa khám</small>
                 </a>
             </div>
             <div class="col-sm-6 col-md-3">
                 <a th:href="@{/admin/doctors}" class="mc-admin-link flex-column align-items-start gap-1">
-                    <i class="bi bi-person-badge-fill fs-2 text-success mb-2"></i>
-                    <h3 class="h6 fw-bold text-dark mb-1">Đội Ngũ Bác Sĩ</h3>
+                    <h3 class="h6 fw-bold text-dark mb-1">Đội ngũ bác sĩ</h3>
                     <small class="text-secondary">Hồ sơ, học hàm, giá khám</small>
                 </a>
             </div>
             <div class="col-sm-6 col-md-3">
                 <a th:href="@{/admin/medicines}" class="mc-admin-link flex-column align-items-start gap-1">
-                    <i class="bi bi-capsule fs-2 text-warning mb-2"></i>
-                    <h3 class="h6 fw-bold text-dark mb-1">Kho Thuốc & Dược Phẩm</h3>
+                    <h3 class="h6 fw-bold text-dark mb-1">Kho thuốc và dược phẩm</h3>
                     <small class="text-secondary">Quản lý tồn kho và giá bán</small>
                 </a>
             </div>
             <div class="col-sm-6 col-md-3">
                 <a th:href="@{/admin/users}" class="mc-admin-link flex-column align-items-start gap-1">
-                    <i class="bi bi-people-fill fs-2 text-danger mb-2"></i>
-                    <h3 class="h6 fw-bold text-dark mb-1">Tài Khoản Người Dùng</h3>
+                    <h3 class="h6 fw-bold text-dark mb-1">Tài khoản người dùng</h3>
                     <small class="text-secondary">Phân quyền và khóa tài khoản</small>
                 </a>
             </div>

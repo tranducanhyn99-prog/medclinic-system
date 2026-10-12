@@ -16,7 +16,7 @@ class InvoiceCodeReservationCoordinatorTest {
     void retriesAfterUniqueViolationFromIndependentReservationTransaction() {
         InvoiceCodeReservationWriter writer = mock(InvoiceCodeReservationWriter.class);
         doThrow(new DataIntegrityViolationException("duplicate invoice code")).doNothing().when(writer).reserve(anyString());
-        InvoiceCodeReservationCoordinator coordinator = new InvoiceCodeReservationCoordinator(writer);
+        InvoiceCodeReservationCoordinator coordinator = new InvoiceCodeReservationCoordinator(writer, java.time.Clock.systemUTC());
         AtomicInteger calls = new AtomicInteger();
 
         assertEquals("INV-second", coordinator.reserveUniqueCode(() -> calls.getAndIncrement() == 0 ? "INV-first" : "INV-second"));
@@ -28,7 +28,7 @@ class InvoiceCodeReservationCoordinatorTest {
     void exhaustsReservationsWithBusinessErrorForOuterTransactionRollback() {
         InvoiceCodeReservationWriter writer = mock(InvoiceCodeReservationWriter.class);
         doThrow(new DataIntegrityViolationException("duplicate invoice code")).when(writer).reserve(anyString());
-        InvoiceCodeReservationCoordinator coordinator = new InvoiceCodeReservationCoordinator(writer);
+        InvoiceCodeReservationCoordinator coordinator = new InvoiceCodeReservationCoordinator(writer, java.time.Clock.systemUTC());
 
         assertThrows(BusinessLogicException.class, () -> coordinator.reserveUniqueCode(() -> "INV-collision"));
         verify(writer, times(InvoiceCodeReservationCoordinator.MAX_ATTEMPTS)).reserve("INV-collision");

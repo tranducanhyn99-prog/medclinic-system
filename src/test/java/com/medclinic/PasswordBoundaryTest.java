@@ -23,7 +23,7 @@ import static org.mockito.Mockito.*;
 class PasswordBoundaryTest {
     @Test
     void bcryptDoesNotAcceptDifferentSuffixOrUnicodeByteOverflow() {
-        PasswordEncoder encoder = new SecurityConfig(null, null, null).passwordEncoder();
+        PasswordEncoder encoder = new SecurityConfig(null, null, null, null).passwordEncoder();
         for (String boundary : new String[] {"a".repeat(72), "á".repeat(36)}) {
             String hash = encoder.encode(boundary);
             assertTrue(encoder.matches(boundary, hash));

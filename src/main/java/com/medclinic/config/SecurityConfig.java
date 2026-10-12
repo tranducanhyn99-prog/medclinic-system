@@ -30,6 +30,7 @@ public class SecurityConfig {
     private final CustomUserDetailsService userDetailsService;
     private final SensitiveEndpointRateLimitFilter rateLimitFilter;
     private final SecurityAuditService securityAuditService;
+    private final com.medclinic.repository.UserRepository userRepository;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -74,13 +75,16 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http,
+            org.springframework.beans.factory.ObjectProvider<org.springframework.security.oauth2.client.registration.ClientRegistrationRepository> googleClients,
+            org.springframework.beans.factory.ObjectProvider<org.springframework.security.oauth2.client.userinfo.OAuth2UserService<org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest, org.springframework.security.oauth2.core.oidc.user.OidcUser>> googleUsers,
+            com.medclinic.service.AuthVerificationService verification) throws Exception {
         http
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(HttpMethod.GET, "/patient/booking").permitAll()
                 .requestMatchers(
                     "/", "/home", "/about", "/specialties/**", "/doctors/**",
-                    "/login", "/register", "/auth/**", "/forgot-password", "/reset-password", "/css/**", "/js/**", "/images/**",
+                    "/login", "/register", "/auth/**", "/oauth2/authorization/google", "/login/oauth2/code/google", "/forgot-password", "/reset-password", "/css/**", "/js/**", "/images/**",
                     "/manifest.json", "/sw.js", "/offline.html", "/favicon.ico", "/vendor/ui/**",
                     "/webjars/**", "/h2-console/**", "/error", "/error/**", "/api/public/**"
                 ).permitAll()
@@ -131,8 +135,38 @@ public class SecurityConfig {
                         "camera=" + (request.getRequestURI().equals(request.getContextPath() + "/staff/reception")
                                 ? "(self)" : "()") + ", microphone=(), geolocation=()"))
             )
-            .addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class);
+            .addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(new com.medclinic.security.ActiveAccountFilter(userRepository),
+                    org.springframework.security.web.access.intercept.AuthorizationFilter.class);
 
+        if (googleClients.getIfAvailable() != null) {
+            http.oauth2Login(oauth -> oauth.loginPage("/login")
+                    // Google proves identity; only the OTP controller may persist a clinic login.
+                    .securityContextRepository(new org.springframework.security.web.context.NullSecurityContextRepository())
+                    .userInfoEndpoint(info -> info.oidcUserService(googleUsers.getObject()))
+                    .successHandler((request, response, authentication) -> {
+                        var principal = (com.medclinic.security.GoogleUserDetails) authentication.getPrincipal();
+                        org.springframework.security.core.context.SecurityContextHolder.clearContext();
+                        new org.springframework.security.web.context.HttpSessionSecurityContextRepository().saveContext(
+                                org.springframework.security.core.context.SecurityContextHolder.createEmptyContext(), request, response);
+                        var session = request.getSession(true);
+                        session.removeAttribute("PENDING_OTP_CHALLENGE_ID");
+                        try {
+                            var issued = verification.issueGoogleChallenge(principal.getId());
+                            session.setAttribute("PENDING_OTP_CHALLENGE_ID", issued.challengeId());
+                            response.sendRedirect(request.getContextPath() + "/auth/otp?challenge=" + issued.challengeId());
+                        } catch (RuntimeException exception) {
+                            securityAuditService.authenticationFailure("google", request.getRemoteAddr(), "OTP_CHALLENGE_FAILED");
+                            response.sendRedirect(request.getContextPath() + "/login?googleError=true");
+                        }
+                    })
+                    .failureHandler((request, response, exception) -> {
+                        String reason = exception instanceof org.springframework.security.oauth2.core.OAuth2AuthenticationException oauthError
+                                ? oauthError.getError().getErrorCode() : "GOOGLE_LOGIN_FAILED";
+                        securityAuditService.authenticationFailure("google", request.getRemoteAddr(), reason);
+                        response.sendRedirect(request.getContextPath() + "/login?googleError=true");
+                    }));
+        }
         return http.build();
     }
 }

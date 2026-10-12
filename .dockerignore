@@ -12,6 +12,7 @@ target/
 .codex/
 .impeccable/
 output/
+tmp/
 uploads/
 backups/
 MedClinic.eapx

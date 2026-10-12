@@ -3,7 +3,7 @@
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout/dashboard}">
 <head>
-    <title>Quản Lý Chuyên Khoa - MedClinic</title>
+    <title>Chuyên khoa - MedClinic</title>
 </head>
 <body>
 <div layout:fragment="content">
@@ -13,7 +13,7 @@
         <div>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-1 small">
-                    <li class="breadcrumb-item"><a th:href="@{/admin/dashboard}" class="text-decoration-none">Admin</a></li>
+                    <li class="breadcrumb-item"><a th:href="@{/admin/dashboard}" class="text-decoration-none">Quản trị</a></li>
                     <li class="breadcrumb-item active" aria-current="page">Chuyên khoa</li>
                 </ol>
             </nav>
@@ -22,7 +22,7 @@
         </div>
         <div>
             <button type="button" class="btn btn-med-primary" data-bs-toggle="modal" data-bs-target="#addSpecialtyModal">
-                <i class="bi bi-plus-circle me-1"></i> Thêm Chuyên Khoa Mới
+                <i class="bi bi-plus-circle me-1"></i> Thêm Chuyên khoa Mới
             </button>
         </div>
     </div>
@@ -35,10 +35,10 @@
             </div>
             <div class="table-responsive">
                 <table class="table mc-data-table align-middle mb-0">
-                    <thead class="table-light text-uppercase">
+                    <thead class="table-light">
                         <tr>
                             <th style="width: 60px;" class="text-center">STT</th>
-                            <th style="min-width: 180px;">Tên Chuyên Khoa</th>
+                            <th style="min-width: 180px;">Tên Chuyên khoa</th>
                             <th>Mô tả chuyên khoa</th>
                             <th style="width: 120px;" class="text-center">Bác sĩ phụ trách</th>
                             <th style="width: 120px;" class="text-center">Trạng thái</th>
@@ -94,7 +94,7 @@
                     <input type="hidden" th:field="*{id}">
                     <div class="modal-header">
                         <h2 class="modal-title fw-bold text-dark" id="addSpecialtyModalTitle">
-                            <i class="bi bi-plus-circle-fill text-primary me-2"></i><span th:text="${specialtyForm.id == null ? 'Thêm chuyên khoa mới' : 'Sửa chuyên khoa'}">Thêm chuyên khoa mới</span>
+                            <span th:text="${specialtyForm.id == null ? 'Thêm chuyên khoa mới' : 'Sửa chuyên khoa'}">Thêm chuyên khoa mới</span>
                         </h2>
                         <button type="button" class="btn-close" aria-label="Đóng hộp thoại" data-bs-dismiss="modal"></button>
                     </div>

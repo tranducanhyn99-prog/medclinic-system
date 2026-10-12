@@ -11,9 +11,14 @@ import com.medclinic.service.impl.InvoiceCodeReservationCoordinator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import com.medclinic.util.VndMoney;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -38,6 +43,9 @@ public class InvoiceService {
         if (medicineFee == null) medicineFee = BigDecimal.ZERO;
 
         BigDecimal totalAmount = consultationFee.add(medicineFee);
+        VndMoney.requireValid(consultationFee, "Tiền khám");
+        VndMoney.requireValid(medicineFee, "Tiền thuốc");
+        VndMoney.requireValid(totalAmount, "Tổng hóa đơn");
         String invoiceCode = invoiceCodeReservationCoordinator.reserveUniqueCode();
 
         Invoice invoice = new Invoice();
@@ -92,6 +100,38 @@ public class InvoiceService {
     @Transactional(readOnly = true)
     public List<Invoice> findAll() {
         return invoiceRepository.findAllByOrderByCreatedAtDesc();
+    }
+
+    @Transactional(readOnly = true)
+    public Page<Invoice> findForBilling(PaymentStatus status, LocalDate from, LocalDate to, int page, int size) {
+        validateDateRange(from, to);
+        int boundedSize = Math.max(1, Math.min(100, size));
+        var pageable = PageRequest.of(Math.max(0, Math.min(1_000_000, page)), boundedSize,
+                Sort.by(Sort.Direction.DESC, "createdAt", "id"));
+        var result = invoiceRepository.findForBilling(status, from == null ? null : from.atStartOfDay(),
+                to == null ? null : to.plusDays(1).atStartOfDay(), pageable);
+        if (result.getTotalPages() == 0 && result.getNumber() > 0) {
+            return Page.empty(pageable.withPage(0));
+        }
+        if (result.getTotalPages() > 0 && result.getNumber() >= result.getTotalPages()) {
+            return invoiceRepository.findForBilling(status, from == null ? null : from.atStartOfDay(),
+                    to == null ? null : to.plusDays(1).atStartOfDay(),
+                    pageable.withPage(result.getTotalPages() - 1));
+        }
+        return result;
+    }
+
+    @Transactional(readOnly = true)
+    public long countForBilling(PaymentStatus status, LocalDate from, LocalDate to) {
+        validateDateRange(from, to);
+        return invoiceRepository.countForBilling(status, from == null ? null : from.atStartOfDay(),
+                to == null ? null : to.plusDays(1).atStartOfDay());
+    }
+
+    private void validateDateRange(LocalDate from, LocalDate to) {
+        if (to != null && (to.equals(LocalDate.MAX) || from != null && from.isAfter(to))) {
+            throw new BusinessLogicException("Khoảng ngày hóa đơn không hợp lệ");
+        }
     }
 
 }

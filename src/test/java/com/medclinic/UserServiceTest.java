@@ -71,7 +71,7 @@ class UserServiceTest {
         when(roleRepository.findByName(RoleType.ROLE_PATIENT)).thenReturn(Optional.of(patientRole));
         when(passwordEncoder.encode("12345678")).thenReturn("hashedPassword123");
 
-        when(userRepository.save(any(User.class))).thenAnswer(invocation -> {
+        when(userRepository.saveAndFlush(any(User.class))).thenAnswer(invocation -> {
             User saved = invocation.getArgument(0);
             saved.setId(10L);
             return saved;
@@ -88,7 +88,7 @@ class UserServiceTest {
         assertFalse(result.getEmailVerified());
         assertFalse(result.getOtpBypass());
 
-        verify(userRepository, times(1)).save(any(User.class));
+        verify(userRepository, times(1)).saveAndFlush(any(User.class));
     }
 
     @Test
@@ -124,5 +124,21 @@ class UserServiceTest {
                 () -> userService.changePassword(1L, "old", "short"));
         assertEquals(com.medclinic.util.PasswordPolicy.MESSAGE, exception.getMessage());
         verify(userRepository, never()).save(any(User.class));
+    }
+
+    @Test
+    void registrationRejectsDuplicatePhoneAndNormalizesBeforeLookup() {
+        registerDto.setPhone(" 0912345678 ");
+        when(userRepository.existsByPhone("0912345678")).thenReturn(true);
+        assertThrows(BusinessLogicException.class, () -> userService.registerPatient(registerDto));
+        verify(userRepository, never()).saveAndFlush(any());
+    }
+
+    @Test
+    void phoneConstraintRaceBecomesAnActionableBusinessError() {
+        when(roleRepository.findByName(RoleType.ROLE_PATIENT)).thenReturn(Optional.of(patientRole));
+        when(userRepository.saveAndFlush(any())).thenThrow(new org.springframework.dao.DataIntegrityViolationException("unique phone"));
+        assertTrue(assertThrows(BusinessLogicException.class, () -> userService.registerPatient(registerDto))
+                .getMessage().contains("kiểm tra số điện thoại"));
     }
 }

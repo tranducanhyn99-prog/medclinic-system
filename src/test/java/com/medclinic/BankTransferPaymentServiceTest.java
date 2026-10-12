@@ -71,12 +71,25 @@ class BankTransferPaymentServiceTest {
     }
 
     @Test
+    void refusesLegacyFractionalOrOverflowingInvoiceWithoutCreatingTransfer() {
+        Invoice invoice = unpaidInvoice();
+        when(invoices.findByIdForUpdate(7L)).thenReturn(Optional.of(invoice));
+        for (String amount : new String[]{"125000.50", "-1", "10000000000"}) {
+            invoice.setTotalAmount(new BigDecimal(amount));
+            assertThrows(BusinessLogicException.class, () -> service.createInstruction(7L));
+        }
+        verifyNoInteractions(payments);
+    }
+
+    @Test
     void rejectsUnsignedOrWrongAmountCallback() {
         var callback = callback(new BigDecimal("120000.00"));
         assertThrows(SecurityException.class, () -> service.confirmCallback(callback, "00".repeat(32)));
 
         BankTransferPayment payment = pendingPayment(unpaidInvoice());
         when(payments.findByProviderEventId("evt-1")).thenReturn(Optional.empty());
+        when(payments.findInvoiceIdByTransferCode("MC7ABCDEFGH")).thenReturn(Optional.of(7L));
+        when(invoices.findByIdForUpdate(7L)).thenReturn(Optional.of(payment.getInvoice()));
         when(payments.findByTransferCodeForUpdate("MC7ABCDEFGH")).thenReturn(Optional.of(payment));
         String signature = HmacSignatureVerifier.signSha256(
                 SECRET, BankTransferPaymentService.canonical(callback));
@@ -97,6 +110,7 @@ class BankTransferPaymentServiceTest {
                 .thenReturn(Optional.of(payment));
         when(payments.findByTransferCodeForUpdate("MC7ABCDEFGH")).thenReturn(Optional.of(payment));
         when(payments.existsByBankTransactionId("txn-123456")).thenReturn(false);
+        when(payments.findInvoiceIdByTransferCode("MC7ABCDEFGH")).thenReturn(Optional.of(7L));
         when(invoices.findByIdForUpdate(7L)).thenReturn(Optional.of(invoice));
         String signature = HmacSignatureVerifier.signSha256(
                 SECRET, BankTransferPaymentService.canonical(callback));
@@ -110,6 +124,9 @@ class BankTransferPaymentServiceTest {
         assertEquals(PaymentMethod.BANK_TRANSFER, invoice.getPaymentMethod());
         assertEquals("txn-123456", payment.getBankTransactionId());
         verify(invoices, times(1)).save(invoice);
+        var order = inOrder(invoices, payments);
+        order.verify(invoices).findByIdForUpdate(7L);
+        order.verify(payments).findByTransferCodeForUpdate("MC7ABCDEFGH");
     }
 
     @Test
@@ -117,6 +134,7 @@ class BankTransferPaymentServiceTest {
         Invoice invoice = unpaidInvoice();
         BankTransferPayment payment = pendingPayment(invoice);
         when(payments.findByIdForUpdate(11L)).thenReturn(Optional.of(payment));
+        when(payments.findInvoiceIdById(11L)).thenReturn(Optional.of(7L));
         when(payments.existsByBankTransactionId("MB-123456")).thenReturn(false);
         when(invoices.findByIdForUpdate(7L)).thenReturn(Optional.of(invoice));
 
@@ -126,6 +144,9 @@ class BankTransferPaymentServiceTest {
         assertEquals(PaymentStatus.PAID, invoice.getPaymentStatus());
         verify(audit).record(4L, "BANK_TRANSFER_MANUAL_CONFIRM", "INVOICE", 7L,
                 "SUCCESS", "MB-123456", "STAFF_RECONCILIATION");
+        var order = inOrder(invoices, payments);
+        order.verify(invoices).findByIdForUpdate(7L);
+        order.verify(payments).findByIdForUpdate(11L);
     }
 
     private Invoice unpaidInvoice() {

@@ -53,7 +53,7 @@ class WorkflowFormErrorRoundTripTest {
     void failedStartExaminationReturnsToDeskWithErrorMessage() {
         MedicalRecordService records = mock(MedicalRecordService.class);
         DoctorDeskController controller = new DoctorDeskController(mock(DoctorService.class), mock(AppointmentService.class),
-                records, mock(MedicineService.class), mock(ScheduleService.class));
+                records, mock(MedicineService.class), mock(ScheduleService.class), java.time.Clock.systemUTC());
         doThrow(new BusinessLogicException("Chỉ có thể bắt đầu khám bệnh nhân đã check-in"))
                 .when(records).startExamination(11L, 7L);
         RedirectAttributesModelMap redirect = new RedirectAttributesModelMap();

@@ -15,6 +15,7 @@ import java.sql.Connection;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @EnabledIfEnvironmentVariable(named = "RUN_SQLSERVER_IT", matches = "true")
 class SqlServerFlywayMigrationIntegrationTest {
@@ -43,6 +44,10 @@ class SqlServerFlywayMigrationIntegrationTest {
                 assertEquals("SQL", historyType(jdbc, "4"));
                 assertEquals("SQL", historyType(jdbc, "5"));
                 assertEquals("SQL", historyType(jdbc, "6"));
+                assertEquals("SQL", historyType(jdbc, "7"));
+                assertEquals("SQL", historyType(jdbc, "8"));
+                assertEquals("SQL", historyType(jdbc, "9"));
+                assertEquals("SQL", historyType(jdbc, "10"));
                 assertEquals(9, jdbc.queryForObject("select count(*) from users", Integer.class));
                 assertEquals(6, jdbc.queryForObject("select count(*) from doctor_profiles", Integer.class));
             }
@@ -63,10 +68,65 @@ class SqlServerFlywayMigrationIntegrationTest {
                 assertEquals("SQL", historyType(jdbc, "4"));
                 assertEquals("SQL", historyType(jdbc, "5"));
                 assertEquals("SQL", historyType(jdbc, "6"));
+                assertEquals("SQL", historyType(jdbc, "7"));
+                assertEquals("SQL", historyType(jdbc, "8"));
+                assertEquals("SQL", historyType(jdbc, "9"));
+                assertEquals("SQL", historyType(jdbc, "10"));
             }
         } finally {
             dropMigrationDatabase(masterJdbc);
         }
+    }
+
+    @Test
+    void phoneMigrationRejectsLegacyDuplicatesAndBlanksWithoutChangingProfiles() {
+        String baseUrl = requiredEnv("DB_URL");
+        assertSafeLocalAcceptanceUrl(baseUrl);
+        String username = optionalEnv("DB_USERNAME"), password = optionalEnv("DB_PASSWORD");
+        String url = withDatabase(baseUrl, MIGRATION_DATABASE);
+        JdbcTemplate master = jdbc(withDatabase(baseUrl, "master"), username, password);
+        try {
+            for (boolean duplicate : new boolean[]{true, false}) {
+                recreateMigrationDatabase(master);
+                flyway(url, username, password, "6").migrate();
+                JdbcTemplate legacy = jdbc(url, username, password);
+                String phone = duplicate ? "0912345678" : "";
+                int count = duplicate ? 2 : 1;
+                for (int i = 0; i < count; i++) {
+                    legacy.update("INSERT INTO users(username,email,password,full_name,phone,is_active,created_at,role_id) "
+                            + "VALUES(?,?,?,?,?,1,GETDATE(),(SELECT id FROM roles WHERE name='ROLE_PATIENT'))",
+                            "legacy-phone-" + i, "legacy-phone-" + i + "@example.test", "encoded", "Legacy patient", phone);
+                }
+                assertThrows(org.flywaydb.core.api.FlywayException.class,
+                        () -> flyway(url, username, password, "7").migrate());
+                assertEquals(count, legacy.queryForObject("SELECT COUNT(*) FROM users WHERE phone = ?", Integer.class, phone));
+                assertEquals(0, legacy.queryForObject("SELECT COUNT(*) FROM sys.indexes WHERE name='ux_users_phone'", Integer.class));
+            }
+        } finally { dropMigrationDatabase(master); }
+    }
+
+    @Test
+    void moneyMigrationRejectsLegacyFractionsWithoutRoundingCatalog() {
+        String baseUrl = requiredEnv("DB_URL");
+        assertSafeLocalAcceptanceUrl(baseUrl);
+        String username = optionalEnv("DB_USERNAME"), password = optionalEnv("DB_PASSWORD");
+        String url = withDatabase(baseUrl, MIGRATION_DATABASE);
+        JdbcTemplate master = jdbc(withDatabase(baseUrl, "master"), username, password);
+        try {
+            recreateMigrationDatabase(master);
+            flyway(url, username, password, "8").migrate();
+            JdbcTemplate legacy = jdbc(url, username, password);
+            legacy.update("INSERT INTO medicines(name,unit,unit_price,stock_quantity,is_active) VALUES('Fraction test','vien',1000.50,0,1)");
+            assertThrows(org.flywaydb.core.api.FlywayException.class,
+                    () -> flyway(url, username, password, "9").migrate());
+            assertEquals(0, new java.math.BigDecimal("1000.50").compareTo(
+                    legacy.queryForObject("SELECT unit_price FROM medicines WHERE name='Fraction test'", java.math.BigDecimal.class)));
+        } finally { dropMigrationDatabase(master); }
+    }
+
+    private org.flywaydb.core.Flyway flyway(String url, String username, String password, String target) {
+        return org.flywaydb.core.Flyway.configure().dataSource(url, username, password)
+                .locations("classpath:db/migration/sqlserver").target(target).load();
     }
 
     private ConfigurableApplicationContext startSqlServerApplication(
@@ -126,7 +186,7 @@ class SqlServerFlywayMigrationIntegrationTest {
         assertTrue(tableExists(jdbc, "bank_transfer_payments"));
         assertTrue(tableExists(jdbc, "business_audit_events"));
         assertTrue(tableExists(jdbc, "security_rate_limit_buckets"));
-        assertEquals(6, jdbc.queryForObject(
+        assertEquals(10, jdbc.queryForObject(
                 "select count(*) from flyway_schema_history where success = 1",
                 Integer.class));
         assertEquals(4, jdbc.queryForObject(

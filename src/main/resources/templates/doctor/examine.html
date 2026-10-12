@@ -3,7 +3,7 @@
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout/dashboard}">
 <head>
-    <title>Bàn Khám Bệnh & Kê Đơn Thuốc - MedClinic</title>
+    <title>Khám bệnh và kê đơn - MedClinic</title>
 </head>
 <body>
 <div layout:fragment="content">
@@ -18,7 +18,7 @@
                 </ol>
             </nav>
             <h1 class="mc-page-title">
-                <i class="bi bi-clipboard2-pulse-fill text-primary me-2"></i>Bàn Khám Lâm Sàng & Kê Đơn Thuốc
+                Khám bệnh và kê đơn
             </h1>
         </div>
         <div class="d-flex align-items-center gap-2">
@@ -63,7 +63,7 @@
                 <!-- Previous Medical History Accordion -->
                 <div class="mc-workflow-card p-3">
                     <h2 class="h6 fw-bold text-dark mb-2 d-flex align-items-center justify-content-between">
-                        <span><i class="bi bi-clock-history text-secondary me-2"></i>Tiền Sử Khám Bệnh</span>
+                        <span>Lịch sử khám bệnh</span>
                         <span class="badge bg-secondary rounded-pill" th:text="${#lists.size(patientHistory)}">0</span>
                     </h2>
 
@@ -122,8 +122,7 @@
                 <!-- Section 1: Clinical Diagnosis -->
                 <div class="mc-workflow-card mb-4">
                     <h2 class="mc-step-title">
-                        <i class="bi bi-file-earmark-medical-fill text-primary me-2"></i>
-                        1. Khám Lâm Sàng & Chẩn Đoán Y Khoa
+                        1. Khám và chẩn đoán
                     </h2>
 
                     <div class="mb-3">
@@ -149,11 +148,10 @@
                 <div class="mc-workflow-card mb-4">
                     <div class="d-flex flex-wrap align-items-center justify-content-between mb-3">
                         <h2 class="mc-step-title mb-0">
-                            <i class="bi bi-capsule-fill text-success me-2"></i>
-                            2. Kê Đơn Thuốc Điện Tử
+                            2. Kê đơn thuốc
                         </h2>
                         <button type="button" class="btn btn-sm btn-outline-success fw-semibold" id="btnAddMedicine">
-                            <i class="bi bi-plus-circle me-1"></i> Thêm Thuốc
+                            <i class="bi bi-plus-circle me-1"></i> Thêm thuốc
                         </button>
                     </div>
 
@@ -192,8 +190,7 @@
                 <!-- Section 3: Notes & Re-examination -->
                 <div class="mc-workflow-card mb-4">
                     <h2 class="mc-step-title">
-                        <i class="bi bi-calendar-event-fill text-warning me-2"></i>
-                        3. Lời Dặn & Hẹn Ngày Tái Khám
+                        3. Lời dặn và tái khám
                     </h2>
 
                     <div class="row g-3">
@@ -218,10 +215,10 @@
                 </details>
                 <div class="mc-workflow-card mc-clinical-actions d-flex flex-row align-items-center justify-content-between">
                     <a th:href="@{/doctor/desk}" class="btn btn-outline-secondary">
-                        <i class="bi bi-arrow-left me-1"></i> Quay lại Hàng Chờ
+                        <i class="bi bi-arrow-left me-1"></i> Quay lại hàng chờ
                     </a>
                     <button type="submit" class="btn btn-med-primary px-4 py-2" id="btnSubmitExamine">
-                        <i class="bi bi-check2-all fs-5"></i> Hoàn Tất Ca Khám & Lưu Bệnh Án
+                        <i class="bi bi-check2-all fs-5"></i> Hoàn tất khám và lưu bệnh án
                     </button>
                 </div>
 

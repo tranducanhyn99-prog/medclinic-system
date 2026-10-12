@@ -46,7 +46,7 @@ class DoctorServiceTest {
 
         assertEquals("GPHN-001", result.getLicenseNumber());
         assertEquals("encoded", result.getUser().getPassword());
-        verify(userRepository).save(any());
+        verify(userRepository).saveAndFlush(any());
     }
 
     @Test
@@ -55,7 +55,7 @@ class DoctorServiceTest {
         when(userRepository.existsByPhone(dto.getPhone())).thenReturn(true);
 
         assertThrows(BusinessLogicException.class, () -> doctorService.registerDoctor(dto));
-        verify(userRepository, never()).save(any());
+        verify(userRepository, never()).saveAndFlush(any());
     }
 
     private AdminDoctorCreateDto dto() {

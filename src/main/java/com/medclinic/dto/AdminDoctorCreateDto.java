@@ -24,8 +24,9 @@ public class AdminDoctorCreateDto {
     @Email(message = "Email không đúng định dạng")
     private String email;
     @NotBlank(message = "Số điện thoại không được để trống")
-    @Pattern(regexp = "^(0[3|5|7|8|9])[0-9]{8}$", message = "Số điện thoại không hợp lệ")
+    @Pattern(regexp = com.medclinic.util.PhoneNumbers.PATTERN, message = com.medclinic.util.PhoneNumbers.MESSAGE)
     private String phone;
+    public void setPhone(String phone) { this.phone = phone == null ? null : phone.trim(); }
     @NotBlank(message = "Số giấy phép hành nghề không được để trống")
     @Size(max = 50, message = "Số giấy phép hành nghề quá dài")
     private String licenseNumber;
@@ -35,7 +36,7 @@ public class AdminDoctorCreateDto {
     private String title;
     @NotNull(message = "Số năm kinh nghiệm không được để trống") @Min(value = 0, message = "Số năm kinh nghiệm không hợp lệ")
     private Integer experienceYears;
-    @NotNull(message = "Giá khám không được để trống") @Min(value = 0, message = "Giá khám không hợp lệ")
+    @NotNull(message = "Giá khám không được để trống") @com.medclinic.validation.ValidVnd
     private BigDecimal consultationFee;
     private String bio;
 }

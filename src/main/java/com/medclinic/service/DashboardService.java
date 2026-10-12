@@ -23,6 +23,7 @@ public class DashboardService {
     private final DoctorProfileRepository doctorProfileRepository;
     private final AppointmentRepository appointmentRepository;
     private final InvoiceRepository invoiceRepository;
+    private final java.time.Clock businessClock;
 
     @Transactional(readOnly = true)
     public long countTotalPatients() {
@@ -36,7 +37,7 @@ public class DashboardService {
 
     @Transactional(readOnly = true)
     public long countTodayAppointments() {
-        return appointmentRepository.countByAppointmentDate(LocalDate.now());
+        return appointmentRepository.countByAppointmentDate(LocalDate.now(businessClock));
     }
 
     @Transactional(readOnly = true)

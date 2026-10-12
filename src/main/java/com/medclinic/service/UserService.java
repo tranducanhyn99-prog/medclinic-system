@@ -38,6 +38,10 @@ public class UserService {
         if (userRepository.existsByEmail(registerDto.getEmail())) {
             throw new BusinessLogicException("Email '" + registerDto.getEmail() + "' đã được đăng ký!");
         }
+        String phone = com.medclinic.util.PhoneNumbers.normalize(registerDto.getPhone(), true);
+        if (userRepository.existsByPhone(phone)) {
+            throw new BusinessLogicException("Số điện thoại đã được đăng ký");
+        }
 
         Role patientRole = roleRepository.findByName(RoleType.ROLE_PATIENT)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy vai trò ROLE_PATIENT"));
@@ -47,7 +51,7 @@ public class UserService {
                 .password(passwordEncoder.encode(registerDto.getPassword()))
                 .fullName(registerDto.getFullName().trim())
                 .email(registerDto.getEmail().trim().toLowerCase())
-                .phone(registerDto.getPhone() != null ? registerDto.getPhone().trim() : null)
+                .phone(phone)
                 .gender(registerDto.getGender())
                 .dateOfBirth(registerDto.getDateOfBirth())
                 .address(registerDto.getAddress())
@@ -57,7 +61,7 @@ public class UserService {
                 .isActive(false)
                 .build();
 
-        return userRepository.save(user);
+        return saveWithUniquePhone(user);
     }
 
     @Transactional(readOnly = true)
@@ -86,7 +90,7 @@ public class UserService {
     public User updateUserProfile(Long userId, String fullName, String phone, Gender gender, LocalDate dateOfBirth, String address) {
         requireText(fullName, "Họ tên");
         User user = findById(userId);
-        String normalizedPhone = normalizeOptional(phone);
+        String normalizedPhone = com.medclinic.util.PhoneNumbers.normalize(phone, false);
         if (normalizedPhone != null) {
             User owner = userRepository.findByPhone(normalizedPhone).orElse(null);
             if (owner != null && !owner.getId().equals(userId)) {
@@ -98,7 +102,7 @@ public class UserService {
         user.setGender(gender);
         user.setDateOfBirth(dateOfBirth);
         user.setAddress(normalizeOptional(address));
-        return userRepository.save(user);
+        return saveWithUniquePhone(user);
     }
 
     @Transactional
@@ -126,6 +130,9 @@ public class UserService {
     public void toggleUserStatus(Long userId) {
         User user = findById(userId);
         user.setIsActive(!user.getIsActive());
+        if (!Boolean.TRUE.equals(user.getIsActive())) {
+            user.setSecurityVersion(user.getSecurityVersion() + 1);
+        }
         userRepository.save(user);
         if (!Boolean.TRUE.equals(user.getIsActive())) {
             userRepository.invalidateAuthChallenges(userId, java.time.LocalDateTime.now());
@@ -135,6 +142,14 @@ public class UserService {
     private void requireText(String value, String label) {
         if (value == null || value.trim().isEmpty()) {
             throw new BusinessLogicException(label + " không được để trống");
+        }
+    }
+
+    private User saveWithUniquePhone(User user) {
+        try {
+            return userRepository.saveAndFlush(user);
+        } catch (org.springframework.dao.DataIntegrityViolationException exception) {
+            throw new BusinessLogicException("Thông tin tài khoản đã được đăng ký. Vui lòng kiểm tra số điện thoại, email và tên đăng nhập.");
         }
     }
 

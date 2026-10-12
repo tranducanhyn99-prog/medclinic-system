@@ -22,6 +22,9 @@ public class CustomUserDetails implements UserDetails {
         return user.getId();
     }
 
+
+    public long getSecurityVersion() { return user.getSecurityVersion(); }
+
     public String getFullName() {
         return user.getFullName();
     }

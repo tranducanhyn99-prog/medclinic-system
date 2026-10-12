@@ -40,6 +40,7 @@ public class DoctorDeskController {
     private final MedicalRecordService medicalRecordService;
     private final MedicineService medicineService;
     private final ScheduleService scheduleService;
+    private final java.time.Clock businessClock;
 
     @InitBinder("examinationForm")
     void bindPrescriptionText(WebDataBinder binder) {
@@ -150,7 +151,7 @@ public class DoctorDeskController {
     @GetMapping("/schedule")
     public String showDoctorSchedule(@AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
         DoctorProfile doctorProfile = doctorService.findByUserId(userDetails.getId());
-        LocalDate today = LocalDate.now();
+        LocalDate today = LocalDate.now(businessClock);
         model.addAttribute("schedules", scheduleService.findByDoctorAndDateRange(doctorProfile.getId(), today, today.plusDays(14)));
         return "doctor/schedule";
     }

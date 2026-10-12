@@ -44,8 +44,9 @@ class AppointmentEmailIntegrationTest {
                 .username("email-" + suffix).password("encoded").fullName("Email Patient")
                 .email("email-" + suffix + "@example.test").role(role).isActive(true).build());
         LocalDate date = LocalDate.now().plusDays(14);
-        DoctorSchedule schedule = doctorScheduleRepository.save(DoctorSchedule.builder()
-                .doctor(doctor).workDate(date).shift(ShiftType.AFTERNOON).maxPatients(8).build());
+        DoctorSchedule schedule = doctorScheduleRepository.findByDoctorIdAndWorkDateAndShift(
+                doctor.getId(), date, ShiftType.AFTERNOON).orElseGet(() -> doctorScheduleRepository.save(
+                DoctorSchedule.builder().doctor(doctor).workDate(date).shift(ShiftType.AFTERNOON).maxPatients(8).build()));
         TimeSlot slot = timeSlotRepository.save(TimeSlot.builder().schedule(schedule)
                 .startTime(LocalTime.of(13, 0)).endTime(LocalTime.of(13, 30)).status(SlotStatus.AVAILABLE).build());
 

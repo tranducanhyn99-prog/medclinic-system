@@ -8,7 +8,19 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 
 @Configuration
 @EnableWebSocketMessageBroker
+@lombok.RequiredArgsConstructor
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
+    private final com.medclinic.repository.UserRepository users;
+
+    @Override
+    public void configureWebSocketTransport(org.springframework.web.socket.config.annotation.WebSocketTransportRegistration registry) {
+        registry.addDecoratorFactory(handler -> new org.springframework.web.socket.handler.WebSocketHandlerDecorator(handler) {
+            @Override
+            public void afterConnectionEstablished(org.springframework.web.socket.WebSocketSession session) throws Exception {
+                super.afterConnectionEstablished(new com.medclinic.security.ActiveAccountWebSocketSession(session, users));
+            }
+        });
+    }
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {

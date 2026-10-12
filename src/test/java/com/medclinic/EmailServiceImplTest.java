@@ -17,6 +17,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.JavaMailSenderImpl;
 
 import java.time.LocalDate;
 import java.util.Properties;
@@ -36,6 +37,20 @@ class EmailServiceImplTest {
 
     private EmailServiceImpl service() {
         return new EmailServiceImpl(javaMailSender);
+    }
+
+    @Test
+    void gmailAppPasswordGroupsAreNormalizedWithoutChangingOtherSmtpPasswords() {
+        var gmail = new JavaMailSenderImpl();
+        gmail.setHost("smtp.gmail.com");
+        gmail.setPassword("abcd efgh ijkl mnop");
+        new EmailServiceImpl(gmail);
+        assertEquals("abcdefghijklmnop", gmail.getPassword());
+        var other = new JavaMailSenderImpl();
+        other.setHost("smtp.example.test");
+        other.setPassword("abcd efgh ijkl mnop");
+        new EmailServiceImpl(other);
+        assertEquals("abcd efgh ijkl mnop", other.getPassword());
     }
     @Test
     void sendsBookingConfirmationEmail() throws Exception {

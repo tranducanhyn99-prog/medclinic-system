@@ -146,4 +146,15 @@ import static org.mockito.Mockito.*;
         when(roleRepository.findByName(RoleType.ROLE_DOCTOR)).thenReturn(Optional.empty());
         assertThrows(ResourceNotFoundException.class, () -> service.registerDoctor(dto));
     }
+
+    @Test
+    void rejectsFractionalAndOverflowConsultationFeesBeforeSaving() {
+        for (String value : new String[]{"1000.50", "10000000000"}) {
+            AdminDoctorCreateDto dto = dto();
+            dto.setConsultationFee(new BigDecimal(value));
+            assertThrows(BusinessLogicException.class, () -> service.registerDoctor(dto));
+            assertThrows(BusinessLogicException.class, () -> service.update(1L, 1L, "BS", 0, dto.getConsultationFee(), null));
+        }
+        verifyNoInteractions(userRepository, doctorProfileRepository);
+    }
 }

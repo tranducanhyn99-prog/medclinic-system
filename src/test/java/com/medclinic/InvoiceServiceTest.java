@@ -110,6 +110,21 @@ class InvoiceServiceTest {
     }
 
     @Test
+    void rejectsFractionalNegativeAndOverflowingInvoiceBeforeReservingCode() {
+        for (BigDecimal fee : List.of(new BigDecimal("1000.50"), new BigDecimal("-1"), new BigDecimal("10000000000"))) {
+            when(appointmentRepository.findById(1L)).thenReturn(Optional.of(appointment(fee)));
+            when(invoiceRepository.findByAppointmentId(1L)).thenReturn(Optional.empty());
+            assertThrows(BusinessLogicException.class, () -> service.createInvoiceForAppointment(1L, BigDecimal.ZERO));
+        }
+        when(appointmentRepository.findById(1L)).thenReturn(Optional.of(appointment(new BigDecimal("9999999999"))));
+        assertThrows(BusinessLogicException.class, () -> service.createInvoiceForAppointment(1L, BigDecimal.ONE));
+        when(appointmentRepository.findById(1L)).thenReturn(Optional.of(appointment(BigDecimal.ONE)));
+        assertThrows(BusinessLogicException.class, () -> service.createInvoiceForAppointment(1L, new BigDecimal("0.50")));
+        verify(coordinator, never()).reserveUniqueCode();
+        verify(invoiceRepository, never()).save(any());
+    }
+
+    @Test
     void delegatesInvoiceQueriesAndReportsMissingRows() {
         Invoice invoice = invoice(1L, PaymentStatus.UNPAID);
         when(invoiceRepository.findById(1L)).thenReturn(Optional.of(invoice));

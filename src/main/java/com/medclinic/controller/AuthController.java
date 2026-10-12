@@ -49,6 +49,11 @@ public class AuthController {
     private final SecurityAuditService securityAuditService;
     private final Environment environment;
 
+    @ModelAttribute("googleLoginEnabled")
+    public boolean googleLoginEnabled() {
+        return environment.getProperty("app.auth.google.enabled", Boolean.class, false);
+    }
+
     @GetMapping("/login")
     public String loginPage(@RequestParam(required = false) String error,
                             @RequestParam(required = false) String logout,
@@ -57,6 +62,12 @@ public class AuthController {
                             Model model) {
         model.addAttribute("demoLoginEnabled", environment.acceptsProfiles(Profiles.of("dev"))
                 && !environment.acceptsProfiles(Profiles.of("prod")));
+        if (request.getParameter("locked") != null) {
+            model.addAttribute("errorMessage", "Phiên đăng nhập đã bị thu hồi. Vui lòng đăng nhập lại hoặc liên hệ phòng khám.");
+        }
+        if (request.getParameter("googleError") != null) {
+            model.addAttribute("errorMessage", "Không thể đăng nhập Google. Dùng Gmail/Google Workspace đã xác thực, thử lại hoặc đăng nhập bằng mật khẩu.");
+        }
         if ("/patient/booking".equals(next)) {
             request.getSession(true).setAttribute(CONTINUE_BOOKING, Boolean.TRUE);
         }
@@ -129,7 +140,9 @@ public class AuthController {
 
     @GetMapping("/auth/otp")
     public String otpPage(@RequestParam Long challenge, Model model,
+                          HttpServletRequest request,
                           RedirectAttributes redirectAttributes) {
+        if (!ownsPendingChallenge(request, challenge)) return invalidOtpSession(redirectAttributes);
         try {
             var info = authVerificationService.getChallengeInfo(challenge);
             long secondsRemaining = Math.max(0L,
@@ -148,6 +161,7 @@ public class AuthController {
                             @RequestParam String code,
                             HttpServletRequest request,
                             RedirectAttributes redirectAttributes) {
+        if (!ownsPendingChallenge(request, challengeId)) return invalidOtpSession(redirectAttributes);
         try {
             var result = authVerificationService.verifyCode(challengeId, code);
             clearPendingChallenge(request);
@@ -167,10 +181,7 @@ public class AuthController {
                             HttpServletRequest request,
                             RedirectAttributes redirectAttributes) {
         HttpSession session = request.getSession(false);
-        if (session == null || !challengeId.equals(session.getAttribute(PENDING_OTP_CHALLENGE_ID))) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Phiên xác thực không hợp lệ. Vui lòng đăng nhập lại.");
-            return "redirect:/login";
-        }
+        if (!ownsPendingChallenge(request, challengeId)) return invalidOtpSession(redirectAttributes);
         try {
             var issued = authVerificationService.resendChallenge(challengeId);
             session.setAttribute(PENDING_OTP_CHALLENGE_ID, issued.challengeId());
@@ -318,7 +329,17 @@ public class AuthController {
         }
     }
 
-    private String redirectFor(User user, HttpServletRequest request) {
+    private boolean ownsPendingChallenge(HttpServletRequest request, Long challengeId) {
+        HttpSession session = request.getSession(false);
+        return session != null && challengeId.equals(session.getAttribute(PENDING_OTP_CHALLENGE_ID));
+    }
+
+    private String invalidOtpSession(RedirectAttributes attributes) {
+        attributes.addFlashAttribute("errorMessage", "Phiên xác thực không hợp lệ. Vui lòng đăng nhập lại.");
+        return "redirect:/login";
+    }
+
+    public static String redirectFor(User user, HttpServletRequest request) {
         HttpSession session = request.getSession(false);
         boolean continueBooking = session != null && Boolean.TRUE.equals(session.getAttribute(CONTINUE_BOOKING));
         if (session != null) {

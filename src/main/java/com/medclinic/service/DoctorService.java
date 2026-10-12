@@ -90,7 +90,7 @@ public class DoctorService {
         validateProfile(doctorDto.getTitle(), doctorDto.getExperienceYears(), doctorDto.getConsultationFee());
         String username = doctorDto.getUsername().trim();
         String email = doctorDto.getEmail().trim().toLowerCase();
-        String phone = doctorDto.getPhone().trim();
+        String phone = com.medclinic.util.PhoneNumbers.normalize(doctorDto.getPhone(), true);
         String license = doctorDto.getLicenseNumber().trim();
         if (userRepository.existsByUsername(username)) throw new BusinessLogicException("Tên đăng nhập đã tồn tại");
         if (userRepository.existsByEmail(email)) throw new BusinessLogicException("Email đã được đăng ký");
@@ -102,7 +102,11 @@ public class DoctorService {
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy vai trò ROLE_DOCTOR"));
         User user = User.builder().username(username).password(passwordEncoder.encode(doctorDto.getPassword()))
                 .fullName(doctorDto.getFullName().trim()).email(email).phone(phone).role(role).isActive(true).build();
-        userRepository.save(user);
+        try {
+            userRepository.saveAndFlush(user);
+        } catch (org.springframework.dao.DataIntegrityViolationException exception) {
+            throw new BusinessLogicException("Thông tin tài khoản bác sĩ đã được đăng ký. Vui lòng kiểm tra số điện thoại, email và tên đăng nhập.");
+        }
         DoctorProfile profile = new DoctorProfile();
         profile.setUser(user); profile.setSpecialty(specialty); profile.setLicenseNumber(license);
         profile.setTitle(doctorDto.getTitle().trim()); profile.setExperienceYears(doctorDto.getExperienceYears());
@@ -113,6 +117,6 @@ public class DoctorService {
     private void validateProfile(String title, int expYears, BigDecimal fee) {
         if (title == null || title.trim().isEmpty()) throw new BusinessLogicException("Học vị bác sĩ không được để trống");
         if (expYears < 0) throw new BusinessLogicException("Số năm kinh nghiệm không hợp lệ");
-        if (fee == null || fee.signum() < 0) throw new BusinessLogicException("Giá khám không hợp lệ");
+        com.medclinic.util.VndMoney.requireValid(fee, "Giá khám");
     }
 }

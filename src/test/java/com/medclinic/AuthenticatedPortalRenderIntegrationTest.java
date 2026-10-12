@@ -2,6 +2,7 @@ package com.medclinic;
 
 import com.medclinic.repository.DoctorProfileRepository;
 import com.medclinic.security.CustomUserDetails;
+import com.medclinic.security.CustomUserDetailsService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
@@ -26,26 +27,27 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class AuthenticatedPortalRenderIntegrationTest {
     @Autowired private MockMvc mockMvc;
     @Autowired private DoctorProfileRepository doctorProfileRepository;
+    @Autowired private CustomUserDetailsService details;
 
     @Test
     void rendersRepresentativeAuthenticatedPortalsForBrowserQa() throws Exception {
         snapshot("patient-booking", "/patient/booking",
-                SecurityMockMvcRequestPostProcessors.user("patient-browser").roles("PATIENT"));
+                SecurityMockMvcRequestPostProcessors.user(details.loadUserByUsername("patient")));
         snapshot("staff-reception", "/staff/reception",
-                SecurityMockMvcRequestPostProcessors.user("staff-browser").roles("STAFF"));
+                SecurityMockMvcRequestPostProcessors.user(details.loadUserByUsername("staff")));
         var doctor = doctorProfileRepository.findAll().getFirst();
         snapshot("doctor-desk", "/doctor/desk",
                 SecurityMockMvcRequestPostProcessors.user(new CustomUserDetails(doctor.getUser())));
         snapshot("admin-dashboard", "/admin/dashboard",
-                SecurityMockMvcRequestPostProcessors.user("admin-browser").roles("ADMIN"));
+                SecurityMockMvcRequestPostProcessors.user(details.loadUserByUsername("admin")));
         snapshot("admin-doctors", "/admin/doctors",
-                SecurityMockMvcRequestPostProcessors.user("admin-browser").roles("ADMIN"));
+                SecurityMockMvcRequestPostProcessors.user(details.loadUserByUsername("admin")));
         snapshot("admin-specialties", "/admin/specialties",
-                SecurityMockMvcRequestPostProcessors.user("admin-browser").roles("ADMIN"));
+                SecurityMockMvcRequestPostProcessors.user(details.loadUserByUsername("admin")));
         snapshot("admin-medicines", "/admin/medicines",
-                SecurityMockMvcRequestPostProcessors.user("admin-browser").roles("ADMIN"));
+                SecurityMockMvcRequestPostProcessors.user(details.loadUserByUsername("admin")));
         snapshot("staff-billing", "/staff/billing",
-                SecurityMockMvcRequestPostProcessors.user("staff-browser").roles("STAFF"));
+                SecurityMockMvcRequestPostProcessors.user(details.loadUserByUsername("staff")));
     }
 
     private void snapshot(String name, String url, RequestPostProcessor principal) throws Exception {

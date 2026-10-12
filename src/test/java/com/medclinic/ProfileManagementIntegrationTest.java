@@ -4,6 +4,7 @@ import com.medclinic.entity.User;
 import com.medclinic.enums.Gender;
 import com.medclinic.repository.UserRepository;
 import com.medclinic.security.CustomUserDetails;
+import com.medclinic.service.AvatarStorageService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
@@ -12,7 +13,11 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.nio.charset.StandardCharsets;
+import java.io.ByteArrayOutputStream;
+import java.awt.image.BufferedImage;
+import javax.imageio.ImageIO;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -28,12 +33,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class ProfileManagementIntegrationTest {
     @Autowired private MockMvc mockMvc;
     @Autowired private UserRepository userRepository;
+    @Autowired private AvatarStorageService storage;
 
     @Test
     void userCanEditPersonalDetailsAndReplaceAvatar() throws Exception {
         User patient = userRepository.findByUsername("patient").orElseThrow();
-        MockMultipartFile avatar = new MockMultipartFile(
-                "avatar", "avatar.png", "image/png", "fake-png-content".getBytes(StandardCharsets.UTF_8));
+        MockMultipartFile avatar = validPng();
 
         mockMvc.perform(multipart("/profile")
                         .file(avatar)
@@ -66,5 +71,27 @@ class ProfileManagementIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("Hồ Sơ Đã Cập Nhật")))
                 .andExpect(content().string(org.hamcrest.Matchers.containsString(updated.getAvatarUrl())));
+    }
+
+    @Test
+    void rejectedUploadKeepsThePreviousAvatarUrlAndFile() throws Exception {
+        User patient = userRepository.findByUsername("patient").orElseThrow();
+        String oldUrl = storage.storeAvatar(validPng(), patient.getAvatarUrl());
+        patient.setAvatarUrl(oldUrl);
+        userRepository.saveAndFlush(patient);
+        mockMvc.perform(multipart("/profile")
+                        .file(new MockMultipartFile("avatar", "fake.png", "image/png", new byte[]{1, 2, 3}))
+                        .param("fullName", patient.getFullName()).param("phone", patient.getPhone())
+                        .with(user(new CustomUserDetails(patient))).with(csrf()))
+                .andExpect(status().is3xxRedirection()).andExpect(redirectedUrl("/profile"))
+                .andExpect(flash().attributeExists("errorMessage"));
+        assertEquals(oldUrl, userRepository.findById(patient.getId()).orElseThrow().getAvatarUrl());
+        assertTrue(Files.exists(Path.of("target/test-avatars", oldUrl.substring(oldUrl.lastIndexOf('/') + 1))));
+    }
+
+    private MockMultipartFile validPng() throws Exception {
+        var bytes = new ByteArrayOutputStream();
+        assertTrue(ImageIO.write(new BufferedImage(2, 2, BufferedImage.TYPE_INT_RGB), "png", bytes));
+        return new MockMultipartFile("avatar", "avatar.png", "image/png", bytes.toByteArray());
     }
 }

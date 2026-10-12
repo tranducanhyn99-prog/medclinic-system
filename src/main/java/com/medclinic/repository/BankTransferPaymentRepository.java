@@ -26,12 +26,18 @@ public interface BankTransferPaymentRepository extends JpaRepository<BankTransfe
     @EntityGraph(attributePaths = {"invoice", "invoice.appointment", "invoice.appointment.patient"})
     Optional<BankTransferPayment> findById(Long id);
 
+    @Query("select p.invoice.id from BankTransferPayment p where p.transferCode = :transferCode")
+    Optional<Long> findInvoiceIdByTransferCode(@Param("transferCode") String transferCode);
+
+    @Query("select p.invoice.id from BankTransferPayment p where p.id = :id")
+    Optional<Long> findInvoiceIdById(@Param("id") Long id);
+
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("select p from BankTransferPayment p join fetch p.invoice where p.transferCode = :transferCode")
+    @Query("select p from BankTransferPayment p where p.transferCode = :transferCode")
     Optional<BankTransferPayment> findByTransferCodeForUpdate(@Param("transferCode") String transferCode);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("select p from BankTransferPayment p join fetch p.invoice where p.id = :id")
+    @Query("select p from BankTransferPayment p where p.id = :id")
     Optional<BankTransferPayment> findByIdForUpdate(@Param("id") Long id);
 
     @Modifying

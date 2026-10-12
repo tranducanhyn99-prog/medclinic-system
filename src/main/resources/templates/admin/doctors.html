@@ -3,7 +3,7 @@
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout/dashboard}">
 <head>
-    <title>Quản Lý Bác Sĩ - MedClinic</title>
+    <title>Đội ngũ bác sĩ - MedClinic</title>
 </head>
 <body>
 <div layout:fragment="content">
@@ -13,7 +13,7 @@
         <div>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-1 small">
-                    <li class="breadcrumb-item"><a th:href="@{/admin/dashboard}" class="text-decoration-none">Admin</a></li>
+                    <li class="breadcrumb-item"><a th:href="@{/admin/dashboard}" class="text-decoration-none">Quản trị</a></li>
                     <li class="breadcrumb-item active" aria-current="page">Bác sĩ</li>
                 </ol>
             </nav>
@@ -22,7 +22,7 @@
         </div>
         <div>
             <button type="button" class="btn btn-med-primary" data-bs-toggle="modal" data-bs-target="#addDoctorModal">
-                <i class="bi bi-person-plus me-1"></i> Thêm Hồ Sơ Bác Sĩ
+                <i class="bi bi-person-plus me-1"></i> Thêm bác sĩ
             </button>
         </div>
     </div>
@@ -35,11 +35,11 @@
             </div>
             <div class="table-responsive">
                 <table class="table mc-data-table align-middle mb-0">
-                    <thead class="table-light text-uppercase">
+                    <thead class="table-light">
                         <tr>
                             <th style="width: 60px;" class="text-center">STT</th>
                             <th>Họ Tên & Học Vị</th>
-                            <th>Chuyên Khoa</th>
+                            <th>Chuyên khoa</th>
                             <th class="text-center" style="width: 130px;">Kinh Nghiệm</th>
                             <th class="text-end" style="width: 140px;">Giá Khám</th>
                             <th>Giới thiệu / Bio</th>
@@ -95,7 +95,7 @@
                 <form th:action="@{/admin/doctors}" th:object="${doctorForm}" method="post">
                     <div class="modal-header">
                         <h2 class="modal-title fw-bold text-dark" id="addDoctorModalTitle">
-                            <i class="bi bi-person-plus-fill text-primary me-2"></i>Thêm Hồ Sơ Bác Sĩ Mới
+                            Thêm bác sĩ Mới
                         </h2>
                         <button type="button" class="btn-close" aria-label="Đóng hộp thoại" data-bs-dismiss="modal"></button>
                     </div>
@@ -106,7 +106,7 @@
                             <div class="col-md-6"><label for="password" class="form-label fw-semibold small">Mật khẩu *</label><input id="password" class="form-control" type="password" th:field="*{password}" th:errorclass="is-invalid" minlength="8" maxlength="72" aria-describedby="doctorPasswordHelp" required><div id="doctorPasswordHelp" class="form-text">Ít nhất 8 ký tự, tối đa 72 byte UTF-8. Ký tự có dấu và emoji có thể chiếm nhiều byte.</div><div class="text-danger small" data-field-error th:errors="*{password}"></div></div>
                             <div class="col-md-6"><label for="fullName" class="form-label fw-semibold small">Họ tên *</label><input id="fullName" class="form-control" th:field="*{fullName}" th:errorclass="is-invalid" required><div class="text-danger small" data-field-error th:errors="*{fullName}"></div></div>
                             <div class="col-md-6"><label for="email" class="form-label fw-semibold small">Email *</label><input id="email" class="form-control" type="email" th:field="*{email}" th:errorclass="is-invalid" required><div class="text-danger small" data-field-error th:errors="*{email}"></div></div>
-                            <div class="col-md-6"><label for="phone" class="form-label fw-semibold small">Số điện thoại *</label><input id="phone" class="form-control" th:field="*{phone}" th:errorclass="is-invalid" required><div class="text-danger small" data-field-error th:errors="*{phone}"></div></div>
+                            <div class="col-md-6"><label for="phone" class="form-label fw-semibold small">Số điện thoại *</label><input id="phone" type="tel" class="form-control" th:field="*{phone}" th:errorclass="is-invalid" pattern="0[35789][0-9]{8}" maxlength="10" required><div class="text-danger small" data-field-error th:errors="*{phone}"></div></div>
                             <div class="col-md-6"><label for="licenseNumber" class="form-label fw-semibold small">Số giấy phép hành nghề *</label><input id="licenseNumber" class="form-control" th:field="*{licenseNumber}" th:errorclass="is-invalid" required><div class="text-danger small" data-field-error th:errors="*{licenseNumber}"></div></div>
                             <div class="col-md-6">
                                 <label for="specialtyId" class="form-label fw-semibold small">Chuyên khoa phụ trách <span class="text-danger">*</span></label>

@@ -2,6 +2,7 @@ package com.medclinic;
 
 import com.medclinic.repository.DoctorProfileRepository;
 import com.medclinic.security.CustomUserDetails;
+import com.medclinic.security.CustomUserDetailsService;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,14 +27,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class PortalPerformanceBaselineIntegrationTest {
     @Autowired private MockMvc mockMvc;
     @Autowired private DoctorProfileRepository doctorProfileRepository;
+    @Autowired private CustomUserDetailsService details;
 
     @Test
     void recordsLocalMockMvcBaselineForAuthenticatedPortalPages() throws Exception {
         measure("PERF-01 /", "/", null);
         measure("PERF-02 /patient/booking", "/patient/booking",
-                SecurityMockMvcRequestPostProcessors.user("patient-benchmark").roles("PATIENT"));
+                SecurityMockMvcRequestPostProcessors.user(details.loadUserByUsername("patient")));
         measure("PERF-03 /staff/reception", "/staff/reception",
-                SecurityMockMvcRequestPostProcessors.user("staff-benchmark").roles("STAFF"));
+                SecurityMockMvcRequestPostProcessors.user(details.loadUserByUsername("staff")));
         var doctor = doctorProfileRepository.findAll().getFirst();
         measure("PERF-04 /doctor/desk", "/doctor/desk",
                 SecurityMockMvcRequestPostProcessors.user(new CustomUserDetails(doctor.getUser())));

@@ -11,10 +11,16 @@ SQL Server là database chính của MedClinic ở phạm vi hiện tại. H2 ch
   - `V3__restore_jdbc_session_state.sql`: khôi phục `NOCOUNT OFF` để connection pool/JDBC generated keys ổn định sau migration.
   - `V4__inventory_restock_and_low_stock.sql`: ngưỡng tồn kho và lịch sử nhập/xuất thuốc.
   - `V5__email_otp_and_profile_security.sql`: trạng thái xác thực email và OTP challenge.
+  - `V6__bank_payments_audit_and_shared_rate_limits.sql`: chuyển khoản, audit và rate limit dùng chung.
+  - `V7__unique_patient_phone.sql`: kiểm tra dữ liệu cũ, filtered unique index và constraint số điện thoại.
+  - `V8__account_security_version.sql`: phiên bản bảo mật để chặn session cũ sau khóa/mở khóa.
+  - `V9__integral_vnd_catalog_prices.sql`: kiểm tra giá thuốc/phí khám/giá nhập kho nguyên VND.
+  - `V10__google_patient_identity.sql`: Google subject nullable, so sánh binary và unique index lọc non-null; giữ nguyên tài khoản cũ.
 - V1/V2 được contract-test để luôn đồng bộ với các SQL đã review trong `docs/database/`; V3 là migration vận hành độc lập để chuẩn hóa session state.
 - V4/V5 dùng `GO` tách các batch SQL Server sau khi tạo cột/bảng, trước khi khai báo constraint tham chiếu các đối tượng vừa tạo. Nếu môi trường đã áp dụng phiên bản V4/V5 cũ, phải đối chiếu Flyway checksum và lịch sử triển khai trước khi nâng cấp; không chạy `repair` hoặc sửa history một cách tự động.
 - Production mặc định giữ `baseline-on-migrate=false`. Chỉ bật `SPRING_FLYWAY_BASELINE_ON_MIGRATE=true` cho lần adoption đầu tiên của database legacy đã được backup/pre-check và có đúng baseline 16 bảng.
 - Không baseline schema dở dang/không rõ nguồn gốc. Luôn backup và chạy pre-check trước production.
+- V7 dừng nếu điện thoại cũ trùng, rỗng hoặc sai định dạng; V9 dừng nếu giá catalog/nhập kho cũ âm hoặc có phần lẻ. Sửa dữ liệu theo quyết định nghiệp vụ rồi kiểm tra lại trước nâng cấp. Không tự gộp/xóa hồ sơ hoặc làm tròn hóa đơn lịch sử; không tự chạy `repair` để bỏ qua lỗi.
 
 ## 2. Database mới
 
@@ -24,7 +30,7 @@ DBA chỉ cần tạo database rỗng và cấp quyền migration cho applicatio
 sqlcmd -S localhost -E -C -Q "CREATE DATABASE [medclinic_db];"
 ```
 
-Khi app khởi động với profile `sqlserver`, Flyway tự tạo `flyway_schema_history`, chạy V1–V6; sau đó Hibernate `validate` mapping entity. Startup phải fail nếu migration hoặc schema validation không đạt.
+Khi app khởi động với profile `sqlserver`, Flyway tự tạo `flyway_schema_history`, chạy V1–V10; sau đó Hibernate `validate` mapping entity. Startup phải fail nếu migration hoặc schema validation không đạt.
 
 Sau lần migrate đầu, có thể giảm quyền DDL của runtime principal theo chính sách môi trường nếu tổ chức tách deployment principal và application principal.
 
@@ -36,9 +42,9 @@ Trước khi bật Flyway cho database đã tồn tại:
 2. Xác nhận schema thực tế tương ứng baseline đã review và có đúng 16 bảng ứng dụng.
 3. Xác nhận chưa có `flyway_schema_history` hoặc xử lý theo runbook migration đã được DBA phê duyệt.
 4. Đặt `SPRING_FLYWAY_BASELINE_ON_MIGRATE=true` cho lần adoption đầu tiên rồi khởi động release với profile `sqlserver`.
-5. Sau khi xác nhận `flyway_schema_history` đã có baseline version 1 cùng V2–V5 thành công, bỏ biến opt-in cho các lần deploy sau.
+5. Sau khi xác nhận `flyway_schema_history` đã có baseline version 1 cùng V2–V10 thành công, bỏ biến opt-in cho các lần deploy sau.
 
-Với schema legacy hợp lệ, Flyway sẽ tạo history bằng **BASELINE version 1**, bỏ qua V1 và áp dụng V2–V5 trở đi. Hibernate `validate` chạy sau migration để chặn schema lệch entity.
+Với schema legacy hợp lệ, Flyway sẽ tạo history bằng **BASELINE version 1**, bỏ qua V1 và áp dụng V2–V10. Hibernate `validate` chạy sau migration để chặn schema lệch entity.
 
 Docker init job chỉ áp dụng guard `0`/`16` khi chưa có `flyway_schema_history`; nếu history đã tồn tại thì không hard-code số bảng để tránh chặn migration tương lai. Compose local/demo bật legacy baseline opt-in rõ ràng sau guard; production standalone vẫn mặc định tắt.
 
@@ -78,7 +84,7 @@ WHERE object_id = OBJECT_ID('appointments')
   AND name = 'uk_appointment_date_queue_sequence';
 ```
 
-Kỳ vọng: 21 bảng ứng dụng; fresh DB có V1–V6 kiểu `SQL`, còn legacy adoption có version 1 kiểu `BASELINE` và V2–V6 kiểu `SQL`; tất cả row history phải `success=1`.
+Kỳ vọng: 21 bảng ứng dụng; fresh DB có V1–V10 kiểu `SQL`, còn legacy adoption có version 1 kiểu `BASELINE` và V2–V10 kiểu `SQL`; tất cả row history phải `success=1`.
 
 ## Backup và restore drill
 
@@ -109,12 +115,17 @@ mvn "-Dtest=SqlServer*" test
 
 Các kiểm chứng trọng yếu gồm:
 
-- Fresh Flyway migration V1 → V6 + Hibernate validate.
-- Legacy 16-table adoption: BASELINE v1 → V2–V6 + Hibernate validate.
+- Fresh Flyway migration V1 → V10 + Hibernate validate.
+- Legacy 16-table adoption: BASELINE v1 → V2–V10 + Hibernate validate.
+- V7/V9 từ chối dữ liệu legacy không hợp lệ, giữ nguyên hồ sơ/giá trị cũ để xử lý có chủ đích.
 - Concurrent booking, medicine stock locking, invoice-code reservation và rollback.
 - Release acceptance E2E Patient → Staff → Doctor → Billing/PDF.
 
 Lần nghiệm thu 23/09/2026 dùng container SQL Server 2022 (engine 16.0). Kiểm tra lại phiên bản engine và kết quả test ở từng môi trường triển khai.
+
+Test điện thoại và thanh toán mới dùng database riêng `medclinic_phone_it` và `medclinic_payments_it`; đổi `DB_URL` tương ứng và chạy lần lượt `SqlServerPhoneUniquenessIntegrationTest`, `SqlServerBankPaymentConcurrencyIntegrationTest`. Cả hai từ chối URL không trỏ đúng database local dành cho test. Xem [nghiệm thu sửa review 10/10](../PROJECT_REVIEW_FIX_ACCEPTANCE_2026-10-10.md).
+
+Test Google dùng local `medclinic_google_it` với V1–V10 + Hibernate validate; chạy `SqlServerGoogleLoginIntegrationTest`. Client giả lập trong test không cần secret thật. Bật tính năng trên app theo [hướng dẫn Google OAuth](../GOOGLE_LOGIN_SETUP.md); bật flag mà thiếu credentials sẽ làm startup fail.
 
 ## 7. Production handoff
 

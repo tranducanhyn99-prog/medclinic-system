@@ -133,4 +133,18 @@ class MedicineServiceTest {
         verifyNoInteractions(inventoryTransactionRepository, userRepository);
     }
 
+    @Test
+    void rejectsFractionalAndOverflowPricesAtEveryCatalogEntryPoint() {
+        Medicine current = medicine(1L, "Existing", true);
+        when(medicineRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(current));
+        for (String value : new String[]{"1000.50", "10000000000"}) {
+            BigDecimal invalid = new BigDecimal(value);
+            assertThrows(BusinessLogicException.class, () -> service.save("New", "viên", invalid, null, 0, 0));
+            assertThrows(BusinessLogicException.class, () -> service.updateCatalog(1L, "Existing", "viên", invalid, null, 0));
+            assertThrows(BusinessLogicException.class, () -> service.restock(1L, 1, invalid, null, 1L));
+        }
+        verify(medicineRepository, never()).save(any());
+        assertEquals(new BigDecimal("1000"), current.getUnitPrice());
+    }
+
 }

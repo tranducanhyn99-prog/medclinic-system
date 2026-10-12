@@ -93,7 +93,8 @@ class LazyLoadingEntityGraphIntegrationTest {
                 .andExpect(content().string(containsString(medicine.getName())));
 
         mockMvc.perform(get("/staff/billing")
-                        .with(SecurityMockMvcRequestPostProcessors.user("staff-billing-test").roles("STAFF")))
+                        .with(SecurityMockMvcRequestPostProcessors.user(new com.medclinic.security.CustomUserDetails(
+                                users.findByUsername("staff").orElseThrow()))))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString(invoice.getInvoiceCode())))
                 .andExpect(content().string(containsString(doctor.getSpecialty().getName())))

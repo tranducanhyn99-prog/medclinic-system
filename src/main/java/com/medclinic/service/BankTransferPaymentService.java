@@ -13,6 +13,7 @@ import com.medclinic.exception.ResourceNotFoundException;
 import com.medclinic.repository.BankTransferPaymentRepository;
 import com.medclinic.repository.InvoiceRepository;
 import com.medclinic.security.HmacSignatureVerifier;
+import com.medclinic.util.VndMoney;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,6 +44,7 @@ public class BankTransferPaymentService {
         if (invoice.getPaymentStatus() != PaymentStatus.UNPAID) {
             throw new BusinessLogicException("Hóa đơn này không còn chờ thanh toán");
         }
+        VndMoney.requireValid(invoice.getTotalAmount(), "Tổng hóa đơn");
 
         LocalDateTime now = LocalDateTime.now();
         var existing = paymentRepository.findFirstByInvoiceIdAndStatusOrderByCreatedAtDesc(
@@ -89,6 +91,9 @@ public class BankTransferPaymentService {
         var duplicate = paymentRepository.findByProviderEventId(callback.eventId());
         if (duplicate.isPresent()) return toInstruction(duplicate.get());
 
+        Long invoiceId = paymentRepository.findInvoiceIdByTransferCode(callback.transferCode())
+                .orElseThrow(() -> new BusinessLogicException("Không tìm thấy nội dung chuyển khoản"));
+        Invoice invoice = lockInvoice(invoiceId);
         BankTransferPayment payment = paymentRepository.findByTransferCodeForUpdate(callback.transferCode())
                 .orElseThrow(() -> new BusinessLogicException("Không tìm thấy nội dung chuyển khoản"));
         if (payment.getStatus() == BankTransferStatus.CONFIRMED
@@ -114,7 +119,7 @@ public class BankTransferPaymentService {
             throw new BusinessLogicException("Giao dịch ngân hàng đã được sử dụng");
         }
 
-        confirm(payment, callback.transactionId(), callback.eventId(),
+        confirm(invoice, payment, callback.transactionId(), callback.eventId(),
                 callback.occurredAt() == null ? LocalDateTime.now() : callback.occurredAt());
         auditService.record(null, "BANK_CALLBACK", "INVOICE", payment.getInvoice().getId(),
                 "SUCCESS", callback.eventId(), "AMOUNT_AND_REFERENCE_MATCHED");
@@ -126,6 +131,9 @@ public class BankTransferPaymentService {
         if (bankTransactionId == null || !bankTransactionId.matches("[A-Za-z0-9._-]{6,100}")) {
             throw new BusinessLogicException("Mã giao dịch ngân hàng không hợp lệ");
         }
+        Long invoiceId = paymentRepository.findInvoiceIdById(paymentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy yêu cầu chuyển khoản"));
+        Invoice invoice = lockInvoice(invoiceId);
         BankTransferPayment payment = paymentRepository.findByIdForUpdate(paymentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy yêu cầu chuyển khoản"));
         if (payment.getStatus() == BankTransferStatus.CONFIRMED) return toInstruction(payment);
@@ -135,16 +143,20 @@ public class BankTransferPaymentService {
         if (paymentRepository.existsByBankTransactionId(bankTransactionId)) {
             throw new BusinessLogicException("Mã giao dịch ngân hàng đã được đối soát");
         }
-        confirm(payment, bankTransactionId, null, LocalDateTime.now());
+        confirm(invoice, payment, bankTransactionId, null, LocalDateTime.now());
         auditService.record(actorId, "BANK_TRANSFER_MANUAL_CONFIRM", "INVOICE",
                 payment.getInvoice().getId(), "SUCCESS", bankTransactionId, "STAFF_RECONCILIATION");
         return toInstruction(payment);
     }
 
-    private void confirm(BankTransferPayment payment, String bankTransactionId,
-                         String providerEventId, LocalDateTime confirmedAt) {
-        Invoice invoice = invoiceRepository.findByIdForUpdate(payment.getInvoice().getId())
+    private Invoice lockInvoice(Long invoiceId) {
+        // All payment writers acquire Invoice before Payment, including cash and QR regeneration.
+        return invoiceRepository.findByIdForUpdate(invoiceId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy hóa đơn"));
+    }
+
+    private void confirm(Invoice invoice, BankTransferPayment payment, String bankTransactionId,
+                         String providerEventId, LocalDateTime confirmedAt) {
         if (invoice.getPaymentStatus() != PaymentStatus.UNPAID) {
             throw new BusinessLogicException("Hóa đơn đã được thanh toán bằng phương thức khác");
         }
@@ -190,6 +202,7 @@ public class BankTransferPaymentService {
     }
 
     private String qrUrl(BankTransferPayment payment) {
+        VndMoney.requireValid(payment.getAmount(), "Số tiền chuyển khoản");
         String path = "https://img.vietqr.io/image/" + properties.getBankId() + "-"
                 + properties.getAccountNo() + "-" + properties.getQrTemplate() + ".png";
         long amount;

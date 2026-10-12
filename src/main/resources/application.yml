@@ -37,6 +37,8 @@ spring:
           auth: true
           starttls:
             enable: true
+          ssl:
+            checkserveridentity: true
 
 server:
   port: 8080
@@ -76,6 +78,10 @@ app:
   email: support@medclinic.vn
   website: ${APP_WEBSITE:http://localhost:8080}
   auth:
+    google:
+      enabled: ${GOOGLE_LOGIN_ENABLED:false}
+      client-id: ${GOOGLE_CLIENT_ID:}
+      client-secret: ${GOOGLE_CLIENT_SECRET:}
     otp-validity-seconds: ${AUTH_OTP_VALIDITY_SECONDS:300}
   mail-delivery:
     from: ${MAIL_FROM:no-reply@medclinic.test}

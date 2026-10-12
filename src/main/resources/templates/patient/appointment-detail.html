@@ -3,7 +3,7 @@
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout/main}">
 <head>
-    <title>Chi Tiết Cuộc Hẹn & Mã QR Check-in - MedClinic</title>
+    <title>Chi tiết cuộc hẹn và mã QR check-in - MedClinic</title>
     <style>
         /* PRINT STYLING: Only print the ticket box, exactly 1 page, hide all alerts/navs/footers */
         @media print {
@@ -87,7 +87,7 @@
                         <div class="d-flex align-items-center gap-2">
                             <i class="bi bi-hospital-fill text-primary fs-2"></i>
                             <div>
-                                <h1 class="h5 fw-bold text-dark mb-0">PHIẾU ĐẶT LỊCH KHÁM BỆNH</h1>
+                                <h1 class="h5 fw-bold text-dark mb-0">Phiếu đặt lịch khám bệnh</h1>
                                 <span class="text-muted small">Phòng khám Đa khoa MedClinic</span>
                             </div>
                         </div>
@@ -168,7 +168,7 @@
 
                     <!-- Notice & Rules -->
                     <div class="alert alert-light border small text-secondary mb-3 p-2.5">
-                        <h2 class="h6 fw-bold text-dark mb-1 small"><i class="bi bi-info-circle text-primary me-1"></i> Hướng Dẫn Dành Cho Bệnh Nhân:</h2>
+                        <h2 class="h6 fw-bold text-dark mb-1 small"><i class="bi bi-info-circle text-primary me-1"></i> Hướng dẫn dành cho bệnh nhân</h2>
                         <ul class="mc-guide-list">
                             <li>Vui lòng có mặt trước giờ khám từ 10 - 15 phút để hoàn tất thủ tục đo huyết áp/tiếp đón.</li>
                             <li>Nếu có kết quả xét nghiệm hoặc đơn thuốc cũ trong vòng 3 tháng, vui lòng mang theo.</li>
@@ -179,20 +179,20 @@
                     <!-- Actions (Hidden when printing) -->
                     <div class="mc-operational-actions justify-content-between no-print pt-2">
                         <button type="button" class="btn btn-outline-secondary" id="printAppointmentBtn">
-                            <i class="bi bi-printer me-1"></i> In Phiếu Khám
+                            <i class="bi bi-printer me-1"></i> In phiếu khám
                         </button>
 
                         <div class="d-flex gap-2">
                             <div th:if="${appointment.status.name() == 'CONFIRMED'}">
                                 <form th:action="@{/patient/appointments/{id}/cancel(id=${appointment.id})}" method="post" id="cancelForm">
                                     <button type="button" class="btn btn-outline-danger" id="cancelBtn">
-                                        <i class="bi bi-x-circle me-1"></i> Hủy Lịch Này
+                                        <i class="bi bi-x-circle me-1"></i> Hủy lịch này
                                     </button>
                                 </form>
                             </div>
 
                             <a th:href="@{/patient/booking}" class="btn btn-med-primary">
-                                <i class="bi bi-calendar-plus me-1"></i> Đặt Thêm Lịch Mới
+                                <i class="bi bi-calendar-plus me-1"></i> Đặt thêm lịch mới
                             </a>
                         </div>
                     </div>

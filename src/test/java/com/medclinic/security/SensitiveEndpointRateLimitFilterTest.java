@@ -48,6 +48,21 @@ class SensitiveEndpointRateLimitFilterTest {
     }
 
     @Test
+    void googleCallbackGetsTheLoginLimitIncludingContextPath() throws Exception {
+        SensitiveEndpointRateLimitFilter filter = new SensitiveEndpointRateLimitFilter(
+                2, 1, 60, mock(SecurityAuditService.class), () -> 5_000L);
+        for (int attempt = 0; attempt < 3; attempt++) {
+            var request = new MockHttpServletRequest("GET", "/clinic/login/oauth2/code/google");
+            request.setContextPath("/clinic");
+            request.setRemoteAddr("10.0.0.5");
+            var response = new MockHttpServletResponse();
+            filter.doFilter(request, response, new MockFilterChain());
+            assertEquals(attempt < 2 ? 200 : 429, response.getStatus());
+        }
+        assertEquals(200, execute(filter, "GET", "/login", "10.0.0.5").getStatus());
+    }
+
+    @Test
     void bankCallbackUsesItsOwnLimit() throws Exception {
         AtomicLong clock = new AtomicLong(5_000L);
         SecurityAuditService audit = mock(SecurityAuditService.class);

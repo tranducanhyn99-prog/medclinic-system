@@ -112,5 +112,17 @@
     "source": "stomp-stompjs-7.2.1.tgz",
     "member": "package/LICENSE",
     "sha256": "c46641c7a00292f58f73544f661200f940d31622be1137aef70c19da4182ffcc"
+  },
+  {
+    "file": "google/google-sans-500.woff2",
+    "source": "Official Google Fonts API / google/fonts",
+    "member": "google-sans-500.woff2",
+    "sha256": "cba79a3d5d52053f1cb758662fa3adcec8a8466db4eb6f83878ac35564ccae3a"
+  },
+  {
+    "file": "google/OFL.txt",
+    "source": "Official Google Fonts API / google/fonts",
+    "member": "OFL.txt",
+    "sha256": "2b75ef20f13d83a7514aee452c4782c20cdc9ff2dee17600f44d37a06d4fb958"
   }
 ]

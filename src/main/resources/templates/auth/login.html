@@ -3,7 +3,7 @@
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout/main}">
 <head>
-    <title>Đăng Nhập - MedClinic</title>
+    <title>Đăng nhập - MedClinic</title>
 </head>
 <body>
 <div layout:fragment="content">
@@ -11,8 +11,6 @@
         <section class="mc-auth-section" aria-labelledby="loginTitle">
             <div class="mc-auth-shell">
                 <aside class="mc-auth-aside">
-                    <div class="mc-auth-icon"><i class="bi bi-heart-pulse-fill"></i></div>
-                    <div class="mc-auth-eyebrow">MedClinic</div>
                     <h2 class="h3 fw-bold mb-2">Chủ động hơn trong mỗi lần đi khám</h2>
                     <p class="text-muted mb-0">Một tài khoản để đặt lịch, nhận mã check-in và theo dõi lịch sử khám tập trung.</p>
                     <ul class="mc-auth-feature-list">
@@ -22,9 +20,16 @@
                     </ul>
                 </aside>
                 <div class="mc-auth-panel">
-                    <div class="mc-auth-eyebrow">Chào mừng trở lại</div>
                     <h1 class="mc-auth-title" id="loginTitle">Đăng nhập</h1>
-                    <p class="mc-auth-subtitle">Nhập mật khẩu trước, sau đó xác thực OTP qua email để truy cập tài khoản.</p>
+                    <p class="mc-auth-subtitle" th:text="${googleLoginEnabled} ? 'Dùng Google hoặc đăng nhập bằng mật khẩu và OTP qua email.' : 'Nhập mật khẩu trước, sau đó xác thực OTP qua email để truy cập tài khoản.'">Nhập mật khẩu trước, sau đó xác thực OTP qua email để truy cập tài khoản.</p>
+
+                    <div th:if="${googleLoginEnabled}" class="mc-google-auth">
+                        <a th:href="@{/oauth2/authorization/google}" class="mc-google-button">
+                            <img th:src="@{/images/google-g.png}" width="20" height="20" alt="">
+                            <span>Đăng nhập bằng Google</span>
+                        </a>
+                        <p class="mc-auth-separator">Hoặc dùng tài khoản MedClinic</p>
+                    </div>
 
                     <form th:action="@{/auth/login}" method="post" class="mc-auth-form">
                         <div class="mb-3">
@@ -59,6 +64,7 @@
                             Chưa có tài khoản? <a th:href="@{/register}">Đăng ký tài khoản bệnh nhân</a>
                         </div>
                     </form>
+
 
                     <div th:if="${demoLoginEnabled}" class="mc-demo-panel">
                         <div class="mc-demo-panel-title">Tài khoản demo dùng cho môi trường phát triển</div>

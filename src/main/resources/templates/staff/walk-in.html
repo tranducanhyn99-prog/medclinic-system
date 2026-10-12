@@ -3,7 +3,7 @@
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout/dashboard}">
 <head>
-    <title>Đăng Ký Khám Vãng Lai (Walk-in) - MedClinic</title>
+    <title>Khám vãng lai - MedClinic</title>
 </head>
 <body>
 <div layout:fragment="content">
@@ -18,12 +18,12 @@
                 </ol>
             </nav>
             <h1 class="mc-page-title">
-                <i class="bi bi-person-plus-fill text-primary me-2"></i>Đăng Ký Khám Trực Tiếp Tại Quầy (Walk-in)
+                Tiếp nhận khám vãng lai
             </h1>
         </div>
         <div>
             <a th:href="@{/staff/reception}" class="btn btn-sm btn-outline-secondary">
-                <i class="bi bi-arrow-left me-1"></i> Quay lại Tiếp Nhận
+                <i class="bi bi-arrow-left me-1"></i> Quay lại tiếp nhận
             </a>
         </div>
     </div>
@@ -36,7 +36,7 @@
 
                     <!-- Patient Info Section -->
                     <h2 class="mc-step-title">
-                        <i class="bi bi-person-vcard text-primary me-2"></i>1. Thông Tin Bệnh Nhân
+                        1. Thông tin bệnh nhân
                     </h2>
 
                     <div class="row g-3 mb-4">
@@ -46,7 +46,7 @@
                         </div>
                         <div class="col-md-6">
                             <label for="phone" class="form-label fw-semibold small">Số điện thoại liên hệ <span class="text-danger">*</span></label>
-                            <input type="tel" class="form-control" id="phone" name="phone" autocomplete="tel" placeholder="Nhập số điện thoại (10 số)..." required>
+                            <input type="tel" class="form-control" id="phone" name="phone" autocomplete="tel" pattern="0[35789][0-9]{8}" maxlength="10" placeholder="Nhập số điện thoại (10 số)..." required>
                         </div>
                         <div class="col-md-4">
                             <label for="dateOfBirth" class="form-label fw-semibold small">Ngày sinh</label>
@@ -70,7 +70,7 @@
 
                     <!-- Medical Assignment Section -->
                     <h2 class="mc-step-title">
-                        <i class="bi bi-hospital text-success me-2"></i>2. Chỉ Định Khám & Khung Giờ
+                        2. Chọn bác sĩ và giờ khám
                     </h2>
 
                     <div class="row g-3 mb-3">
@@ -139,7 +139,7 @@
                     <div class="mc-operational-actions justify-content-between pt-3 border-top">
                         <a th:href="@{/staff/reception}" class="btn btn-outline-secondary">Hủy bỏ</a>
                         <button type="submit" class="btn btn-med-primary px-4 py-2" id="btnSubmitWalkIn" disabled>
-                            <i class="bi bi-check2-circle fs-5 me-1"></i> Đăng Ký Khám & Cấp STT Ngay
+                            <i class="bi bi-check2-circle fs-5 me-1"></i> Đăng ký và cấp số thứ tự
                         </button>
                     </div>
 

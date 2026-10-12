@@ -1,0 +1,55 @@
+{
+  "date": "2026-10-12",
+  "feature": "Google authentication followed by clinic email OTP",
+  "java": {
+    "command": "mvn verify",
+    "reported": 324,
+    "passed": 278,
+    "skippedSqlServerGuards": 46,
+    "failures": 0,
+    "errors": 0,
+    "coverageGate": "passed",
+    "lineCoveragePercent": 88.43,
+    "branchCoveragePercent": 72.15
+  },
+  "frontend": {"passed": 26, "failures": 0},
+  "callbackProtocol": {
+    "passed": 7,
+    "provider": "mocked token endpoint with locally RSA-signed ID tokens",
+    "checks": [
+      "new Google patient has no clinic session before OTP",
+      "existing Google patient requires OTP even with demo bypass",
+      "session rotation and booking continuation after OTP",
+      "CSRF and challenge ownership",
+      "wrong code and resend invalidation",
+      "locked patient cannot login or be reactivated by Google OTP",
+      "challenge failure leaves no authenticated session",
+      "wrong nonce and forged signature are rejected"
+    ]
+  },
+  "gmailSmtp": {
+    "tlsAndAuthentication": "passed",
+    "emailSentByProbe": false,
+    "formattedAppPassword": "normalized in memory by Gmail-specific application handling",
+    "credentialsIncluded": false
+  },
+  "userConfirmedLiveGoogleOtpFlow": true,
+  "localRuntime": {
+    "dockerBuild": "passed",
+    "appHealth": "healthy",
+    "profiles": "sqlserver,demo",
+    "googleEnabled": true,
+    "gmailSmtpPort": 587,
+    "smtpAuthAndRequiredStartTls": true,
+    "loginAndRegister": "HTTP 200 with Google buttons",
+    "anonymousProfileAndAppointments": "HTTP 302 to login",
+    "databaseAndUploadVolumes": "preserved"
+  },
+  "limitations": [
+    "SQL Server guarded tests were not rerun for this change",
+    "live Google and OTP completion was confirmed by the user; the agent did not operate the user's Google account",
+    "seed demo password logins retain their existing OTP bypass; Google logins always require OTP"
+  ],
+  "envFileModifiedByAgent": false,
+  "commitOrPush": false
+}

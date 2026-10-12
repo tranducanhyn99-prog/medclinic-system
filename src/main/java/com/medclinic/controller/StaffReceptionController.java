@@ -1,6 +1,7 @@
 package com.medclinic.controller;
 
 import com.medclinic.enums.PaymentMethod;
+import com.medclinic.enums.PaymentStatus;
 import com.medclinic.service.AppointmentService;
 import com.medclinic.service.DoctorService;
 import com.medclinic.service.InvoiceService;
@@ -118,8 +119,29 @@ public class StaffReceptionController {
     }
 
     @GetMapping("/billing")
-    public String billingList(Model model) {
-        model.addAttribute("invoices", invoiceService.findAll());
+    public String billingList(
+            @RequestParam(defaultValue = "UNPAID") String status,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "25") int size, Model model) {
+        if (!java.util.Set.of("UNPAID", "PAID", "REFUNDED", "ALL").contains(status)) {
+            status = "UNPAID";
+            model.addAttribute("errorMessage", "Trạng thái không hợp lệ; đang hiển thị hóa đơn chưa trả.");
+        }
+        PaymentStatus paymentStatus = "ALL".equals(status) ? null : PaymentStatus.valueOf(status);
+        var invoices = invoiceService.findForBilling(paymentStatus, from, to, page, size);
+        long unpaid = invoiceService.countForBilling(PaymentStatus.UNPAID, from, to);
+        long paid = invoiceService.countForBilling(PaymentStatus.PAID, from, to);
+        long refunded = invoiceService.countForBilling(PaymentStatus.REFUNDED, from, to);
+        model.addAttribute("invoices", invoices.getContent());
+        model.addAttribute("invoicePage", invoices);
+        model.addAttribute("currentStatus", status);
+        model.addAttribute("from", from);
+        model.addAttribute("to", to);
+        model.addAttribute("countAll", unpaid + paid + refunded);
+        model.addAttribute("countUnpaid", unpaid);
+        model.addAttribute("countPaid", paid);
         model.addAttribute("bankPaymentAvailable", bankTransferPaymentService.isAvailable());
         return "staff/billing";
     }
@@ -127,10 +149,22 @@ public class StaffReceptionController {
     @PostMapping("/billing/pay/{invoiceId}")
     public String processPayment(@PathVariable Long invoiceId, 
                                  @RequestParam("method") PaymentMethod method,
+                                 @RequestParam(defaultValue = "UNPAID") String status,
+                                 @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+                                 @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
+                                 @RequestParam(defaultValue = "0") int page,
+                                 @RequestParam(defaultValue = "25") int size,
                                  @AuthenticationPrincipal CustomUserDetails userDetails,
                                  RedirectAttributes redirectAttributes) {
         invoiceService.processPayment(invoiceId, method, userDetails == null ? null : userDetails.getId());
         redirectAttributes.addFlashAttribute("successMessage", "Thanh toán thành công");
+        if (!"UNPAID".equals(status) || from != null || to != null || page != 0 || size != 25) {
+            redirectAttributes.addAttribute("status", status);
+            if (from != null) redirectAttributes.addAttribute("from", from.toString());
+            if (to != null) redirectAttributes.addAttribute("to", to.toString());
+            redirectAttributes.addAttribute("page", Math.max(0, page));
+            redirectAttributes.addAttribute("size", Math.max(1, Math.min(100, size)));
+        }
         return "redirect:/staff/billing";
     }
 }

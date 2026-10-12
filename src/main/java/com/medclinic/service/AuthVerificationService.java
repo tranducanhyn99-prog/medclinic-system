@@ -48,6 +48,17 @@ public class AuthVerificationService {
     }
 
     @Transactional
+    public ChallengeIssued issueGoogleChallenge(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessLogicException("Không tìm thấy tài khoản cần xác thực."));
+        if (user.getGoogleSubject() == null) {
+            throw new BusinessLogicException("Tài khoản chưa được liên kết với Google.");
+        }
+        // Google email is already verified; LOGIN prevents an OTP from reactivating a locked account.
+        return createChallenge(user, AuthChallengeType.LOGIN);
+    }
+
+    @Transactional
     public ChallengeIssued resendChallenge(Long challengeId) {
         AuthVerificationChallenge current = challengeRepository.findByIdForUpdate(challengeId)
                 .orElseThrow(() -> new BusinessLogicException("Phiên xác thực không tồn tại."));

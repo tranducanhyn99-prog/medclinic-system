@@ -1,6 +1,7 @@
 package com.medclinic;
 
 import io.micrometer.core.instrument.MeterRegistry;
+import com.medclinic.security.CustomUserDetailsService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
@@ -41,6 +42,7 @@ class SecurityHardeningIntegrationTest {
     }
     @Autowired private MockMvc mockMvc;
     @Autowired private MeterRegistry meterRegistry;
+    @Autowired private CustomUserDetailsService details;
 
     @Test
     void publicResponsesIncludeSecurityHeaders() throws Exception {
@@ -55,7 +57,7 @@ class SecurityHardeningIntegrationTest {
     @Test
     void receptionCanRequestItsOwnCameraAndOfflinePageIsPublic() throws Exception {
         mockMvc.perform(get("/staff/reception").with(
-                        SecurityMockMvcRequestPostProcessors.user("staff").roles("STAFF")))
+                        SecurityMockMvcRequestPostProcessors.user(details.loadUserByUsername("staff"))))
                 .andExpect(status().isOk())
                 .andExpect(header().string("Permissions-Policy",
                         "camera=(self), microphone=(), geolocation=()"));
@@ -71,11 +73,11 @@ class SecurityHardeningIntegrationTest {
     @Test
     void deniedPortalAccessUsesMedClinicRecoveryPage() throws Exception {
         mockMvc.perform(get("/admin/dashboard").with(
-                        SecurityMockMvcRequestPostProcessors.user("doctor").roles("DOCTOR")))
+                        SecurityMockMvcRequestPostProcessors.user(details.loadUserByUsername("doctor"))))
                 .andExpect(status().isForbidden())
                 .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.forwardedUrl("/error/403"));
         mockMvc.perform(get("/error/403").with(
-                        SecurityMockMvcRequestPostProcessors.user("doctor").roles("DOCTOR")))
+                        SecurityMockMvcRequestPostProcessors.user(details.loadUserByUsername("doctor"))))
                 .andExpect(status().isForbidden())
                 .andExpect(content().string(containsString("Tài khoản hiện tại không có quyền mở trang này")))
                 .andExpect(content().string(containsString("Về bàn khám")))
@@ -85,11 +87,11 @@ class SecurityHardeningIntegrationTest {
     @Test
     void apiForbiddenRemainsJsonAndMissingWebPageIs404() throws Exception {
         mockMvc.perform(get("/actuator/metrics").accept(MediaType.APPLICATION_JSON).with(
-                        SecurityMockMvcRequestPostProcessors.user("doctor").roles("DOCTOR")))
+                        SecurityMockMvcRequestPostProcessors.user(details.loadUserByUsername("doctor"))))
                 .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.code").value("FORBIDDEN"));
         mockMvc.perform(get("/this-page-does-not-exist").with(
-                        SecurityMockMvcRequestPostProcessors.user("doctor").roles("DOCTOR")))
+                        SecurityMockMvcRequestPostProcessors.user(details.loadUserByUsername("doctor"))))
                 .andExpect(status().isNotFound())
                 .andExpect(content().string(containsString("Không tìm thấy trang")));
         mockMvc.perform(get("/error").requestAttr(jakarta.servlet.RequestDispatcher.ERROR_STATUS_CODE, 500))
@@ -108,7 +110,7 @@ class SecurityHardeningIntegrationTest {
                 .andExpect(status().is3xxRedirection());
 
         mockMvc.perform(get("/actuator/metrics").with(
-                        SecurityMockMvcRequestPostProcessors.user("admin").roles("ADMIN")))
+                        SecurityMockMvcRequestPostProcessors.user(details.loadUserByUsername("admin"))))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("names")));
     }
@@ -139,7 +141,7 @@ class SecurityHardeningIntegrationTest {
         double before = authenticationCount("logout");
 
         mockMvc.perform(post("/logout").with(csrf()).with(
-                        SecurityMockMvcRequestPostProcessors.user("doctor").roles("DOCTOR")))
+                        SecurityMockMvcRequestPostProcessors.user(details.loadUserByUsername("doctor"))))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/login?logout=true"));
 

@@ -73,12 +73,12 @@ class UserServiceExtendedTest {
     void updatesProfileAndNormalizesOptionalFields() {
         User u = user(1L);
         when(userRepository.findById(1L)).thenReturn(Optional.of(u));
-        when(userRepository.findByPhone("0902")).thenReturn(Optional.empty());
-        when(userRepository.save(any(User.class))).thenAnswer(i -> i.getArgument(0));
+        when(userRepository.findByPhone("0902000001")).thenReturn(Optional.empty());
+        when(userRepository.saveAndFlush(any(User.class))).thenAnswer(i -> i.getArgument(0));
 
-        User updated = service.updateUserProfile(1L, "  Nguyễn An  ", " 0902 ", null, null, "  HCM  ");
+        User updated = service.updateUserProfile(1L, "  Nguyễn An  ", " 0902000001 ", null, null, "  HCM  ");
         assertEquals("Nguyễn An", updated.getFullName());
-        assertEquals("0902", updated.getPhone());
+        assertEquals("0902000001", updated.getPhone());
         assertEquals("HCM", updated.getAddress());
 
         User noOptional = service.updateUserProfile(1L, "Nguyễn An", " ", null, null, null);        assertNull(noOptional.getPhone());
@@ -93,19 +93,19 @@ class UserServiceExtendedTest {
                 () -> service.updateUserProfile(1L, " ", null, null, null, null));
 
         User owner = user(2L);
-        when(userRepository.findByPhone("0909")).thenReturn(Optional.of(owner));
+        when(userRepository.findByPhone("0909000001")).thenReturn(Optional.of(owner));
         assertThrows(BusinessLogicException.class,
-                () -> service.updateUserProfile(1L, "Valid", "0909", null, null, null));
+                () -> service.updateUserProfile(1L, "Valid", "0909000001", null, null, null));
     }
 
     @Test
     void allowsKeepingOwnPhone() {
-        User u = user(1L); u.setPhone("0901");
+        User u = user(1L); u.setPhone("0901000001");
         when(userRepository.findById(1L)).thenReturn(Optional.of(u));
-        when(userRepository.findByPhone("0901")).thenReturn(Optional.of(u));
-        when(userRepository.save(any(User.class))).thenAnswer(i -> i.getArgument(0));
+        when(userRepository.findByPhone("0901000001")).thenReturn(Optional.of(u));
+        when(userRepository.saveAndFlush(any(User.class))).thenAnswer(i -> i.getArgument(0));
 
-        assertEquals("0901", service.updateUserProfile(1L, "Valid", "0901", null, null, null).getPhone());
+        assertEquals("0901000001", service.updateUserProfile(1L, "Valid", "0901000001", null, null, null).getPhone());
     }
 
     @Test

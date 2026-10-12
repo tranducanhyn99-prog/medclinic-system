@@ -109,6 +109,7 @@ public class AppointmentService {
     public Appointment bookWalkInAppointment(String fullName, String phone, LocalDate dateOfBirth, Gender gender, String address,
                                              Long doctorId, LocalDate date, Long timeSlotId, String reason) {
         requireToday(date);
+        phone = com.medclinic.util.PhoneNumbers.normalize(phone, true);
         User patient = userRepository.findByPhone(phone).orElse(null);
         if (patient == null) {
             patient = new User();
@@ -126,7 +127,11 @@ public class AppointmentService {
             Role role = roleRepository.findByName(RoleType.ROLE_PATIENT)
                     .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy vai trò ROLE_PATIENT"));
             patient.setRole(role);
-            patient = userRepository.save(patient);
+            try {
+                patient = userRepository.saveAndFlush(patient);
+            } catch (org.springframework.dao.DataIntegrityViolationException exception) {
+                throw new BusinessLogicException("Số điện thoại vừa được đăng ký ở một phiên khác. Vui lòng tìm lại hồ sơ bệnh nhân.");
+            }
         }
 
         Appointment appointment = bookAppointment(patient.getId(), doctorId, date, timeSlotId, reason);

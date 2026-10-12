@@ -10,6 +10,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
+// Updating an OAuth binding must not overwrite an admin lock from another transaction.
+@org.hibernate.annotations.DynamicUpdate
 @Table(name = "users")
 @Getter
 @Setter
@@ -36,6 +38,13 @@ public class User {
 
     @Column(length = 20)
     private String phone;
+
+    @Column(length = 255)
+    private String googleSubject;
+
+    @Builder.Default
+    @Column(nullable = false)
+    private long securityVersion = 0;
 
     @Enumerated(EnumType.STRING)
     @Column(length = 10)

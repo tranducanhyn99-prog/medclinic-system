@@ -8,7 +8,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <!-- PWA Manifest & Web App Meta -->
     <link rel="manifest" th:href="@{/manifest.json}">
-    <meta name="theme-color" content="#0891b2">
+    <meta name="theme-color" content="#176b9b">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="MedClinic">
@@ -32,9 +32,9 @@
     <!-- SweetAlert2 -->
     <link th:href="@{/vendor/ui/sweetalert2.min.css}" rel="stylesheet">
 
-    <link rel="stylesheet" th:href="@{/css/medclinic-main-shell.css(v=4.0)}">
+    <link rel="stylesheet" th:href="@{/css/medclinic-main-shell.css(v=5.1)}">
 
-    <link rel="stylesheet" th:href="@{/css/medclinic-design-system.css(v='4.2')}">
+    <link rel="stylesheet" th:href="@{/css/medclinic-design-system.css(v='5.1')}">
 </head>
 <body class="mc-main-shell">
     <a class="skip-link" href="#main-content">Bỏ qua điều hướng, đến nội dung chính</a>
@@ -53,41 +53,35 @@
             </button>
 
             <div class="collapse navbar-collapse navbar-panel" id="navbarMain">
-                <div class="mobile-menu-intro d-xl-none">
-                    <span class="mobile-menu-eyebrow">Chăm sóc sức khỏe chủ động</span>
-                    <strong>Hôm nay bạn cần hỗ trợ gì?</strong>
-                    <span>Đặt lịch, tìm bác sĩ và theo dõi hồ sơ tại một nơi.</span>
-                </div>
-
                 <ul class="navbar-nav main-nav-list me-auto mb-xl-0 ms-xl-4">
                     <li class="nav-item">
                         <a class="nav-link nav-link-med" th:href="@{/}">
                             <span class="nav-icon"><i class="bi bi-house"></i></span>
-                            <span class="nav-copy"><span>Trang chủ</span><small>Tổng quan dịch vụ</small></span>
+                            <span class="nav-copy"><span>Trang chủ</span></span>
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link nav-link-med" th:href="@{/doctors}">
                             <span class="nav-icon"><i class="bi bi-person-badge"></i></span>
-                            <span class="nav-copy"><span>Tìm bác sĩ</span><small>Chọn theo chuyên khoa</small></span>
+                            <span class="nav-copy"><span>Tìm bác sĩ</span></span>
                         </a>
                     </li>
                     <li class="nav-item" sec:authorize="hasRole('PATIENT') or !isAuthenticated()">
                         <a class="nav-link nav-link-med nav-link-booking" th:href="@{/patient/booking}">
                             <span class="nav-icon"><i class="bi bi-calendar-plus"></i></span>
-                            <span class="nav-copy"><span>Đặt lịch khám</span><small>Chủ động chọn khung giờ</small></span>
+                            <span class="nav-copy"><span>Đặt lịch khám</span></span>
                         </a>
                     </li>
                     <li class="nav-item" sec:authorize="hasRole('PATIENT')">
                         <a class="nav-link nav-link-med" th:href="@{/patient/appointments}">
                             <span class="nav-icon"><i class="bi bi-clock-history"></i></span>
-                            <span class="nav-copy"><span>Lịch hẹn của tôi</span><small>Theo dõi và quản lý lịch</small></span>
+                            <span class="nav-copy"><span>Lịch hẹn của tôi</span></span>
                         </a>
                     </li>
                     <li class="nav-item" sec:authorize="hasRole('PATIENT')">
                         <a class="nav-link nav-link-med" th:href="@{/patient/medical-history}">
                             <span class="nav-icon"><i class="bi bi-file-earmark-medical"></i></span>
-                            <span class="nav-copy"><span>Bệnh án điện tử</span><small>Xem lịch sử khám bệnh</small></span>
+                            <span class="nav-copy"><span>Hồ sơ khám</span></span>
                         </a>
                     </li>
                 </ul>
@@ -109,29 +103,27 @@
                     </div>
 
                     <div sec:authorize="isAuthenticated()" class="dropdown">
-                        <button class="btn btn-light border dropdown-toggle d-flex align-items-center gap-2 px-3 py-2 rounded-3" type="button" data-bs-toggle="dropdown">
-                            <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center" style="width: 28px; height: 28px; font-size: 0.85rem;">
-                                <i class="bi bi-person-fill"></i>
-                            </div>
-                            <span class="fw-semibold small" sec:authentication="name">User</span>
+                        <button class="btn btn-med-outline dropdown-toggle d-flex align-items-center gap-2" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <span class="navbar-user-symbol"><i class="bi bi-person-fill" aria-hidden="true"></i></span>
+                            <span class="fw-semibold small" sec:authentication="principal.fullName">User</span>
                         </button>
-                        <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 mt-2 p-2" style="min-width: 220px;">
+                        <ul class="dropdown-menu dropdown-menu-end navbar-account-menu mt-2 p-2">
                             <li><a class="dropdown-item rounded-2 py-2" th:href="@{/profile}"><i class="bi bi-person-gear me-2 text-secondary"></i> Hồ sơ cá nhân</a></li>
 
                             <!-- Role portals -->
                             <li sec:authorize="hasRole('ADMIN')">
                                 <a class="dropdown-item rounded-2 py-2 text-danger fw-semibold" th:href="@{/admin/dashboard}">
-                                    <i class="bi bi-speedometer2 me-2"></i> Bàn Quản Trị Admin
+                                    <i class="bi bi-speedometer2 me-2"></i> Quản trị phòng khám
                                 </a>
                             </li>
                             <li sec:authorize="hasRole('DOCTOR')">
                                 <a class="dropdown-item rounded-2 py-2 text-success fw-semibold" th:href="@{/doctor/desk}">
-                                    <i class="bi bi-heart-pulse-fill me-2"></i> Bàn Khám Bác Sĩ
+                                    <i class="bi bi-heart-pulse-fill me-2"></i> Bàn khám bác sĩ
                                 </a>
                             </li>
                             <li sec:authorize="hasRole('STAFF')">
                                 <a class="dropdown-item rounded-2 py-2 text-warning-emphasis fw-semibold" th:href="@{/staff/reception}">
-                                    <i class="bi bi-calendar-check-fill me-2"></i> Quầy Tiếp Nhận & Check-in
+                                    <i class="bi bi-calendar-check-fill me-2"></i> Quầy tiếp nhận
                                 </a>
                             </li>
 
@@ -147,11 +139,6 @@
                     </div>
                 </div>
 
-                <a class="mobile-menu-support d-xl-none" th:href="@{/doctors}">
-                    <span class="nav-icon"><i class="bi bi-person-badge"></i></span>
-                    <span><small>Bắt đầu đặt khám</small><strong>Xem danh sách bác sĩ</strong></span>
-                    <i class="bi bi-arrow-up-right ms-auto" aria-hidden="true"></i>
-                </a>
             </div>
         </div>
     </nav>
@@ -165,59 +152,27 @@
     </main>
 
     <!-- Footer -->
-    <footer class="footer-med mt-5">
+    <footer class="footer-med">
         <div class="container">
-            <div class="footer-main row g-4 g-lg-5">
-                <div class="col-lg-5 col-xl-4">
-                    <div class="footer-brand d-flex align-items-center mb-3">
-                        <img th:src="@{/images/logo.svg}" alt="MedClinic Logo" width="36" height="36" class="me-2 p-1 bg-white rounded-2 brand-emblem-img">
-                        <span class="fs-4 fw-bold text-white">Med<span class="text-info">Clinic</span></span>
-                    </div>
-                    <p class="footer-description mb-3">Đồng hành cùng bạn trong hành trình chăm sóc sức khỏe với quy trình đặt lịch thuận tiện, thông tin rõ ràng và đội ngũ tận tâm.</p>
-                    <div class="footer-trust-list">
-                        <span><i class="bi bi-shield-check"></i> Bảo mật thông tin</span>
-                        <span><i class="bi bi-calendar2-check"></i> Đặt lịch trực tuyến</span>
-                    </div>
+            <div class="mc-footer-content">
+                <div>
+                    <a th:href="@{/}" class="footer-brand">MedClinic</a>
+                    <nav class="mc-footer-links" aria-label="Liên kết cuối trang">
+                        <a th:href="@{/doctors}">Tìm bác sĩ</a>
+                        <a th:href="@{/patient/booking}">Đặt lịch khám</a>
+                        <a th:href="@{/patient/appointments}">Lịch hẹn của tôi</a>
+                    </nav>
                 </div>
-                <div class="col-6 col-lg-2">
-                    <h2 class="h6 text-white footer-heading">Dịch vụ</h2>
-                    <ul class="footer-links list-unstyled mb-0">
-                        <li><a th:href="@{/doctors}">Tìm bác sĩ</a></li>
-                        <li><a th:href="@{/patient/booking}">Đặt lịch khám</a></li>
-                        <li><a th:href="@{/patient/appointments}">Quản lý lịch hẹn</a></li>
-                    </ul>
-                </div>
-                <div class="col-6 col-lg-2">
-                    <h2 class="h6 text-white footer-heading">Tiện ích</h2>
-                    <ul class="footer-links list-unstyled mb-0">
-                        <li><a th:href="@{/login}">Đăng nhập</a></li>
-                        <li><a th:href="@{/register}">Tạo tài khoản</a></li>
-                        <li><a th:href="@{/profile}">Hồ sơ cá nhân</a></li>
-                    </ul>
-                </div>
-                <div class="col-lg-3 col-xl-4">
-                    <h2 class="h6 text-white footer-heading">Thông tin cơ sở</h2>
-                    <ul class="footer-contact list-unstyled mb-0">
-                        <li>
-                            <i class="bi bi-geo-alt-fill text-info"></i>
-                            <span><small>Địa chỉ phòng khám</small><strong>123 Nguyễn Trãi, Phường 2, Quận 5, TP.HCM</strong></span>
-                        </li>
-                        <li>
-                            <i class="bi bi-telephone-fill text-info"></i>
-                            <span><small>Hotline hỗ trợ đặt hẹn</small><strong><a href="tel:19006868" class="text-white text-decoration-none">1900 6868</a> • <a href="tel:02838389999" class="text-white text-decoration-none">(028) 3838 9999</a></strong></span>
-                        </li>
-                        <li>
-                            <i class="bi bi-envelope-fill text-info"></i>
-                            <span><small>Email tư vấn & Chăm sóc</small><strong><a href="mailto:hotro@medclinic.vn" class="text-white text-decoration-none">hotro@medclinic.vn</a></strong></span>
-                        </li>
-                        <li>
-                            <i class="bi bi-clock-fill text-info"></i>
-                            <span><small>Giờ làm việc</small><strong>Thứ 2 - Thứ 7: 07:30 - 17:30 | CN: 08:00 - 12:00</strong></span>
-                        </li>
-                    </ul>
+                <div>
+                    <h2 class="h6 text-white">Thông tin phòng khám</h2>
+                    <address>
+                        <p>123 Nguyễn Trãi, Phường 2, Quận 5, TP.HCM</p>
+                        <p>Hỗ trợ đặt hẹn: <a href="tel:19006868">1900 6868</a> · <a href="tel:02838389999">(028) 3838 9999</a> · <a href="mailto:hotro@medclinic.vn">hotro@medclinic.vn</a></p>
+                        <p>Thứ 2 - Thứ 7: 07:30 - 17:30 | CN: 08:00 - 12:00</p>
+                    </address>
                 </div>
             </div>
-            <div class="footer-bottom d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
+            <div class="footer-bottom">
                 <span>© 2026 MedClinic. Bảo lưu mọi quyền.</span>
                 <span>Thông tin trên website nhằm hỗ trợ chăm sóc sức khỏe và không thay thế chẩn đoán y khoa.</span>
             </div>

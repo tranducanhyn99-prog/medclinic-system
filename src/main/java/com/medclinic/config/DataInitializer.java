@@ -31,6 +31,7 @@ public class DataInitializer implements CommandLineRunner {
     private final ScheduleService scheduleService;
     private final MedicineRepository medicineRepository;
     private final PasswordEncoder passwordEncoder;
+    private final java.time.Clock businessClock;
 
     @Override
     @Transactional
@@ -91,9 +92,9 @@ public class DataInitializer implements CommandLineRunner {
 
         // 5. Generate 14-day Schedules & Slots for Doctors
         List<DoctorProfile> allDoctors = List.of(doc1, doc2, doc3, doc4, doc5, doc6);
-        LocalDate today = LocalDate.now();
+        LocalDate today = LocalDate.now(businessClock);
         for (DoctorProfile doc : allDoctors) {
-            for (int i = 0; i < 14; i++) {
+            for (int i = 0; i <= 14; i++) {
                 LocalDate workDate = today.plusDays(i);
                 scheduleService.createOrGetSchedule(doc.getId(), workDate, ShiftType.MORNING);
                 scheduleService.createOrGetSchedule(doc.getId(), workDate, ShiftType.AFTERNOON);

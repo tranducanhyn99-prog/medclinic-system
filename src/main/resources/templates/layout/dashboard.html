@@ -8,7 +8,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <!-- PWA Manifest & Web App Meta -->
     <link rel="manifest" th:href="@{/manifest.json}">
-    <meta name="theme-color" content="#0891b2">
+    <meta name="theme-color" content="#176b9b">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="MedClinic">
@@ -29,9 +29,9 @@
     <link th:href="@{/vendor/ui/sweetalert2.min.css}" rel="stylesheet">
 
 
-    <link rel="stylesheet" th:href="@{/css/medclinic-portal-shell.css(v=4.0)}">
+    <link rel="stylesheet" th:href="@{/css/medclinic-portal-shell.css(v=5.1)}">
 
-    <link rel="stylesheet" th:href="@{/css/medclinic-design-system.css(v='4.0')}">
+    <link rel="stylesheet" th:href="@{/css/medclinic-design-system.css(v='5.1')}">
 </head>
 <body class="mc-portal-shell">
     <a class="skip-link" href="#main-content">Bỏ qua điều hướng, đến nội dung chính</a>
@@ -40,70 +40,67 @@
         <nav id="sidebar-wrapper" aria-label="Điều hướng cổng nội bộ">
             <a th:href="@{/}" class="sidebar-brand text-decoration-none d-flex align-items-center">
                 <img th:src="@{/images/logo.svg}" alt="MedClinic Logo" width="32" height="32" class="me-2 brand-emblem-img">
-                <span>Med<span class="text-info">Clinic</span></span>
+                <span>MedClinic</span>
             </a>
 
             <div class="flex-grow-1 overflow-y-auto py-2">
                 <!-- Doctor Menu -->
                 <div sec:authorize="hasRole('DOCTOR')">
-                    <div class="sidebar-nav-title">Phân hệ Bác sĩ</div>
+                    <div class="sidebar-nav-title">Bàn làm việc bác sĩ</div>
                     <a th:href="@{/doctor/desk}" class="sidebar-link">
-                        <i class="bi bi-heart-pulse-fill text-success fs-5"></i> Bàn Khám Hôm Nay
+                        <i class="bi bi-heart-pulse" aria-hidden="true"></i> Bàn khám hôm nay
                     </a>
                     <a th:href="@{/doctor/schedule}" class="sidebar-link">
-                        <i class="bi bi-calendar3-week-fill text-info fs-5"></i> Lịch Trực Công Tác
+                        <i class="bi bi-calendar3" aria-hidden="true"></i> Lịch trực
                     </a>
                 </div>
 
                 <!-- Staff Reception Menu -->
                 <div sec:authorize="hasRole('STAFF')">
-                    <div class="sidebar-nav-title">Phân hệ Lễ tân & Thu ngân</div>
+                    <div class="sidebar-nav-title">Tiếp nhận và thu ngân</div>
                     <a th:href="@{/staff/reception}" class="sidebar-link">
-                        <i class="bi bi-person-check-fill text-warning fs-5"></i> Tiếp Nhận & Check-in
+                        <i class="bi bi-person-check" aria-hidden="true"></i> Bàn tiếp nhận
                     </a>
                     <a th:href="@{/staff/walk-in}" class="sidebar-link">
-                        <i class="bi bi-person-plus-fill text-primary fs-5"></i> Đăng Ký Khám Vãng Lai
+                        <i class="bi bi-person-plus" aria-hidden="true"></i> Khám vãng lai
                     </a>
                     <a th:href="@{/staff/billing}" class="sidebar-link">
-                        <i class="bi bi-credit-card-fill text-success fs-5"></i> Thu Ngân & Viện Phí
+                        <i class="bi bi-credit-card" aria-hidden="true"></i> Thu ngân và viện phí
                     </a>
                 </div>
 
                 <!-- Admin Menu -->
                 <div sec:authorize="hasRole('ADMIN')">
-                    <div class="sidebar-nav-title">Hệ thống Quản trị</div>
+                    <div class="sidebar-nav-title">Quản trị phòng khám</div>
                     <a th:href="@{/admin/dashboard}" class="sidebar-link">
-                        <i class="bi bi-speedometer2 text-danger fs-5"></i> Bảng Điều Khiển KPI
+                        <i class="bi bi-speedometer2" aria-hidden="true"></i> Tổng quan
                     </a>
                     <a th:href="@{/admin/specialties}" class="sidebar-link">
-                        <i class="bi bi-diagram-3-fill text-info fs-5"></i> Quản Lý Chuyên Khoa
+                        <i class="bi bi-diagram-3" aria-hidden="true"></i> Chuyên khoa
                     </a>
                     <a th:href="@{/admin/doctors}" class="sidebar-link">
-                        <i class="bi bi-person-badge-fill text-success fs-5"></i> Đội Ngũ Bác Sĩ
+                        <i class="bi bi-person-badge" aria-hidden="true"></i> Đội ngũ bác sĩ
                     </a>
                     <a th:href="@{/admin/medicines}" class="sidebar-link">
-                        <i class="bi bi-capsule text-warning fs-5"></i> Quản Lý Kho Thuốc
+                        <i class="bi bi-capsule" aria-hidden="true"></i> Kho thuốc
                     </a>
                     <a th:href="@{/admin/users}" class="sidebar-link">
-                        <i class="bi bi-people-fill text-primary fs-5"></i> Quản Lý Tài Khoản
+                        <i class="bi bi-people" aria-hidden="true"></i> Tài khoản
                     </a>
                 </div>
 
                 <div class="sidebar-nav-title">Lối tắt</div>
                 <a th:href="@{/}" class="sidebar-link">
-                    <i class="bi bi-arrow-left-circle fs-5"></i> Về Trang Chủ
+                    <i class="bi bi-arrow-left" aria-hidden="true"></i> Về trang chủ
                 </a>
             </div>
 
             <!-- Bottom User Profile in Sidebar -->
-            <div class="p-3 border-top border-secondary border-opacity-25 d-flex align-items-center justify-content-between">
+            <div class="sidebar-profile">
                 <div class="d-flex align-items-center gap-2 text-truncate me-2">
-                    <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 34px; height: 34px;">
-                        <i class="bi bi-person-fill"></i>
-                    </div>
                     <div class="text-truncate">
-                        <div class="small fw-semibold text-white text-truncate" sec:authentication="name">User</div>
-                        <div class="text-secondary" style="font-size: 0.75rem;">
+                        <div class="sidebar-profile-name small fw-semibold text-truncate" sec:authentication="principal.fullName">User</div>
+                        <div class="sidebar-profile-role">
                             <span sec:authorize="hasRole('ADMIN')">Quản trị viên</span>
                             <span sec:authorize="hasRole('DOCTOR')">Bác sĩ khám</span>
                             <span sec:authorize="hasRole('STAFF')">Lễ tân tiếp nhận</span>
@@ -128,8 +125,8 @@
                     <button class="btn btn-sm btn-light border d-md-none" id="sidebarToggle" type="button" aria-controls="sidebar-wrapper" aria-expanded="false" aria-label="Mở điều hướng">
                         <i class="bi bi-list fs-5"></i>
                     </button>
-                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle py-1.5 px-2.5 rounded-2 small fw-semibold d-none d-sm-inline-block">
-                        <i class="bi bi-shield-check me-1"></i> Cổng vận hành MedClinic
+                    <span class="portal-context d-none d-sm-inline-block">
+                        Cổng vận hành MedClinic
                     </span>
                 </div>
                 <div class="d-flex align-items-center gap-3">
@@ -151,7 +148,7 @@
             </main>
 
             <!-- Portal Footer -->
-            <footer class="portal-footer bg-white border-top py-3 px-4 text-center text-muted small d-flex justify-content-between align-items-center">
+            <footer class="portal-footer">
                 <span>© 2026 MedClinic. Cổng vận hành nội bộ.</span>
                 <span><i class="bi bi-headset me-1"></i> Hỗ trợ hệ thống: 1900 6868</span>
             </footer>

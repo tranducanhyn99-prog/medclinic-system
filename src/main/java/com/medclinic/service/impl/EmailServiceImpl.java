@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.web.util.HtmlUtils;
@@ -34,6 +35,12 @@ public class EmailServiceImpl implements EmailService {
             @Value("${app.mail-delivery.max-attempts:3}") int maxAttempts,
             @Value("${app.mail-delivery.retry-backoff-ms:250}") long retryBackoffMs,
             @Value("${app.mail-delivery.from:no-reply@medclinic.test}") String fromAddress) {
+        // Google presents app passwords in four groups; other SMTP passwords keep their spaces.
+        if (javaMailSender instanceof JavaMailSenderImpl sender
+                && "smtp.gmail.com".equalsIgnoreCase(sender.getHost()) && sender.getPassword() != null
+                && sender.getPassword().matches("\\S{4}( \\S{4}){3}")) {
+            sender.setPassword(sender.getPassword().replace(" ", ""));
+        }
         this.javaMailSender = javaMailSender;
         this.monitor = monitor;
         this.maxAttempts = Math.max(1, Math.min(maxAttempts, 5));

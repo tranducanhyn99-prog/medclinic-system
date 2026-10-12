@@ -1,0 +1,214 @@
+{
+  "date": "2026-10-12",
+  "feature": "Google OIDC signup/login for patients",
+  "defaultJava": {
+    "skipped": 46,
+    "reported": 318,
+    "passed": 272,
+    "errors": 0,
+    "failures": 0
+  },
+  "coverage": {
+    "counters": {
+      "BRANCH": {
+        "covered": 892,
+        "percent": 71.88,
+        "missed": 349
+      },
+      "LINE": {
+        "covered": 2356,
+        "percent": 87.98,
+        "missed": 322
+      }
+    },
+    "source": "default clean verify before separate SQL runs"
+  },
+  "sqlServer": {
+    "totals": {
+      "reported": 46,
+      "failures": 0,
+      "skipped": 0,
+      "passed": 46,
+      "errors": 0
+    },
+    "environment": "isolated local SQLServer test container",
+    "migrations": "V1-V10; fresh, legacy, preflight; nullable unique subject",
+    "classes": [
+      {
+        "reported": 16,
+        "failures": 0,
+        "skipped": 0,
+        "name": "com.medclinic.SqlServerBackendAcceptanceIntegrationTest",
+        "passed": 16,
+        "errors": 0
+      },
+      {
+        "reported": 5,
+        "failures": 0,
+        "skipped": 0,
+        "name": "com.medclinic.SqlServerBankPaymentConcurrencyIntegrationTest",
+        "passed": 5,
+        "errors": 0
+      },
+      {
+        "reported": 2,
+        "failures": 0,
+        "skipped": 0,
+        "name": "com.medclinic.SqlServerConcurrentBookingIntegrationTest",
+        "passed": 2,
+        "errors": 0
+      },
+      {
+        "reported": 3,
+        "failures": 0,
+        "skipped": 0,
+        "name": "com.medclinic.SqlServerFlywayMigrationIntegrationTest",
+        "passed": 3,
+        "errors": 0
+      },
+      {
+        "reported": 9,
+        "failures": 0,
+        "skipped": 0,
+        "name": "com.medclinic.SqlServerGoogleLoginIntegrationTest",
+        "passed": 9,
+        "errors": 0
+      },
+      {
+        "reported": 1,
+        "failures": 0,
+        "skipped": 0,
+        "name": "com.medclinic.SqlServerInvoiceCodeReservationIntegrationTest",
+        "passed": 1,
+        "errors": 0
+      },
+      {
+        "reported": 1,
+        "failures": 0,
+        "skipped": 0,
+        "name": "com.medclinic.SqlServerLazyLoadingEntityGraphIntegrationTest",
+        "passed": 1,
+        "errors": 0
+      },
+      {
+        "reported": 1,
+        "failures": 0,
+        "skipped": 0,
+        "name": "com.medclinic.SqlServerMedicalRecordRollbackIntegrationTest",
+        "passed": 1,
+        "errors": 0
+      },
+      {
+        "reported": 1,
+        "failures": 0,
+        "skipped": 0,
+        "name": "com.medclinic.SqlServerMedicineStockConcurrencyIntegrationTest",
+        "passed": 1,
+        "errors": 0
+      },
+      {
+        "reported": 4,
+        "failures": 0,
+        "skipped": 0,
+        "name": "com.medclinic.SqlServerPhoneUniquenessIntegrationTest",
+        "passed": 4,
+        "errors": 0
+      },
+      {
+        "reported": 1,
+        "failures": 0,
+        "skipped": 0,
+        "name": "com.medclinic.SqlServerPortalPerformanceBaselineIntegrationTest",
+        "passed": 1,
+        "errors": 0
+      },
+      {
+        "reported": 1,
+        "failures": 0,
+        "skipped": 0,
+        "name": "com.medclinic.SqlServerReleaseAcceptanceEndToEndIntegrationTest",
+        "passed": 1,
+        "errors": 0
+      },
+      {
+        "reported": 1,
+        "failures": 0,
+        "skipped": 0,
+        "name": "com.medclinic.SqlServerSharedRateLimitIntegrationTest",
+        "passed": 1,
+        "errors": 0
+      }
+    ]
+  },
+  "googleFinalVerification": {
+    "errors": 0,
+    "skipped": 0,
+    "failures": 0,
+    "passed": 23,
+    "executed": 23,
+    "scope": "14 H2/config/protocol tests and9 SQL Google tests; included in suites above",
+    "package": "verified after stopping preview to release Windows JAR lock; packaging reuses passed test/coverage data"
+  },
+  "frontend": {
+    "skipped": 0,
+    "passed": 26,
+    "failures": 0
+  },
+  "browser": {
+    "keyboardFocus": "visible",
+    "routes": [
+      "/login",
+      "/register"
+    ],
+    "buttonHeight": 44,
+    "noOverflow": true,
+    "credentials": "fake local preview values; no live consent",
+    "passed": true,
+    "assets": "official Google logo and Google Sans served locally",
+    "captureCount": 8,
+    "pageErrors": 0,
+    "externalRequests": 0,
+    "themes": [
+      "light",
+      "dark"
+    ],
+    "widths": [
+      1440,
+      390
+    ],
+    "fontBytes": 3752
+  },
+  "protocol": {
+    "googleLive": false,
+    "proved": [
+      "valid state/nonce and signed token establish clinic principal and rotate session",
+      "continue booking uses local allowlisted destination",
+      "wrong nonce and forged signature denied without account creation"
+    ],
+    "provider": "local RSA test keys and mocked token endpoint",
+    "tests": 3
+  },
+  "review": {
+    "retry": "first reviewer capacity failure; fresh independent retry completed",
+    "disposition": "ship",
+    "scope": "Google UI extension at eight captures only",
+    "documentation": "incumbent design-system files preserved; independent documenter completed after capacity retry"
+  },
+  "googleCloudClient": "not configured; follow docs/GOOGLE_LOGIN_SETUP.md",
+  "deployment": "not deployed; working tree only",
+  "docLinks": "passed;359 local targets",
+  "notVerified": [
+    "real Google consent/token exchange with live client",
+    "real SMTP/bank/camera",
+    "production deployment"
+  ],
+  "packageAudit": "passed;V1-V10,Google classes,locallogo,font,OFL,README; font/license hashes match source",
+  "cleanup": "isolated preview/browser closed;SQL test container stopped;demo not rebuilt or modified",
+  "combinedUniqueJava": {
+    "skipped": 0,
+    "passed": 318,
+    "errors": 0,
+    "reported": 318,
+    "failures": 0
+  }
+}

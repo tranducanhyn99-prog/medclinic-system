@@ -3,7 +3,7 @@
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout/main}">
 <head>
-    <title>Sổ Tay Bệnh Án Điện Tử - MedClinic</title>
+    <title>Sổ tay bệnh án điện tử - MedClinic</title>
 </head>
 <body>
 <div layout:fragment="content">
@@ -29,13 +29,13 @@
             <div class="mc-empty-icon">
                 <i class="bi bi-folder-x fs-1"></i>
             </div>
-            <h2 class="h5 fw-bold text-dark mb-2">Chưa Có Hồ Sơ Bệnh Án</h2>
+            <h2 class="h5 fw-bold text-dark mb-2">Chưa có hồ sơ bệnh án</h2>
             <p class="mc-empty-copy">
                 Sau khi hoàn tất thăm khám tại MedClinic, kết quả chẩn đoán và đơn thuốc của bạn sẽ được bác sĩ cập nhật tự động tại đây.
             </p>
             <div>
                 <a th:href="@{/patient/booking}" class="btn btn-med-primary px-4 py-2">
-                    <i class="bi bi-calendar-plus me-1"></i> Đặt Lịch Khám Ngay
+                    <i class="bi bi-calendar-plus me-1"></i> Đặt lịch khám ngay
                 </a>
             </div>
         </div>
@@ -99,9 +99,9 @@
                     <!-- Prescription Items (if available) -->
                     <div th:if="${rec.prescription != null}" class="mt-3 pt-3 border-top">
                         <div class="d-flex align-items-center justify-content-between mb-2">
-                            <h3 class="h6 fw-bold text-dark mb-0"><i class="bi bi-capsule text-primary me-1"></i> Đơn Thuốc Đã Kê:</h3>
+                            <h3 class="h6 fw-bold text-dark mb-0"><i class="bi bi-capsule text-primary me-1"></i> Đơn thuốc đã kê</h3>
                             <a th:href="@{/export/prescription/{id}(id=${rec.appointment.id})}" class="btn btn-sm btn-outline-primary" target="_blank">
-                                <i class="bi bi-file-earmark-pdf me-1"></i> Xuất Đơn Thuốc (PDF)
+                                <i class="bi bi-file-earmark-pdf me-1"></i> Xuất đơn thuốc (PDF)
                             </a>
                         </div>
 
@@ -110,9 +110,9 @@
                                 <thead class="table-light">
                                     <tr>
                                         <th style="width: 40px;" class="text-center">STT</th>
-                                        <th>Tên Thuốc / Dược Phẩm</th>
+                                        <th>Tên thuốc / dược phẩm</th>
                                         <th style="width: 90px;" class="text-center">Số lượng</th>
-                                        <th>Liều dùng & Cách sử dụng</th>
+                                        <th>Liều dùng và cách sử dụng</th>
                                     </tr>
                                 </thead>
                                 <tbody>

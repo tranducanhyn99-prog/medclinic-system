@@ -157,7 +157,7 @@ function workerFixture(fail = false) {
     const response = {ok: true, type: 'basic', clone() {return this;}};
     const caches = {open: async () => ({addAll: async paths => additions.push(...paths), put: async request => writes.push(request.url)}),
         match: async path => path === '/offline.html' ? 'offline-shell' : undefined,
-        keys: async () => ['medclinic-static-v1', 'medclinic-static-v2', 'another-app'], delete: async key => deleted.push(key)};
+        keys: async () => ['medclinic-static-v1', 'medclinic-static-v2', 'medclinic-static-v3', 'another-app'], delete: async key => deleted.push(key)};
     vm.runInNewContext(source('sw.js'), {URL, Response, caches, fetch: async () => {if (fail) throw Error('offline'); return response;},
         self: {location: {origin: 'https://medclinic.test'}, clients: {claim: async () => {}}, skipWaiting() {}, addEventListener: (key, fn) => handlers[key] = fn}});
     async function send(path, mode = 'cors', method = 'GET') {
@@ -180,7 +180,7 @@ test('worker serves offline identity and purges only its own obsolete cache', as
     assert.equal(await f.send('/patient/appointments', 'navigate'), 'offline-shell');
     const waits = []; f.handlers.install({waitUntil: p => waits.push(p)}); f.handlers.activate({waitUntil: p => waits.push(p)});
     await Promise.all(waits);
-    assert.deepEqual(f.additions, ['/offline.html', '/images/logo.svg']); assert.deepEqual(f.deleted, ['medclinic-static-v1']);
+    assert.deepEqual(f.additions, ['/offline.html', '/images/logo.svg']); assert.deepEqual(f.deleted, ['medclinic-static-v1', 'medclinic-static-v2']);
 });
 test('chart data and legend/grid colors update together when theme changes', () => {
     const charts = [], document = new Element();

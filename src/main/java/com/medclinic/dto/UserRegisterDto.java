@@ -32,8 +32,10 @@ public class UserRegisterDto {
     private String email;
 
     @NotBlank(message = "Số điện thoại không được để trống")
-    @Pattern(regexp = "^(0[3|5|7|8|9])[0-9]{8}$", message = "Số điện thoại không hợp lệ (10 số, bắt đầu bằng 03, 05, 07, 08, 09)")
+    @Pattern(regexp = com.medclinic.util.PhoneNumbers.PATTERN, message = com.medclinic.util.PhoneNumbers.MESSAGE)
     private String phone;
+
+    public void setPhone(String phone) { this.phone = phone == null ? null : phone.trim(); }
 
     private Gender gender = Gender.MALE;
 

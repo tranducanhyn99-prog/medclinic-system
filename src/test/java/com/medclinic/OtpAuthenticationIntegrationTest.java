@@ -43,6 +43,7 @@ class OtpAuthenticationIntegrationTest {
     @Autowired private RoleRepository roleRepository;
     @Autowired private PasswordEncoder passwordEncoder;
     @Autowired private AuthVerificationService authVerificationService;
+    @Autowired private com.medclinic.repository.AuthVerificationChallengeRepository challenges;
     @MockitoBean private EmailService emailService;
 
     @BeforeEach
@@ -82,7 +83,8 @@ class OtpAuthenticationIntegrationTest {
                 codeCaptor.capture(), anyString(), eq(5L), eq("đăng ký tài khoản"));
         assertTrue(codeCaptor.getValue().matches("\\d{6}"));
 
-        MvcResult verified = mockMvc.perform(post("/auth/otp").with(csrf())
+        MvcResult verified = mockMvc.perform(post("/auth/otp")
+                        .session((MockHttpSession) registration.getRequest().getSession(false)).with(csrf())
                         .param("challengeId", Long.toString(challengeId))
                         .param("code", codeCaptor.getValue()))
                 .andExpect(status().is3xxRedirection())
@@ -187,6 +189,20 @@ class OtpAuthenticationIntegrationTest {
         long challengeId = Long.parseLong(login.getResponse().getRedirectedUrl().split("=")[1]);
         MockHttpSession ownerSession = (MockHttpSession) login.getRequest().getSession(false);
         assertNotNull(ownerSession);
+        mockMvc.perform(get("/auth/otp").param("challenge", Long.toString(challengeId)))
+                .andExpect(redirectedUrl("/login"));
+        mockMvc.perform(get("/auth/otp").session(new MockHttpSession()).param("challenge", Long.toString(challengeId)))
+                .andExpect(redirectedUrl("/login"));
+        for (int attempt = 0; attempt < 5; attempt++) {
+            String foreignIp = "192.0.2." + (attempt + 1);
+            mockMvc.perform(post("/auth/otp").session(new MockHttpSession()).with(csrf())
+                            .with(request -> { request.setRemoteAddr(foreignIp); return request; })
+                            .param("challengeId", Long.toString(challengeId)).param("code", "invalid"))
+                    .andExpect(redirectedUrl("/login"));
+        }
+        assertEquals(0, challenges.findById(challengeId).orElseThrow().getAttempts());
+        mockMvc.perform(get("/auth/otp").session(ownerSession).param("challenge", Long.toString(challengeId)))
+                .andExpect(status().isOk());
         clearInvocations(emailService);
 
         mockMvc.perform(post("/auth/otp/resend").with(csrf())

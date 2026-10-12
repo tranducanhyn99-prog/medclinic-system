@@ -91,9 +91,7 @@ public class MedicineService {
         if (quantity <= 0) {
             throw new BusinessLogicException("Số lượng nhập thêm phải lớn hơn 0");
         }
-        if (unitCost != null && unitCost.signum() < 0) {
-            throw new BusinessLogicException("Giá nhập không được âm");
-        }
+        if (unitCost != null) com.medclinic.util.VndMoney.requireValid(unitCost, "Giá nhập");
         Medicine medicine = medicineRepository.findByIdForUpdate(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy thuốc"));
         User admin = userRepository.findById(adminUserId)
@@ -136,7 +134,8 @@ public class MedicineService {
         if (name == null || name.trim().isEmpty() || unit == null || unit.trim().isEmpty()) {
             throw new BusinessLogicException("Tên thuốc và đơn vị tính không được để trống");
         }
-        if (unitPrice == null || unitPrice.signum() < 0 || stockQuantity < 0 || reorderLevel < 0) {
+        com.medclinic.util.VndMoney.requireValid(unitPrice, "Đơn giá");
+        if (stockQuantity < 0 || reorderLevel < 0) {
             throw new BusinessLogicException("Đơn giá, tồn kho và ngưỡng cảnh báo phải lớn hơn hoặc bằng 0");
         }
     }

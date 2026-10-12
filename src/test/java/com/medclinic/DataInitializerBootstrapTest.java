@@ -17,6 +17,8 @@ import static org.junit.jupiter.api.Assertions.*;
 @ActiveProfiles("dev")
 class DataInitializerBootstrapTest {
     @Autowired private DoctorProfileRepository doctorProfileRepository;
+    @Autowired private com.medclinic.repository.DoctorScheduleRepository schedules;
+    @Autowired private java.time.Clock businessClock;
 
     @Test
     void sampleDataInitializerIsLimitedToDevOrDemoProfiles() {
@@ -32,5 +34,16 @@ class DataInitializerBootstrapTest {
         assertEquals(doctors.size(), new HashSet<>(doctors.stream().map(DoctorProfile::getLicenseNumber).toList()).size());
         assertTrue(doctors.stream().allMatch(doctor -> doctor.getLicenseNumber() != null && !doctor.getLicenseNumber().isBlank()
                 && doctor.getTitle() != null && doctor.getExperienceYears() != null && doctor.getConsultationFee() != null));
+    }
+
+    @Test
+    void seededSchedulesIncludeTheLastBookableBusinessDay() {
+        var lastDay = java.time.LocalDate.now(businessClock).plusDays(14);
+        for (var doctor : doctorProfileRepository.findAll()) {
+            if (java.util.Set.of("doctor", "doc_mai", "doc_nam", "doc_ha", "doc_bao", "doc_tuan")
+                    .contains(doctor.getUser().getUsername())) {
+                assertEquals(2, schedules.findByDoctorIdAndWorkDateBetweenWithTimeSlots(doctor.getId(), lastDay, lastDay).size());
+            }
+        }
     }
 }
