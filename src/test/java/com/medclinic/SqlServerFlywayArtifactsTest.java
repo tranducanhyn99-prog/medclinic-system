@@ -16,8 +16,8 @@ class SqlServerFlywayArtifactsTest {
     @Test
     void versionedMigrationsStayAlignedWithReviewedSqlServerScripts() throws IOException {
         String baselineMigration = normalized(MIGRATIONS.resolve("V1__baseline_schema.sql"));
-        assertTrue(baselineMigration.contains("CREATE TABLE users"));
-        assertTrue(baselineMigration.contains("CREATE TABLE appointments"));
+        assertTrue(baselineMigration.contains("create table users ("));
+        assertTrue(baselineMigration.contains("create table appointments ("));
         String rolesMigration = normalized(MIGRATIONS.resolve("V2__reference_roles.sql"));
         assertTrue(rolesMigration.contains("ROLE_PATIENT"));
         assertTrue(rolesMigration.contains("ROLE_ADMIN"));
