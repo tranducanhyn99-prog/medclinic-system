@@ -108,7 +108,7 @@ Hệ thống được phát triển theo mô hình kiến trúc phân tầng chu
 ## 4. YÊU CẦU PHI CHỨC NĂNG (NON-FUNCTIONAL REQUIREMENTS)
 
 ### 4.1. Hiệu năng & Khả năng đáp ứng (Performance)
-- **NFR-PERF-01:** Với các trang công khai và portal đã nêu trong `docs/performance/TEST_PLAN.md`, p95 thời gian tải tài liệu HTML sau warm-up dưới 1,5 giây trong môi trường nghiệm thu được ghi nhận. Kết quả baseline phải kèm cấu hình môi trường; khi chưa có kết quả, yêu cầu ở trạng thái chưa xác minh.
+- **NFR-PERF-01:** Với các trang công khai và portal, p95 thời gian tải tài liệu HTML sau warm-up dưới 1,5 giây trong môi trường nghiệm thu được ghi nhận (xem `docs/KIEM_THU.md`). Kết quả baseline phải kèm cấu hình môi trường; khi chưa có kết quả, yêu cầu ở trạng thái chưa xác minh.
 - **NFR-PERF-02:** Email chạy bất đồng bộ sau commit; QR và PDF được sinh trong bộ nhớ/stream với kích thước hữu hạn, không tạo file tạm ngoài ý muốn.
 - **NFR-RT-01:** Kênh realtime hàng chờ dùng STOMP user destination theo session đã xác thực, chỉ broadcast sau commit thành công và client tự thử kết nối lại sau khi socket bị gián đoạn.
 

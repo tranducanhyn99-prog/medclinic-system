@@ -35,7 +35,7 @@ Test H2 không thay thế xác nhận schema/migration, cạnh tranh và rollbac
 ./ops/run-playwright-check.ps1 -WithFixture
 ```
 
-Kết quả ở `output/playwright-check`; phạm vi gồm public, bốn vai trò, kích thước màn hình, theme và luồng ca khám. Chỉ dùng môi trường demo. Đo hiệu năng theo [kế hoạch baseline](performance/TEST_PLAN.md); thời gian MockMvc/HTML local không đại diện tải đồng thời hoặc hiển thị toàn trang.
+Kết quả ở `output/playwright-check`; phạm vi gồm public, bốn vai trò, kích thước màn hình, theme và luồng ca khám. Chỉ dùng môi trường demo. Thời gian MockMvc/HTML local không đại diện tải đồng thời hoặc hiển thị toàn trang.
 
 ## Kết quả đợt dọn repo 15/10/2026
 

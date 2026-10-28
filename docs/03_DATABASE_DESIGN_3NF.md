@@ -279,7 +279,7 @@ Các migration hiện tại:
 - `src/main/resources/db/migration/sqlserver/V5__email_otp_and_profile_security.sql`: thêm `users.email_verified`, `users.otp_bypass` và bảng `auth_verification_challenges` cho OTP/magic link 5 phút.
 - `src/main/resources/db/migration/sqlserver/V6__bank_payments_audit_and_shared_rate_limits.sql`: thêm VietQR payment request, audit nghiệp vụ, shared rate-limit bucket và mở `BANK_TRANSFER` trong payment method.
 
-V1/V2 được kiểm tra tự động để luôn đồng bộ nội dung với `docs/database/SQLSERVER_BASELINE_SCHEMA_2026-09-19.sql` và `docs/database/SQLSERVER_REFERENCE_DATA_2026-09-19.sql`.
+`V1` và `V2` là hai script khởi tạo schema chuẩn và seed bốn role hệ thống trên SQL Server.
 
 - `V7__unique_patient_phone.sql`: chuẩn hóa/kiểm tra dữ liệu trước khi thêm unique filtered index cho số điện thoại.
 - `V8__account_security_version.sql`: phiên đăng nhập bị thu hồi khi tài khoản thay đổi phiên bản bảo mật.

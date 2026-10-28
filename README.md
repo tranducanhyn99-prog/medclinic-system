@@ -76,7 +76,7 @@ $env:DEMO_EARLY_CLINICAL_PROCESSING = 'false'
 mvn spring-boot:run
 ```
 
-Ngoài `dev`/`demo`, xử lý ca khám luôn yêu cầu hôm nay. Xem [chính sách demo](docs/CLINICAL_DEMO_BACKEND_2026-10-06.md).
+Ngoài `dev`/`demo`, xử lý ca khám luôn yêu cầu hôm nay.
 
 ## Demo SQL Server + email bằng Docker
 
@@ -146,7 +146,7 @@ docs/               Đặc tả, mô hình, báo cáo và kịch bản bảo v�
 | `.github/workflows`, `.gitignore`, `.gitattributes` | CI, quy tắc bỏ qua file và chuẩn hóa file văn bản. |
 | `Dockerfile`, `compose.yml`, `.dockerignore`, `.env*.example`, `docker`, `deploy`, `ops` | Mẫu cấu hình, triển khai, backup/restore và kiểm chứng. |
 | `README.md`, `LICENSE`, `DESIGN.md`, tài liệu thiết kế/vận hành trong `docs` | Cài đặt, kiến trúc, dữ liệu, UI và thuyết trình. |
-| `MedClinic.eapx`, XML mô hình, diagram, `docs/generated/*.docx` | Mô hình và báo cáo phục vụ môn học. |
+| `MedClinic.eapx`, diagram, `docs/generated/*.docx` | Mô hình và báo cáo phục vụ môn học. |
 
 `target`, `output`, `tmp`, `.codex`, `.impeccable`, `.vscode`, rubric Excel, generator nội bộ, backup, uploads, `.env` và ảnh/log nghiệm thu là dữ liệu local được ignore. Giữ `.env` và backup đang có trên máy. Khi clone repo, chạy theo README và tạo cấu hình riêng từ file mẫu.
 
@@ -159,7 +159,7 @@ docs/               Đặc tả, mô hình, báo cáo và kịch bản bảo v�
 - [Kiểm thử](docs/KIEM_THU.md), [truy vết yêu cầu đến code/test](docs/04_RTM_MATRIX.md).
 - [Yêu cầu](docs/01_SRS_IEEE830.md), [UML](docs/02_UML_DESIGN.md), [dữ liệu](docs/03_DATABASE_DESIGN_3NF.md), [kiến trúc](docs/05_SYSTEM_ARCHITECTURE.md).
 - [Hệ thống giao diện hiện tại](DESIGN.md), [thiết kế UI/UX](docs/06_UI_UX_DESIGN.md).
-- [SQL Server runbook](docs/database/SQLSERVER_RUNBOOK.md), [provision admin](docs/database/PRODUCTION_ADMIN_PROVISIONING.md), [chuẩn bị tích hợp](docs/INTEGRATION_PREPARATION_2026-10-03.md).
+- [SQL Server runbook](docs/database/SQLSERVER_RUNBOOK.md), [Google OAuth](docs/GOOGLE_LOGIN_SETUP.md), [Gmail OTP](docs/GMAIL_OTP_SETUP.md).
 
 Triển khai ngoài local cần `sqlserver,prod`, HTTPS/SMTP/database credentials, `APP_WEBSITE` và remember-me key từ môi trường. Xem [.env.production.example](.env.production.example) và runbook. V7/V9 dừng nâng cấp nếu dữ liệu cũ có điện thoại trùng/sai hoặc giá lẻ; cần xử lý dữ liệu trước migration. Tích hợp thực tế vẫn cần nghiệm thu riêng.
 

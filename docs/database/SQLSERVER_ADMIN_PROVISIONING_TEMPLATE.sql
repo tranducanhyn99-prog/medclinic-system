@@ -11,7 +11,7 @@ DECLARE @roleId BIGINT;
 SELECT @roleId = id FROM roles WHERE name = N'ROLE_ADMIN';
 
 IF @roleId IS NULL
-    THROW 51000, 'ROLE_ADMIN is missing. Apply SQLSERVER_REFERENCE_DATA_2026-09-19.sql first.', 1;
+    THROW 51000, 'ROLE_ADMIN is missing. Apply V2__reference_roles.sql first.', 1;
 
 IF EXISTS (SELECT 1 FROM users WHERE username = N'$(AdminUsername)')
     THROW 51001, 'Admin username already exists.', 1;

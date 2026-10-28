@@ -11,10 +11,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class SqlServerDeploymentArtifactsTest {
     private static final Path DATABASE_DOCS = Path.of("docs", "database");
+    private static final Path MIGRATIONS = Path.of(
+            "src", "main", "resources", "db", "migration", "sqlserver");
 
     @Test
     void referenceDataScriptSeedsEveryMandatoryRoleIdempotently() throws IOException {
-        String sql = Files.readString(DATABASE_DOCS.resolve("SQLSERVER_REFERENCE_DATA_2026-09-19.sql"));
+        String sql = Files.readString(MIGRATIONS.resolve("V2__reference_roles.sql"));
 
         for (String role : new String[]{"ROLE_PATIENT", "ROLE_DOCTOR", "ROLE_STAFF", "ROLE_ADMIN"}) {
             assertTrue(sql.contains("IF NOT EXISTS (SELECT 1 FROM roles WHERE name = N'" + role + "')"));
@@ -28,7 +30,7 @@ class SqlServerDeploymentArtifactsTest {
     @Test
     void adminProvisioningTemplateRequiresRoleAndBcryptWithoutDefaultSecrets() throws IOException {
         String sql = Files.readString(DATABASE_DOCS.resolve("SQLSERVER_ADMIN_PROVISIONING_TEMPLATE.sql"));
-        String guide = Files.readString(DATABASE_DOCS.resolve("PRODUCTION_ADMIN_PROVISIONING.md"));
+        String guide = Files.readString(DATABASE_DOCS.resolve("SQLSERVER_RUNBOOK.md"));
 
         assertTrue(sql.contains("WHERE name = N'ROLE_ADMIN'"));
         assertTrue(sql.contains("Admin username already exists"));
@@ -37,7 +39,7 @@ class SqlServerDeploymentArtifactsTest {
         assertTrue(sql.contains("BCrypt"));
         assertFalse(sql.contains("123456"));
 
-        assertTrue(guide.contains("SQLSERVER_REFERENCE_DATA_2026-09-19.sql"));
+        assertTrue(guide.contains("V2__reference_roles.sql"));
         assertTrue(guide.contains("SQLSERVER_ADMIN_PROVISIONING_TEMPLATE.sql"));
         assertTrue(guide.contains("không có"));
         assertTrue(guide.contains("must_change_password"));

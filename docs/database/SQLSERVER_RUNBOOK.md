@@ -144,6 +144,6 @@ mvn '-Dtest=SqlServerGoogleCallbackProtocolIntegrationTest' test
 
 - Backup + pre-check trước khi Flyway nhận quản lý database legacy.
 - Review migration SQL/checksum và quyền DDL trước deployment.
-- Provision admin theo `PRODUCTION_ADMIN_PROVISIONING.md` sau khi V2 đã tạo role hệ thống.
+- Sau khi Flyway áp dụng `V2__reference_roles.sql` tạo role hệ thống, khởi tạo tài khoản quản trị qua `SQLSERVER_ADMIN_PROVISIONING_TEMPLATE.sql` với BCrypt hash tạo riêng và bật `must_change_password = 1` (production không có tài khoản admin mặc định).
 - Không dùng demo account/password từ profile `dev`.
 - Ghi lại version Flyway, operator, thời điểm và kết quả smoke test trong biên bản triển khai.
