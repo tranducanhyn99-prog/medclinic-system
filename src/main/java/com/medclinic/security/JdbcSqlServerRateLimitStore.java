@@ -26,7 +26,15 @@ public class JdbcSqlServerRateLimitStore implements RateLimitStore {
 
     @Override
     public Decision increment(String bucketKey, long nowMillis, long windowMillis, int limit) {
-        return transactions.execute(status -> incrementLocked(bucketKey, nowMillis, windowMillis, limit));
+        org.springframework.dao.DataAccessException lastFailure = null;
+        for (int attempt = 0; attempt < 3; attempt++) {
+            try {
+                return transactions.execute(status -> incrementLocked(bucketKey, nowMillis, windowMillis, limit));
+            } catch (org.springframework.dao.DataAccessException exception) {
+                lastFailure = exception;
+            }
+        }
+        throw lastFailure;
     }
 
     private Decision incrementLocked(String bucketKey, long nowMillis, long windowMillis, int limit) {

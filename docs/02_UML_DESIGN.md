@@ -476,7 +476,7 @@ classDiagram
 ```
 
 
-## 4. Luồng Google và bệnh án chỉ đọc (12/10/2026)
+## 6. Luồng Google và bệnh án chỉ đọc (12/10/2026)
 
 ```mermaid
 sequenceDiagram

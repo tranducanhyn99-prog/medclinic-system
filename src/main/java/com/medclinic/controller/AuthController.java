@@ -104,6 +104,15 @@ public class AuthController {
                     "Mã OTP đã được gửi đến " + issued.maskedEmail() + ".");
             return "redirect:/auth/otp?challenge=" + issued.challengeId();
         } catch (AuthenticationException exception) {
+            var unverified = userService.findUnverifiedRegistrationCandidate(username, password);
+            if (unverified.isPresent()) {
+                var issued = authVerificationService.issueChallenge(
+                        unverified.get().getId(), AuthChallengeType.REGISTRATION);
+                request.getSession(true).setAttribute(PENDING_OTP_CHALLENGE_ID, issued.challengeId());
+                redirectAttributes.addFlashAttribute("successMessage",
+                        "Tài khoản chưa kích hoạt. Mã OTP mới đã được gửi đến " + issued.maskedEmail() + ".");
+                return "redirect:/auth/otp?challenge=" + issued.challengeId();
+            }
             securityAuditService.authenticationFailure(username, request.getRemoteAddr(),
                     exception.getClass().getSimpleName());
             return "redirect:/login?error=true";
@@ -200,6 +209,7 @@ public class AuthController {
                                   RedirectAttributes redirectAttributes) {
         try {
             var result = authVerificationService.verifyMagicToken(token);
+            clearPendingChallenge(request);
             establishSession(result.user(), request);
             securityAuditService.authenticationSuccess(result.user().getUsername(), request.getRemoteAddr());
             redirectAttributes.addFlashAttribute("successMessage",
@@ -290,6 +300,7 @@ public class AuthController {
                                  @RequestParam String oldPassword,
                                  @RequestParam String newPassword,
                                  @RequestParam String confirmPassword,
+                                 HttpServletRequest request,
                                  RedirectAttributes redirectAttributes) {
         if (!newPassword.equals(confirmPassword)) {
             redirectAttributes.addFlashAttribute("errorMessage", "Mật khẩu mới và xác nhận mật khẩu không trùng khớp!");
@@ -297,6 +308,7 @@ public class AuthController {
         }
         try {
             userService.changePassword(userDetails.getId(), oldPassword, newPassword);
+            establishSession(userService.findById(userDetails.getId()), request);
             redirectAttributes.addFlashAttribute("successMessage", "Đổi mật khẩu thành công!");
         } catch (Exception exception) {
             redirectAttributes.addFlashAttribute("errorMessage", com.medclinic.util.PublicErrorMessages.forException(exception));

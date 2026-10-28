@@ -5,7 +5,13 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
 @EnabledIfEnvironmentVariable(named = "RUN_SQLSERVER_IT", matches = "true")
-@SpringBootTest(properties = {"spring.jpa.hibernate.ddl-auto=create-drop", "spring.flyway.enabled=false"})
+@org.junit.jupiter.api.condition.EnabledIf("disposableLocalDatabaseConfigured")
+@SpringBootTest(properties = {"spring.jpa.hibernate.ddl-auto=create-drop", "spring.flyway.enabled=false", "spring.datasource.url=${DB_URL}"})
 @ActiveProfiles(profiles = {"dev", "sqlserver"}, inheritProfiles = false)
 class SqlServerConcurrentBookingIntegrationTest extends ConcurrentBookingIntegrationTest {
+    static boolean disposableLocalDatabaseConfigured() {
+        String url = System.getenv("DB_URL");
+        return url != null && url.toLowerCase(java.util.Locale.ROOT).matches(
+                "jdbc:sqlserver://(?:localhost|127\\.0\\.0\\.1)(?::[0-9]+)?;.*databasename=medclinic_(?:e2e|[a-z0-9_]+_it)(?:;.*)?");
+    }
 }

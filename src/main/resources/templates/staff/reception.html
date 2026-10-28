@@ -321,12 +321,12 @@
 
 <div layout:fragment="scripts">
 <script>
-let html5QrcodeScanner = null;
+let html5QrcodeScanner = null; let isSubmittingScan = false;
 
 document.addEventListener('DOMContentLoaded', function () {
     const scannerModal = document.getElementById('qrScannerModal');
 
-    scannerModal.addEventListener('shown.bs.modal', function () {
+    scannerModal.addEventListener('shown.bs.modal', function () { isSubmittingScan = false;
         if (typeof Html5QrcodeScanner === 'undefined' || !navigator.mediaDevices) {
             document.getElementById('qr-reader-results').textContent = 'Không thể mở camera trên thiết bị này. Đóng cửa sổ và nhập mã cuộc hẹn vào ô tra cứu.';
             return;
@@ -348,7 +348,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    function onScanSuccess(decodedText, decodedResult) {
+    function onScanSuccess(decodedText, decodedResult) { if (isSubmittingScan) return; isSubmittingScan = true;
         document.getElementById('qr-reader-results').innerText = "Đã tìm thấy: " + decodedText;
 
         // Auto fill and submit search
@@ -385,7 +385,7 @@ function printTicket(stt, patient, doctor, specialty, time) {
     document.getElementById('ticketSpecialty').innerText = specialty;
     document.getElementById('ticketTime').innerText = time;
 
-    const ticketModal = new bootstrap.Modal(document.getElementById('ticketModal'));
+    const ticketModal = bootstrap.Modal.getOrCreateInstance(document.getElementById('ticketModal'));
     ticketModal.show();
 }
 </script>

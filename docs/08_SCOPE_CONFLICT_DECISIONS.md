@@ -11,7 +11,7 @@
 | RTM | Mã `TC-*` trong RTM là kế hoạch kiểm thử, trừ khi cột kiểm chứng nêu rõ class/method nguồn và một lần chạy thành công. | Tránh đồng nhất ID kế hoạch với test đã chạy. |
 | Tài liệu CSDL/DOCX | Không regenerate DOCX khi build source còn lỗi hoặc mô hình entity đang thay đổi. | Git chỉ lưu 5 DOCX canonical trong `docs/generated`; generator nội bộ được giữ ngoài version control và DOCX chỉ cập nhật sau render QA. |
 | WebSocket hàng chờ bác sĩ | **Đã triển khai.** Check-in/bắt đầu khám/hoàn tất khám phát `DoctorQueueChangedEvent`; listener `AFTER_COMMIT` gửi STOMP user destination `/user/queue/doctor` tới đúng tài khoản bác sĩ. | `WebSocketConfig`, `DoctorQueueWebSocketListener`, Doctor Desk client và bộ test AFTER_COMMIT/rollback. |
-| Thanh toán online, audit trail | Chọn VietQR chuyển khoản ngân hàng thay VNPay. Đã có payment request, callback HMAC/idempotency, manual reconciliation và audit cho thu tiền; tích hợp trực tiếp MB Paygate vẫn cần merchant onboarding/credential thật. | Migration V6, `BankTransferPaymentServiceImpl`, `BankPaymentCallbackController`, `business_audit_events`. |
+| Thanh toán online, audit trail | Chọn VietQR chuyển khoản ngân hàng thay VNPay. Đã có payment request, callback HMAC/idempotency, manual reconciliation và audit cho thu tiền; tích hợp trực tiếp MB Paygate vẫn cần merchant onboarding/credential thật. | Migration V6, `BankTransferPaymentService`, `BankPaymentCallbackController`, `business_audit_events`. |
 | Hiệu năng | Baseline local đã được đo cho các trang đại diện và đều dưới mục tiêu p95 1,5 giây; production/CDN vẫn là nghiệm thu riêng. | Kế hoạch và biểu mẫu kết quả nằm ở `docs/performance/TEST_PLAN.md`. |
 
 ## Điều kiện cập nhật lại

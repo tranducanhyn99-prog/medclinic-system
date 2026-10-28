@@ -109,11 +109,17 @@ public class AppointmentService {
     public Appointment bookWalkInAppointment(String fullName, String phone, LocalDate dateOfBirth, Gender gender, String address,
                                              Long doctorId, LocalDate date, Long timeSlotId, String reason) {
         requireToday(date);
+        if (fullName == null || fullName.trim().isEmpty()) {
+            throw new BusinessLogicException("Họ tên bệnh nhân không được để trống");
+        }
+        if (dateOfBirth != null && dateOfBirth.isAfter(LocalDate.now(businessClock))) {
+            throw new BusinessLogicException("Ngày sinh không hợp lệ");
+        }
         phone = com.medclinic.util.PhoneNumbers.normalize(phone, true);
         User patient = userRepository.findByPhone(phone).orElse(null);
         if (patient == null) {
             patient = new User();
-            patient.setFullName(fullName);
+            patient.setFullName(fullName.trim());
             patient.setPhone(phone);
             patient.setUsername("walkin-" + UUID.randomUUID());
             patient.setPassword(passwordEncoder.encode(UUID.randomUUID().toString()));
@@ -123,6 +129,7 @@ public class AppointmentService {
             patient.setAddress(address == null ? null : address.trim());
             // A reception record is not an issued login account. It remains disabled
             // until the patient completes verified account registration/reset later.
+            patient.setEmailVerified(false);
             patient.setIsActive(false);
             Role role = roleRepository.findByName(RoleType.ROLE_PATIENT)
                     .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy vai trò ROLE_PATIENT"));

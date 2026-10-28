@@ -77,7 +77,7 @@ public class SensitiveEndpointRateLimitFilter extends OncePerRequestFilter {
         String remoteIp = request.getRemoteAddr();
         String key = Sha256.hex(remoteIp + '|' + endpoint);
         int limit = switch (endpoint) {
-            case "/auth/login", "/login/oauth2/code/google" -> loginMaxRequests;
+            case "/auth/login", "/register", "/auth/verify-email", "/login/oauth2/code/google" -> loginMaxRequests;
             case "/api/payments/bank/callback" -> paymentCallbackMaxRequests;
             default -> passwordResetMaxRequests;
         };
@@ -97,13 +97,15 @@ public class SensitiveEndpointRateLimitFilter extends OncePerRequestFilter {
 
     private String protectedEndpoint(HttpServletRequest request) {
         String path = request.getRequestURI().substring(request.getContextPath().length());
-        if ("GET".equalsIgnoreCase(request.getMethod()) && "/login/oauth2/code/google".equals(path)) {
+        if ("GET".equalsIgnoreCase(request.getMethod())
+                && ("/login/oauth2/code/google".equals(path) || "/auth/verify-email".equals(path))) {
             return path;
         }
         if (!"POST".equalsIgnoreCase(request.getMethod())) {
             return null;
         }
         if ("/auth/login".equals(path)
+                || "/register".equals(path)
                 || "/auth/otp".equals(path)
                 || "/auth/otp/resend".equals(path)
                 || "/forgot-password".equals(path)

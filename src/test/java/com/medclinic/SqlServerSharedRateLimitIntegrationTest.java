@@ -15,9 +15,15 @@ import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @EnabledIfEnvironmentVariable(named = "RUN_SQLSERVER_IT", matches = "true")
-@SpringBootTest(properties = {"spring.jpa.hibernate.ddl-auto=create-drop", "spring.flyway.enabled=false"})
+@org.junit.jupiter.api.condition.EnabledIf("disposableLocalDatabaseConfigured")
+@SpringBootTest(properties = {"spring.jpa.hibernate.ddl-auto=create-drop", "spring.flyway.enabled=false", "spring.datasource.url=${DB_URL}"})
 @ActiveProfiles(profiles = {"dev", "sqlserver"}, inheritProfiles = false)
 class SqlServerSharedRateLimitIntegrationTest {
+    static boolean disposableLocalDatabaseConfigured() {
+        String url = System.getenv("DB_URL");
+        return url != null && url.toLowerCase(java.util.Locale.ROOT).matches(
+                "jdbc:sqlserver://(?:localhost|127\\.0\\.0\\.1)(?::[0-9]+)?;.*databasename=medclinic_(?:e2e|[a-z0-9_]+_it)(?:;.*)?");
+    }
     @Autowired
     private RateLimitStore store;
 

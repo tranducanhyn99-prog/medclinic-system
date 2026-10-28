@@ -20,6 +20,7 @@ try {
 
     & docker cp "${SqlServerContainer}:${containerPath}" (Join-Path $destination $backupName)
     if ($LASTEXITCODE -ne 0) { throw 'Could not copy database backup from the container.' }
+    & docker exec $SqlServerContainer rm -f $containerPath | Out-Null
 
     $uploads = Join-Path $destination 'uploads'
     & docker cp "${AppContainer}:/app/uploads" $uploads

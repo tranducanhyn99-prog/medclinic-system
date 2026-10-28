@@ -65,10 +65,9 @@ Mau_Thiet_Ke_Du_Lieu/
 /.impeccable/
 /output/
 /tmp/
-# Private raw evidence stays local; curated public summaries are committed.
-/docs/evidence/private/
-/docs/evidence/backend-2026-10-01/camera-scan-result.png
-/docs/evidence/backend-2026-10-01/camera-check-in.png
-/docs/evidence/backend-2026-10-01/mailpit-otp.png
-/docs/evidence/backend-2026-10-01/smtp-magic-login.png
-/docs/evidence/backend-2026-10-01/smtp-otp-success.png
+# Local review captures, IDE migration hooks and report generators
+/docs/evidence/
+/.github/modernize/
+/src/main/java/com/medclinic/generator/
+# Course grading sheet supplied locally
+/LTWEB_CuoiKy(Rubric)_*.xlsx

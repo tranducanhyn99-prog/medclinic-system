@@ -52,7 +52,7 @@ Các mục sau **chưa** được đánh dấu production-complete:
 - Secret-manager wiring/rotation policy của hosting environment.
 - Manual screen-reader release smoke.
 - Final DBA backup/change approval và deployment-window smoke. Repository có `ops/backup.ps1` và `ops/restore-drill.ps1`; kết quả từng lần chạy phải được lưu ngoài Git.
-- Với thanh toán ngân hàng: merchant onboarding/credential thật, HTTPS callback, secret rotation và đối soát kế toán theo `18_P2_PRODUCTION_READINESS_AND_BANK_PAYMENT_2026-09-23.md`.
+- Với thanh toán ngân hàng: merchant onboarding/credential thật, HTTPS callback, secret rotation và đối soát kế toán theo [hướng dẫn tích hợp](../INTEGRATION_PREPARATION_2026-10-03.md).
 - Production admin identity thật và bootstrap-password rotation/handoff.
 
 Các mục này cần credential, hạ tầng hoặc human verification thật và không được giả lập thành bằng chứng đã hoàn thành.

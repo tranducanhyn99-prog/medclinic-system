@@ -4,7 +4,7 @@
 
 Ngày: 03/10/2026. Người dùng xác nhận có staging, SMTP và sandbox ngân hàng; thông tin kết nối cụ thể và nghiệm thu các dịch vụ đó chưa được xác minh.
 
-Tài liệu này liệt kê đầu vào cần có để tiếp tục các task tích hợp. Đối chiếu với [application.yml](../src/main/resources/application.yml), [mẫu production](../.env.production.example) và [runbook vận hành/thanh toán](18_P2_PRODUCTION_READINESS_AND_BANK_PAYMENT_2026-09-23.md). Không điền secret vào tài liệu này hoặc commit file env đã điền.
+Tài liệu này liệt kê đầu vào cần có để tiếp tục các task tích hợp. Đối chiếu với [application.yml](../src/main/resources/application.yml), [mẫu production](../.env.production.example), [SQL Server runbook](database/SQLSERVER_RUNBOOK.md) và [bảo mật/vận hành](10_SECURITY_OBSERVABILITY.md). Không điền secret vào tài liệu này hoặc commit file env đã điền.
 
 ## 1. Staging — triển khai và kiểm tra toàn bộ luồng
 

@@ -111,7 +111,7 @@
                             </td>
                             <td class="text-end pe-3">
                                 <!-- Do not allow locking own admin account if it's current user -->
-                                <form th:action="@{/admin/users/{id}/toggle(id=${u.id})}" method="post" class="d-inline m-0">
+                                <form th:if="${u.username != #authentication.name}" th:action="@{/admin/users/{id}/toggle(id=${u.id})}" method="post" class="d-inline m-0">
                                     <button type="submit" class="btn btn-sm mc-action-btn"
                                             th:classappend="${u.isActive ? 'btn-outline-danger' : 'btn-outline-success'}"
                                             th:title="${u.isActive ? 'Khóa tài khoản này' : 'Mở khóa tài khoản'}">
@@ -121,7 +121,7 @@
                                 </form>
                             </td>
                         </tr>
-                    </tbody>
+                    </tbody><!-- empty-guard --><tbody th:if="${#lists.isEmpty(users)}"><tr><td colspan="8" class="text-center py-4 text-muted">Không tìm thấy tài khoản phù hợp với từ khóa tra cứu.</td></tr></tbody>
                 </table>
             </div>
         </div>

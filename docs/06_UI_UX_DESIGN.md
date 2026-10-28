@@ -11,10 +11,10 @@ Nguyên tắc: hiển thị thông tin nghiệp vụ thay vì ID kỹ thuật; m
 | Nhóm | Màn hình | Người dùng | Mục tiêu chính |
 |---|---|---|---|
 | Công khai | Trang chủ, danh sách/chi tiết bác sĩ | Khách, bệnh nhân | Tìm hiểu dịch vụ và chọn bác sĩ |
-| Xác thực | Đăng nhập, đăng ký, quên/đặt lại mật khẩu, hồ sơ | Tất cả | Xác thực và quản lý tài khoản |
+| Xác thực | Đăng nhập, đăng ký, xác thực OTP (`/auth/otp`), quên/đặt lại mật khẩu, hồ sơ | Tất cả | Xác thực và quản lý tài khoản |
 | Bệnh nhân | Đặt lịch, lịch hẹn, chi tiết lịch, bệnh án | Bệnh nhân | Đặt, theo dõi hoặc hủy lịch; xem QR và tiền sử |
-| Bác sĩ | Bàn khám, khám bệnh, lịch trực | Bác sĩ | Xử lý hàng chờ, chẩn đoán, kê đơn |
-| Tiếp nhận | Tiếp nhận, đăng ký vãng lai, thu ngân | Lễ tân | Check-in, cấp STT, thu phí/in hóa đơn |
+| Bác sĩ | Bàn khám, khám bệnh, lịch trực, danh sách & chi tiết bệnh án đã khám (`/doctor/records`, `/doctor/records/{id}`) | Bác sĩ | Xử lý hàng chờ, chẩn đoán, kê đơn và tra cứu bệnh án |
+| Tiếp nhận | Tiếp nhận, đăng ký vãng lai, thu ngân, thanh toán chuyển khoản VietQR (`/staff/billing/bank/payment/{id}`) | Lễ tân | Check-in, cấp STT, thu phí tiền mặt/VietQR và in hóa đơn |
 | Quản trị | Dashboard, chuyên khoa, bác sĩ, thuốc, tài khoản | Admin | Theo dõi KPI và quản trị danh mục |
 
 ## 3. Luồng chuyển màn hình
@@ -97,10 +97,7 @@ Trạng thái lịch hẹn luôn gồm chữ, badge/icon và màu; không dùng 
 
 Template được tổ chức theo role tại `src/main/resources/templates/{patient,doctor,staff,admin}`; hai layout dùng chung là `layout/main.html` và `layout/dashboard.html`. Bằng chứng triển khai UX được giữ trong test render/accessibility, JaCoCo và lịch sử commit của repository.
 
-> [!TIP]
-> **Bộ Prompt & Tài Liệu Đặc Tả Thiết Kế Dành Riêng Cho Figma AI:**<br>
-> Xem tài liệu chi tiết gồm 8 bộ prompt có cấu trúc và mã JSON Tokens tại:<br>
-> 🔗 [FIGMA_AI_PROMPT_SPECIFICATION.md](design/FIGMA_AI_PROMPT_SPECIFICATION.md)
+Các token và quy tắc giao diện hiện tại nằm trong [DESIGN.md](../DESIGN.md). Phần handoff bên dưới là hướng dẫn thiết kế, không khẳng định đã có file Figma hoàn chỉnh.
 
 ## 9. Figma handoff — cấu trúc file thiết kế
 
@@ -129,30 +126,30 @@ Khi dựng trên Figma, tạo file `MedClinic UI Kit & Screens` với các Pages
 
 | Token | Giá trị | Mục đích |
 |---|---:|---|
-| `color/primary/default` | `#0891B2` | Medical Cyan chính, CTA, viền active, icon |
-| `color/primary/hover` | `#0E7490` | Hover nút bấm chính, link tương tác |
+| `color/primary/default` | `#176B9B` | Medical Blue chính, CTA, viền active, icon |
+| `color/primary/hover` | `#0E527B` | Hover nút bấm chính, link tương tác |
 | `color/primary/strong` | `#155E75` | Tiêu đề trang, văn bản thương hiệu, viền nhấn |
-| `color/primary/soft` | `#ECFEFF` | Nền thẻ bác sĩ, nền slot chọn, background badge |
+| `color/primary/soft` | `#EBF5FB` | Nền thẻ bác sĩ, nền slot chọn, background badge |
 | `color/secondary/default` | `#0D9488` | Nhãn chuyên khoa, tag dịch vụ hỗ trợ |
 | `color/navy/950` | `#090E1A` | Nền thanh điều hướng Sidebar quản trị (Dashboard) |
 | `color/navy/900` | `#0F172A` | Tiêu đề Headings, văn bản chính, footer |
 | `color/surface/default` | `#FFFFFF` | Nền card, modal, input |
-| `color/background/subtle` | `#F8FAFC` | Nền trang tổng thể (chống lóa) |
-| `color/text/primary` | `#0F172A` | Nội dung văn bản chính |
-| `color/text/secondary` | `#64748B` | Nội dung phụ, subtitle |
-| `color/border/default` | `#E2E8F0` | Viền input, card, table |
-| `color/success/600` | `#059669` | Thành công, đã khám, đã thanh toán |
-| `color/warning/600` | `#D97706` | Cảnh báo, chờ khám, tồn kho thấp |
-| `color/danger/600` | `#E11D48` | Lỗi, đã hủy lịch, hotline cấp cứu |
+| `color/background/subtle` | `#F5F9FC` | Nền trang tổng thể Cool White (chống lóa) |
+| `color/text/primary` | `#203442` | Nội dung văn bản chính |
+| `color/text/secondary` | `#526675` | Nội dung phụ, subtitle |
+| `color/border/default` | `#D5E2EC` | Viền input, card, table |
+| `color/success/600` | `#166534` | Thành công, đã khám, đã thanh toán |
+| `color/warning/600` | `#92400E` | Cảnh báo, chờ khám, tồn kho thấp |
+| `color/danger/600` | `#9F1239` | Lỗi, đã hủy lịch, hotline cấp cứu |
 
 Không truyền đạt trạng thái chỉ bằng màu: badge trạng thái luôn có icon và nhãn chữ.
 
 ### 10.2. Typography, spacing và frame
 
-- Font: `Inter`; heading: 700–800, body: 400–500.
+- Font: `Geist` variable font nội bộ (`400–650`, có `GeistMono` cho mã đặt lịch/hóa đơn/số tiền `tabular-nums`); không phụ thuộc CDN font ngoài.
 - Cỡ: `Display 32/40`, `H1 28/36`, `H2 22/30`, `H3 18/26`, `Body 16/24`, `Small 14/20`, `Caption 12/16`.
 - Spacing scale: `4, 8, 12, 16, 24, 32, 48` px; radius: `8` px cho button/input, `12–14` px cho card.
-- Frame cần dựng: Desktop `1440`, Tablet `768`, Mobile `390` px. Nội dung desktop tối đa `1140` px; portal có sidebar `260` px.
+- Frame cần dựng: Desktop `1440`, Tablet `768`, Mobile `390` px. Nội dung desktop tối đa `1140` px; portal có sidebar `244` px.
 - Dùng Auto Layout cho mọi card, form group, toolbar, header, sidebar item và danh sách; không dùng tọa độ tuyệt đối trừ overlay/modal.
 
 ## 11. Component specification

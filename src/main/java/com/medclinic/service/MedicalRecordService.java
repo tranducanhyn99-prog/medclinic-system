@@ -168,7 +168,7 @@ public class MedicalRecordService {
         return saved;
     }
 
-    @PreAuthorize("hasAnyRole('DOCTOR','PATIENT','ADMIN')")
+    @PreAuthorize("#patientId == principal.id or hasAnyRole('DOCTOR','ADMIN')")
     @Transactional(readOnly = true)
     public List<MedicalRecord> getPatientMedicalHistory(Long patientId) {
         return medicalRecordRepository.findByPatientIdOrderByCreatedAtDesc(patientId);

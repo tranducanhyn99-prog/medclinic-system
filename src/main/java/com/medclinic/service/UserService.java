@@ -32,13 +32,44 @@ public class UserService {
         if (!registerDto.getPassword().equals(registerDto.getConfirmPassword())) {
             throw new BusinessLogicException("Mật khẩu xác nhận không khớp!");
         }
+        String username = registerDto.getUsername().trim();
+        String email = registerDto.getEmail().trim().toLowerCase();
+        String phone = com.medclinic.util.PhoneNumbers.normalize(registerDto.getPhone(), true);
+
+        User claimable = findClaimablePatient(username, email, phone);
+        if (claimable != null) {
+            User byUsername = userRepository.findByUsername(username).orElse(null);
+            if (byUsername != null && !byUsername.getId().equals(claimable.getId())) {
+                throw new BusinessLogicException("Tên đăng nhập '" + registerDto.getUsername() + "' đã tồn tại!");
+            }
+            User byEmail = userRepository.findByEmail(email).orElse(null);
+            if (byEmail != null && !byEmail.getId().equals(claimable.getId())) {
+                throw new BusinessLogicException("Email '" + registerDto.getEmail() + "' đã được đăng ký!");
+            }
+            User byPhone = userRepository.findByPhone(phone).orElse(null);
+            if (byPhone != null && !byPhone.getId().equals(claimable.getId())) {
+                throw new BusinessLogicException("Số điện thoại đã được đăng ký");
+            }
+            claimable.setUsername(username);
+            claimable.setPassword(passwordEncoder.encode(registerDto.getPassword()));
+            claimable.setFullName(registerDto.getFullName().trim());
+            claimable.setEmail(email);
+            claimable.setPhone(phone);
+            claimable.setGender(registerDto.getGender());
+            claimable.setDateOfBirth(registerDto.getDateOfBirth());
+            claimable.setAddress(normalizeOptional(registerDto.getAddress()));
+            claimable.setEmailVerified(false);
+            claimable.setOtpBypass(false);
+            claimable.setIsActive(false);
+            return saveWithUniquePhone(claimable);
+        }
+
         if (userRepository.existsByUsername(registerDto.getUsername())) {
             throw new BusinessLogicException("Tên đăng nhập '" + registerDto.getUsername() + "' đã tồn tại!");
         }
         if (userRepository.existsByEmail(registerDto.getEmail())) {
             throw new BusinessLogicException("Email '" + registerDto.getEmail() + "' đã được đăng ký!");
         }
-        String phone = com.medclinic.util.PhoneNumbers.normalize(registerDto.getPhone(), true);
         if (userRepository.existsByPhone(phone)) {
             throw new BusinessLogicException("Số điện thoại đã được đăng ký");
         }
@@ -47,10 +78,10 @@ public class UserService {
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy vai trò ROLE_PATIENT"));
 
         User user = User.builder()
-                .username(registerDto.getUsername().trim())
+                .username(username)
                 .password(passwordEncoder.encode(registerDto.getPassword()))
                 .fullName(registerDto.getFullName().trim())
-                .email(registerDto.getEmail().trim().toLowerCase())
+                .email(email)
                 .phone(phone)
                 .gender(registerDto.getGender())
                 .dateOfBirth(registerDto.getDateOfBirth())
@@ -62,6 +93,44 @@ public class UserService {
                 .build();
 
         return saveWithUniquePhone(user);
+    }
+
+    @Transactional(readOnly = true)
+    public java.util.Optional<User> findUnverifiedRegistrationCandidate(String identifier, String rawPassword) {
+        if (identifier == null || identifier.isBlank() || rawPassword == null) {
+            return java.util.Optional.empty();
+        }
+        String normalized = identifier.trim();
+        return userRepository.findByUsername(normalized)
+                .or(() -> userRepository.findByEmail(normalized.toLowerCase()))
+                .filter(this::isClaimableUnverifiedPatient)
+                .filter(u -> u.getEmail() != null && !u.getEmail().endsWith("@invalid.medclinic.local"))
+                .filter(u -> passwordEncoder.matches(rawPassword, u.getPassword()));
+    }
+
+    private User findClaimablePatient(String username, String email, String phone) {
+        User byPhone = userRepository.findByPhone(phone).orElse(null);
+        if (byPhone != null && isClaimableUnverifiedPatient(byPhone)) {
+            return byPhone;
+        }
+        User byUsername = userRepository.findByUsername(username).orElse(null);
+        if (byUsername != null && isClaimableUnverifiedPatient(byUsername)) {
+            return byUsername;
+        }
+        User byEmail = userRepository.findByEmail(email).orElse(null);
+        if (byEmail != null && isClaimableUnverifiedPatient(byEmail)) {
+            return byEmail;
+        }
+        return null;
+    }
+
+    private boolean isClaimableUnverifiedPatient(User user) {
+        return user != null
+                && user.getRole() != null
+                && user.getRole().getName() == RoleType.ROLE_PATIENT
+                && !Boolean.TRUE.equals(user.getIsActive())
+                && (!Boolean.TRUE.equals(user.getEmailVerified())
+                    || (user.getEmail() != null && user.getEmail().endsWith("@invalid.medclinic.local")));
     }
 
     @Transactional(readOnly = true)
@@ -122,7 +191,9 @@ public class UserService {
             throw new BusinessLogicException("Mật khẩu hiện tại không chính xác!");
         }
         user.setPassword(passwordEncoder.encode(newPassword));
+        user.setSecurityVersion(user.getSecurityVersion() + 1);
         userRepository.save(user);
+        userRepository.invalidateAuthChallenges(userId, java.time.LocalDateTime.now());
     }
 
     @Transactional

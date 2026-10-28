@@ -27,5 +27,6 @@ try {
 
     Write-Host "Restore drill passed. Temporary database $drillDatabase was checked and removed."
 } finally {
+    & docker exec $SqlServerContainer rm -f $containerPath 2>$null | Out-Null
     Pop-Location
 }

@@ -76,12 +76,11 @@ Production dùng callback HTTPS của domain thật, credentials trong secret ma
 
 Test callback dùng token RSA ký bằng khóa local để chạy authorization → callback → session và từ chối nonce sai/chữ ký giả. Test account phủ quyền, email trùng, khóa/mở khóa, Workspace và callback đồng thời. Enabled thiếu credentials làm startup fail; disabled không yêu cầu credentials.
 
-Ngày 12/10: suite mặc định **272 pass, 46 SQL skipped**, sau đó chạy riêng **46/46 SQL pass**; tổng 318 test Java riêng biệt thực sự chạy, 0 failure/error. Frontend **26/26 pass**. Tám capture login/register ở 1440/390px và light/dark đúng theme, không tràn ngang, logo/font local, focus rõ; reviewer độc lập chấp nhận UI. JAR cuối chứa V1–V10 và đủ assets/giấy phép. **359 link nội bộ hợp lệ**. Coverage của suite mặc định: LINE 87,98%, BRANCH 71,88%; không cộng skip thành pass.
+Kết quả lần chạy hiện tại được tổng hợp trong [hướng dẫn kiểm thử](KIEM_THU.md). Các class dưới đây giữ trong source để chạy lại; test SQL Server cần environment guard và database riêng.
 
 - [GoogleLoginIntegrationTest](../src/test/java/com/medclinic/GoogleLoginIntegrationTest.java)
 - [GoogleCallbackProtocolIntegrationTest](../src/test/java/com/medclinic/GoogleCallbackProtocolIntegrationTest.java)
 - [GoogleLoginConfigurationTest](../src/test/java/com/medclinic/GoogleLoginConfigurationTest.java)
 - [SqlServerGoogleLoginIntegrationTest](../src/test/java/com/medclinic/SqlServerGoogleLoginIntegrationTest.java)
-- [Kết quả kiểm chứng 12/10](evidence/google-login-2026-10-12/verification-summary.json)
 
-Kết quả trên là mốc ban đầu của tích hợp Google, trước khi bổ sung bước OTP. Để thử luồng hiện tại, cấu hình email theo [hướng dẫn Gmail OTP](GMAIL_OTP_SETUP.md), rồi hoàn tất Google → xác nhận email trên trình duyệt thật. Review 10/10 là mốc trước tính năng Google.
+Để thử luồng hiện tại, cấu hình email theo [hướng dẫn Gmail OTP](GMAIL_OTP_SETUP.md), rồi hoàn tất Google → xác nhận email trên trình duyệt thật. Test với nhà cung cấp giả lập không thay thế lần thử tích hợp thực tế này.

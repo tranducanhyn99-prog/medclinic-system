@@ -30,6 +30,13 @@ public class InvoiceService {
     private final InvoiceCodeReservationCoordinator invoiceCodeReservationCoordinator;
     private final BusinessAuditService auditService;
 
+    private com.medclinic.repository.BankTransferPaymentRepository bankTransferPaymentRepository;
+
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    public void setBankTransferPaymentRepository(com.medclinic.repository.BankTransferPaymentRepository bankTransferPaymentRepository) {
+        this.bankTransferPaymentRepository = bankTransferPaymentRepository;
+    }
+
     @Transactional
     public Invoice createInvoiceForAppointment(Long appointmentId, BigDecimal medicineFee) {
         Appointment appointment = appointmentRepository.findById(appointmentId)
@@ -80,6 +87,13 @@ public class InvoiceService {
         invoice.setPaymentMethod(paymentMethod);
         invoice.setPaidAt(LocalDateTime.now());
         Invoice saved = invoiceRepository.save(invoice);
+        if (bankTransferPaymentRepository != null) {
+            bankTransferPaymentRepository.findFirstByInvoiceIdAndStatusOrderByCreatedAtDesc(
+                    invoiceId, com.medclinic.enums.BankTransferStatus.PENDING).ifPresent(pending -> {
+                pending.setStatus(com.medclinic.enums.BankTransferStatus.EXPIRED);
+                bankTransferPaymentRepository.save(pending);
+            });
+        }
         auditService.record(actorId, "CASH_PAYMENT_CONFIRMED", "INVOICE", invoiceId,
                 "SUCCESS", invoice.getInvoiceCode(), "STAFF_CASH_COLLECTION");
         return saved;

@@ -44,8 +44,10 @@ class MedicineStockConcurrencyIntegrationTest {
         DoctorProfile doctor = doctorProfiles.findByUserId(doctorUser.getId()).orElseThrow();
         User patient = users.findByUsername("patient").orElseThrow();
         Medicine medicine = medicines.findAll().stream().filter(m -> Boolean.TRUE.equals(m.getIsActive())).findFirst().orElseThrow();
+        int originalStock = medicine.getStockQuantity();
         medicine.setStockQuantity(1);
         medicines.saveAndFlush(medicine);
+        try {
 
         LocalDate date = LocalDate.now(java.time.ZoneId.of("Asia/Ho_Chi_Minh"));
         DoctorSchedule schedule = schedules.findByDoctorIdAndWorkDateAndShift(doctor.getId(), date, ShiftType.MORNING)
@@ -82,6 +84,11 @@ class MedicineStockConcurrencyIntegrationTest {
                 .map(a -> appointments.findById(a.getId()).orElseThrow().getStatus())
                 .filter(s -> s == AppointmentStatus.COMPLETED).count();
         assertEquals(1, completedCount);
+        } finally {
+            Medicine restored = medicines.findById(medicine.getId()).orElseThrow();
+            restored.setStockQuantity(originalStock);
+            medicines.saveAndFlush(restored);
+        }
     }
 
     private Appointment createInProgressAppointment(User patient, DoctorProfile doctor, DoctorSchedule schedule,

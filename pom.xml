@@ -176,6 +176,15 @@
                     </excludes>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <excludes>
+                        <exclude>com/medclinic/generator/**</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
             <!-- JaCoCo Code Coverage Plugin -->
             <plugin>
                 <groupId>org.jacoco</groupId>

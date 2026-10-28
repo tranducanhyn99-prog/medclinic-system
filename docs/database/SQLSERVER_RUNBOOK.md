@@ -123,9 +123,22 @@ Các kiểm chứng trọng yếu gồm:
 
 Lần nghiệm thu 23/09/2026 dùng container SQL Server 2022 (engine 16.0). Kiểm tra lại phiên bản engine và kết quả test ở từng môi trường triển khai.
 
-Test điện thoại và thanh toán mới dùng database riêng `medclinic_phone_it` và `medclinic_payments_it`; đổi `DB_URL` tương ứng và chạy lần lượt `SqlServerPhoneUniquenessIntegrationTest`, `SqlServerBankPaymentConcurrencyIntegrationTest`. Cả hai từ chối URL không trỏ đúng database local dành cho test. Xem [nghiệm thu sửa review 10/10](../PROJECT_REVIEW_FIX_ACCEPTANCE_2026-10-10.md).
+Test điện thoại và thanh toán mới dùng database riêng `medclinic_phone_it` và `medclinic_payments_it`; đổi `DB_URL` tương ứng và chạy lần lượt `SqlServerPhoneUniquenessIntegrationTest`, `SqlServerBankPaymentConcurrencyIntegrationTest`. Cả hai từ chối URL không trỏ đúng database local dành cho test. Xem [hướng dẫn kiểm thử](../KIEM_THU.md).
 
 Test Google dùng local `medclinic_google_it` với V1–V10 + Hibernate validate; chạy `SqlServerGoogleLoginIntegrationTest`. Client giả lập trong test không cần secret thật. Bật tính năng trên app theo [hướng dẫn Google OAuth](../GOOGLE_LOGIN_SETUP.md); bật flag mà thiếu credentials sẽ làm startup fail.
+
+### Kiểm thử OTP và Google chờ OTP
+
+Tạo database test riêng, dùng Flyway V1–V10 + Hibernate validate. Bật `RUN_SQLSERVER_IT=true`, đặt `DB_USERNAME`, `DB_PASSWORD`, `REMEMBER_ME_KEY` trong môi trường, rồi chạy từng lớp:
+
+```powershell
+$env:DB_URL = 'jdbc:sqlserver://localhost:14333;databaseName=medclinic_otp_it;encrypt=true;trustServerCertificate=true;sendStringParametersAsUnicode=true'
+mvn '-Dtest=SqlServerOtpAuthenticationIntegrationTest' test
+$env:DB_URL = 'jdbc:sqlserver://localhost:14333;databaseName=medclinic_google_otp_it;encrypt=true;trustServerCertificate=true;sendStringParametersAsUnicode=true'
+mvn '-Dtest=SqlServerGoogleCallbackProtocolIntegrationTest' test
+```
+
+Đổi port theo SQL Server local. Guard của từng lớp chỉ chấp nhận localhost/127.0.0.1 và đúng tên database trên. Bộ này giả lập email/Google; kết quả và phạm vi xem [kiểm thử](../KIEM_THU.md).
 
 ## 7. Production handoff
 

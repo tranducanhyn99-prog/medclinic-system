@@ -66,9 +66,12 @@ public class PasswordResetService {
         }
 
         User user = token.getUser();
+        LocalDateTime now = LocalDateTime.now();
         user.setPassword(passwordEncoder.encode(newPassword));
-        token.setUsedAt(LocalDateTime.now());
+        user.setSecurityVersion(user.getSecurityVersion() + 1);
+        token.setUsedAt(now);
         userRepository.save(user);
+        userRepository.invalidateAuthChallenges(user.getId(), now);
         passwordResetTokenRepository.save(token);
     }
 

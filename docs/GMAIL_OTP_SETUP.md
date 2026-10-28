@@ -48,6 +48,6 @@ Google xác minh email và tạo/liên kết bệnh nhân theo chính sách [Goo
 
 OTP gửi cùng Gmail đã dùng đăng nhập là bước xác nhận bổ sung, không được coi là yếu tố bảo mật độc lập. Gửi email là bất đồng bộ; trang OTP không bảo đảm thư đã đến hộp thư. Gmail có giới hạn gửi và cần Internet. Google OAuth Client ID/Secret và Gmail SMTP Mật khẩu ứng dụng là hai bộ thông tin khác nhau.
 
-## Kiểm chứng ngày 12/10/2026
+## Kiểm chứng
 
-`mvn verify`: 278 bài thực sự chạy/pass, 46 bài SQL có guard được bỏ qua, 0 failure/error. Coverage LINE 88,43%, BRANCH 72,15%; đạt ngưỡng của dự án. Frontend 26/26 pass. Callback Google dùng JWT RSA local kiểm tra chờ OTP, quyền truy cập, CSRF/session, mã sai/gửi lại, tài khoản khóa và lỗi phát hành challenge. Gmail SMTP đã qua TLS/xác thực; probe không gửi thư. App local đã rebuild, khỏe và nạp Gmail/Google. Người dùng đã xác nhận hoàn tất luồng Google → OTP qua Gmail thật; agent không thao tác tài khoản Google của người dùng. Xem [kết quả kiểm chứng](evidence/google-otp-2026-10-12/verification-summary.json).
+Callback Google có test dùng JWT RSA local cho bước chờ OTP, quyền truy cập, CSRF/session, mã sai/gửi lại, tài khoản khóa và lỗi phát hành challenge. Xem [cách chạy và kết quả kiểm thử](KIEM_THU.md). Gửi OTP qua Gmail thật cần thử lại với cấu hình SMTP của môi trường đang dùng; test local không xác nhận thư đã đến hộp thư.

@@ -32,6 +32,21 @@ public class DoctorService {
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
 
+    private ScheduleService scheduleService;
+    private java.time.Clock businessClock = java.time.Clock.system(java.time.ZoneId.of("Asia/Ho_Chi_Minh"));
+
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    public void setScheduleService(ScheduleService scheduleService) {
+        this.scheduleService = scheduleService;
+    }
+
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    public void setBusinessClock(java.time.Clock businessClock) {
+        if (businessClock != null) {
+            this.businessClock = businessClock;
+        }
+    }
+
     @Transactional(readOnly = true)
     public List<DoctorProfile> findAll() {
         return doctorProfileRepository.findAll();
@@ -111,7 +126,16 @@ public class DoctorService {
         profile.setUser(user); profile.setSpecialty(specialty); profile.setLicenseNumber(license);
         profile.setTitle(doctorDto.getTitle().trim()); profile.setExperienceYears(doctorDto.getExperienceYears());
         profile.setConsultationFee(doctorDto.getConsultationFee()); profile.setBio(doctorDto.getBio());
-        return doctorProfileRepository.save(profile);
+        DoctorProfile saved = doctorProfileRepository.save(profile);
+        if (scheduleService != null && saved != null && saved.getId() != null) {
+            java.time.LocalDate today = java.time.LocalDate.now(businessClock);
+            for (int i = 0; i <= 14; i++) {
+                java.time.LocalDate date = today.plusDays(i);
+                scheduleService.createOrGetSchedule(saved.getId(), date, com.medclinic.enums.ShiftType.MORNING);
+                scheduleService.createOrGetSchedule(saved.getId(), date, com.medclinic.enums.ShiftType.AFTERNOON);
+            }
+        }
+        return saved;
     }
 
     private void validateProfile(String title, int expYears, BigDecimal fee) {

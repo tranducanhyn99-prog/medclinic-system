@@ -197,6 +197,7 @@ a { text-underline-offset: .2em; }
 .table > :not(caption) > * > * { padding: .9rem 1rem; vertical-align: middle; }
 .table thead th { background: var(--mc-surface-subtle); color: var(--mc-text-muted); font-size: .8125rem; font-weight: 550; letter-spacing: 0; white-space: nowrap; }
 .table-info { --bs-table-bg: var(--mc-info-soft); --bs-table-color: var(--mc-text); --bs-table-hover-bg: var(--mc-primary-subtle); --bs-table-hover-color: var(--mc-text); --bs-table-border-color: var(--mc-border); }
+.table-warning { --bs-table-bg: var(--mc-warning-soft); --bs-table-color: var(--mc-text); --bs-table-hover-bg: var(--mc-primary-soft); --bs-table-hover-color: var(--mc-text); --bs-table-border-color: var(--mc-border); }
 .table-light { --bs-table-bg: var(--mc-surface-subtle); --bs-table-color: var(--mc-text); --bs-table-hover-bg: var(--mc-primary-soft); --bs-table-hover-color: var(--mc-text); --bs-table-border-color: var(--mc-border); }
 .mc-data-table tbody tr:hover { background: var(--mc-primary-soft); }
 .mc-data-table td:last-child { white-space: nowrap; }

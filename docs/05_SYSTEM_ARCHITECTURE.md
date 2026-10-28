@@ -72,7 +72,7 @@ graph TD
 
 ### 2.2. Security Layer (Tầng Bảo mật & Phân quyền)
 - **Công nghệ:** Spring Security 7 với cấu hình `SecurityFilterChain`.
-- **Cơ chế xác thực:** Session-based authentication kết hợp Remember-me token 14 ngày. Endpoint SockJS/STOMP `/ws/**` yêu cầu session đã xác thực; Doctor Desk nhận cập nhật qua user destination riêng của tài khoản đăng nhập.
+- **Cơ chế xác thực:** Session-based authentication kết hợp xác thực bước hai qua Email OTP / Magic Link và kiểm tra hiệu lực tức thời theo `securityVersion`. Endpoint SockJS/STOMP `/ws/**` yêu cầu session đã xác thực; Doctor Desk nhận cập nhật qua user destination riêng của tài khoản đăng nhập.
 - **Phân quyền RBAC:**
   - `ROLE_PATIENT`: Truy cập `/patient/**`
   - `ROLE_DOCTOR`: Truy cập `/doctor/**`
@@ -82,7 +82,7 @@ graph TD
 - **Password reset:** Token thô chỉ gửi qua email; CSDL lưu SHA-256 hash trong `password_reset_tokens`, hạn 24 giờ và đánh dấu `used_at` sau khi dùng.
 - **Session/cookie hardening:** Session timeout 30 phút; chống session fixation bằng `migrateSession`; `JSESSIONID` dùng `HttpOnly` + `SameSite=Lax`. Profile SQL Server mặc định `Secure=true`; local HTTP phải opt-out rõ ràng.
 - **Abuse protection:** các POST xác thực/OTP/reset dùng rate limit theo remote IP + endpoint, mặc định 20 login và 5 request nhạy cảm trong 300 giây. Profile SQL Server dùng bucket chung trong DB với khóa IP đã băm; trả HTTP 429 + `Retry-After` khi vượt ngưỡng.
-- **Response hardening:** Không expose error message/binding error/stacktrace; thêm `Referrer-Policy: strict-origin-when-cross-origin` và `Permissions-Policy` tắt camera/microphone/geolocation.
+- **Response hardening:** Không expose error message/binding error/stacktrace; thêm `Referrer-Policy: strict-origin-when-cross-origin` và `Permissions-Policy` tắt camera/microphone/geolocation toàn cục, chỉ bật `camera=(self)` trên `/staff/reception` phục vụ quét QR tiếp nhận.
 
 ### 2.3. Business Service Layer & Concurrency Engine (Tầng Nghiệp vụ)
 - **Concurrency Locking (Xử lý đồng thời chống Double Booking):**
@@ -105,7 +105,7 @@ graph TD
 - **Cơ sở dữ liệu:** Cấu hình linh hoạt đa môi trường:
   - Profile `dev`: H2 In-Memory Database (tự động khởi tạo schema và seed data, zero-configuration).
   - Profile `sqlserver`: Microsoft SQL Server — database chính cho môi trường hiện tại và production.
-  - **Schema versioning:** Profile `sqlserver` dùng Flyway V1–V6 chạy trước Hibernate; `ddl-auto=validate` chỉ xác minh mapping sau migration. Database legacy 16 bảng chỉ được nhận quản lý bằng baseline version 1 khi operator bật opt-in sau pre-check/backup; mặc định production không tự baseline.
+  - **Schema versioning:** Profile `sqlserver` dùng Flyway V1–V10 chạy trước Hibernate; `ddl-auto=validate` chỉ xác minh mapping sau migration. Database legacy 16 bảng chỉ được nhận quản lý bằng baseline version 1 khi operator bật opt-in sau pre-check/backup; mặc định production không tự baseline.
 - **Migration safety:** Docker init chỉ áp dụng guard `0`/`16` khi chưa có Flyway history; khi history đã tồn tại, versioning thuộc Flyway/Hibernate. Migration test destructive chạy trên database disposable `medclinic_flyway_it`, không dùng production database.
 - **Chuẩn hóa CSDL:** Toàn bộ quan hệ được thiết kế chuẩn mực **3NF**.
 
@@ -113,7 +113,7 @@ graph TD
 - **Actuator exposure:** Chỉ expose `health` và `metrics`; `/actuator/health` cho anonymous nhưng chỉ trả `status`, còn `/actuator/metrics/**` yêu cầu `ROLE_ADMIN`.
 - **Micrometer:** Theo dõi JVM/HTTP metrics mặc định và hai metric custom: `medclinic.security.authentication{outcome=...}` và `medclinic.security.rate_limit.rejected{endpoint=...}`.
 - **Security audit log:** Login success/failure, logout và rate-limit rejection ghi log dạng key=value; không log password, reset token hoặc secret.
-- **Giới hạn hiện tại:** Rate limiter là in-memory per JVM. Khi scale nhiều instance cần chuyển enforcement lên trusted gateway hoặc shared store như Redis; không tin trực tiếp `X-Forwarded-For` nếu proxy chưa được trust-configure.
+- **Giới hạn hiện tại:** Rate limiter dùng `InMemoryRateLimitStore` cho profile `dev` và `JdbcSqlServerRateLimitStore` (shared bucket trên SQL Server với transaction `SERIALIZABLE` + `UPDLOCK/HOLDLOCK`) cho profile `sqlserver`. Khi đối mặt lưu lượng DDoS lớn vẫn nên kết hợp WAF/gateway phía trước; không tin trực tiếp `X-Forwarded-For` nếu proxy chưa được trust-configure.
 
 
 ## Luồng xác thực và đọc hồ sơ hiện tại

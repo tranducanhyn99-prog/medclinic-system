@@ -40,36 +40,45 @@ class InventoryManagementIntegrationTest {
         Medicine medicine = medicines.findAll().stream()
                 .filter(m -> Boolean.TRUE.equals(m.getIsActive()))
                 .findFirst().orElseThrow();
+        int originalStock = medicine.getStockQuantity();
+        Integer originalReorderLevel = medicine.getReorderLevel();
         medicine.setStockQuantity(10);
         medicine.setReorderLevel(20);
         medicines.saveAndFlush(medicine);
 
-        mockMvc.perform(post("/admin/medicines/{id}/restock", medicine.getId())
-                        .with(user(new CustomUserDetails(admin))).with(csrf())
-                        .param("quantity", "15")
-                        .param("unitCost", "800")
-                        .param("note", "Phiếu nhập test"))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/admin/medicines"));
+        try {
+            mockMvc.perform(post("/admin/medicines/{id}/restock", medicine.getId())
+                            .with(user(new CustomUserDetails(admin))).with(csrf())
+                            .param("quantity", "15")
+                            .param("unitCost", "800")
+                            .param("note", "Phiếu nhập test"))
+                    .andExpect(status().is3xxRedirection())
+                    .andExpect(redirectedUrl("/admin/medicines"));
 
-        Medicine reloaded = medicines.findById(medicine.getId()).orElseThrow();
-        assertEquals(25, reloaded.getStockQuantity());
+            Medicine reloaded = medicines.findById(medicine.getId()).orElseThrow();
+            assertEquals(25, reloaded.getStockQuantity());
 
-        InventoryTransaction tx = inventoryTransactions.findAll().stream()
-                .filter(candidate -> candidate.getMedicine().getId().equals(medicine.getId()))
-                .filter(candidate -> candidate.getType() == InventoryTransactionType.RESTOCK)
-                .reduce((first, second) -> second).orElseThrow();
-        assertEquals(15, tx.getQuantityChange());
-        assertEquals(10, tx.getStockBefore());
-        assertEquals(25, tx.getStockAfter());
-        assertEquals(0, tx.getUnitCost().compareTo(new BigDecimal("800")));
-        assertEquals(admin.getId(), tx.getPerformedBy().getId());
+            InventoryTransaction tx = inventoryTransactions.findAll().stream()
+                    .filter(candidate -> candidate.getMedicine().getId().equals(medicine.getId()))
+                    .filter(candidate -> candidate.getType() == InventoryTransactionType.RESTOCK)
+                    .reduce((first, second) -> second).orElseThrow();
+            assertEquals(15, tx.getQuantityChange());
+            assertEquals(10, tx.getStockBefore());
+            assertEquals(25, tx.getStockAfter());
+            assertEquals(0, tx.getUnitCost().compareTo(new BigDecimal("800")));
+            assertEquals(admin.getId(), tx.getPerformedBy().getId());
 
-        mockMvc.perform(get("/admin/medicines")
-                        .with(user(new CustomUserDetails(admin))))
-                .andExpect(status().isOk())
-                .andExpect(content().string(containsString("Lịch sử giao dịch kho gần nhất")))
-                .andExpect(content().string(containsString("Phiếu nhập test")))
-                .andExpect(content().string(containsString("Nhập kho")));
+            mockMvc.perform(get("/admin/medicines")
+                            .with(user(new CustomUserDetails(admin))))
+                    .andExpect(status().isOk())
+                    .andExpect(content().string(containsString("Lịch sử giao dịch kho gần nhất")))
+                    .andExpect(content().string(containsString("Phiếu nhập test")))
+                    .andExpect(content().string(containsString("Nhập kho")));
+        } finally {
+            Medicine restored = medicines.findById(medicine.getId()).orElseThrow();
+            restored.setStockQuantity(originalStock);
+            restored.setReorderLevel(originalReorderLevel);
+            medicines.saveAndFlush(restored);
+        }
     }
 }

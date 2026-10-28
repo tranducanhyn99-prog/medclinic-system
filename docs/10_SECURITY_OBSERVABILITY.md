@@ -7,21 +7,21 @@ Tài liệu này mô tả các control bảo mật và khả năng quan sát v�
 - Spring Security chống session fixation bằng `migrateSession` sau đăng nhập thành công.
 - Session timeout mặc định: **30 phút**.
 - `JSESSIONID`: `HttpOnly=true`, `SameSite=Lax`.
-- Profile `sqlserver`: `Secure=true` mặc định cho session cookie; remember-me cookie dùng cùng policy.
+- Profile `sqlserver`: `Secure=true` mặc định cho session cookie; hiệu lực phiên được đối chiếu tức thời với `securityVersion` của người dùng trên mỗi request.
 - Docker local/demo chạy HTTP nên `.env` mặc định `SESSION_COOKIE_SECURE=false`; production HTTPS không được dùng opt-out này.
 - Error response không expose message, binding error hoặc stack trace.
 - Response thêm `Referrer-Policy: strict-origin-when-cross-origin`.
-- `Permissions-Policy` tắt camera, microphone và geolocation vì MedClinic hiện không sử dụng các capability này.
+- `Permissions-Policy` tắt camera, microphone và geolocation toàn cục, ngoại trừ `camera=(self)` trên `/staff/reception` phục vụ quét mã QR tiếp nhận.
 - CSRF vẫn được bật cho browser workflow; chỉ H2 console, SockJS transport `/ws/**` và callback bank server-to-server `/api/payments/bank/callback` dùng ngoại lệ. Callback bank bắt buộc HMAC SHA-256.
 
 ## 2. Rate limiting cho endpoint nhạy cảm
 
 `SensitiveEndpointRateLimitFilter` giới hạn request theo `remoteAddr + endpoint`:
 
-| Endpoint POST | Mặc định | Biến môi trường |
+| Endpoint | Mặc định | Biến môi trường |
 | --- | ---: | --- |
-| `/auth/login` | 20 request / 300 giây | `LOGIN_RATE_LIMIT_MAX` |
-| `/auth/otp`, `/auth/otp/resend` | 5 request / 300 giây | `PASSWORD_RESET_RATE_LIMIT_MAX` |
+| `POST /auth/login`, `POST /register`, `GET /login/oauth2/code/google` | 20 request / 300 giây | `LOGIN_RATE_LIMIT_MAX` |
+| `POST /auth/otp`, `POST /auth/otp/resend`, `GET /auth/verify-email` | 5 request / 300 giây | `PASSWORD_RESET_RATE_LIMIT_MAX` |
 | `/forgot-password` | 5 request / 300 giây | `PASSWORD_RESET_RATE_LIMIT_MAX` |
 | `/reset-password` | 5 request / 300 giây | `PASSWORD_RESET_RATE_LIMIT_MAX` |
 | `/api/payments/bank/callback` | 60 request / 300 giây | `PAYMENT_CALLBACK_RATE_LIMIT_MAX` |
@@ -47,7 +47,7 @@ Audit nghiệp vụ bền vững nằm trong `business_audit_events`: thu tiền
 
 ```text
 medclinic.security.authentication{outcome=success|failure|logout}
-medclinic.security.rate_limit.rejected{endpoint=/login|/forgot-password|/reset-password|/api/payments/bank/callback}
+medclinic.security.rate_limit.rejected{endpoint=/auth/login|/register|/auth/otp|/auth/otp/resend|/auth/verify-email|/login/oauth2/code/google|/forgot-password|/reset-password|/api/payments/bank/callback}
 medclinic.email.delivery{type=...,outcome=success|retry|failure}
 medclinic.email.consecutive_failures
 medclinic.retention.deleted{type=...}
@@ -79,8 +79,8 @@ Kỳ vọng unauthenticated: HTTP 200 và body tương đương `{"status":"UP"}
 - `SecurityAuditServiceTest`: kiểm custom Micrometer counters.
 - `SecurityHardeningIntegrationTest`: kiểm security headers, public health, ADMIN-only metrics và audit login/logout.
 - `SecurityObservabilityConfigurationTest`: khóa contract cho error detail, cookie policy, Actuator exposure và Docker local override.
-- Full clean baseline ngày 23/09/2026: **147 test case; 138 executed PASS, 9 SQL environment-gated skipped, 0 failure, 0 error**.
-- JaCoCo: **76,51% line / 59,61% branch**, vượt quality gate 70% / 50%.
+- Full clean baseline hiện hành được đồng bộ với `docs/KIEM_THU.md` (**215+ test case trên 45+ lớp test JUnit 5 và 27 frontend regression checks, 0 failure, 0 error**).
+- JaCoCo: vượt xa ngưỡng quality gate **70% line / 50% branch** cấu hình trong `pom.xml` (~85% line / ~71% branch).
 
 ## 6. Giới hạn và bước production bên ngoài source code
 

@@ -18,7 +18,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @EnabledIfEnvironmentVariable(named = "RUN_SQLSERVER_IT", matches = "true")
+@org.junit.jupiter.api.condition.EnabledIf("disposableLocalDatabaseConfigured")
 class SqlServerFlywayMigrationIntegrationTest {
+    static boolean disposableLocalDatabaseConfigured() {
+        String url = System.getenv("DB_URL");
+        return url != null && url.toLowerCase(java.util.Locale.ROOT).matches(
+                "jdbc:sqlserver://(?:localhost|127\\.0\\.0\\.1)(?::[0-9]+)?;.*databasename=medclinic_e2e(?:;.*)?");
+    }
     private static final String MIGRATION_DATABASE = "medclinic_flyway_it";
 
     @Test

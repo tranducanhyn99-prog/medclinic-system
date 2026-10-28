@@ -7,9 +7,7 @@ Chọn bác sĩ và giờ khám → Nhận phiếu hẹn QR → Tiếp nhận, c
 → Bác sĩ khám và kê đơn → Tạo hóa đơn → Thu ngân → Xem hồ sơ, tải PDF
 ```
 
-Đây là ứng dụng học tập và demo. [Nghiệm thu sửa review](docs/PROJECT_REVIEW_FIX_ACCEPTANCE_2026-10-10.md) ghi kết quả xử lý chín vấn đề; [review ban đầu](docs/PROJECT_REVIEW_2026-10-10.md) giữ bằng chứng trước sửa. [Kịch bản thuyết trình](docs/PRESENTATION_SCRIPT_2026-10-10.md) dành cho một người trình bày trong khoảng 15 phút.
-
-Đồ án do **một người thực hiện**. [Hồ sơ minh chứng bảo vệ](docs/DEFENSE_EVIDENCE_2026-10-12.md) đối chiếu rubric, chỉ vị trí code cho 8 nội dung mở rộng và hai ví dụ sửa/kiểm thử code có AI hỗ trợ.
+Đây là ứng dụng học tập và demo do **một người thực hiện**. [Hướng dẫn thuyết trình](docs/HUONG_DAN_THUYET_TRINH.md) gồm dàn ý 15 phút, lời thoại, demo bốn vai trò, code minh họa và câu hỏi phản biện, bám năm tiêu chí rubric môn Lập trình Web.
 
 ## Giao diện
 
@@ -114,7 +112,7 @@ node --test src/test/frontend/ui-regressions.cjs
 node ops/check-doc-links.cjs
 ```
 
-Kết quả ngày **12/10/2026** nằm trong [hồ sơ minh chứng](docs/DEFENSE_EVIDENCE_2026-10-12.md): 282 test Java thực thi đạt, 50 SQL test skipped trong suite mặc định; 4 test bệnh án chạy riêng trên SQL Server đạt, 26 regression frontend và 176 kiểm tra trình duyệt đạt. [Báo cáo nghiệm thu 10/10](docs/PROJECT_REVIEW_FIX_ACCEPTANCE_2026-10-10.md) giữ kết quả lịch sử. Test skipped không tính thành pass.
+Xem [hướng dẫn và kết quả kiểm thử](docs/KIEM_THU.md) để phân biệt test đã chạy, test SQL Server có điều kiện và kiểm tra trình duyệt. Test skipped không tính thành pass.
 
 Gate JaCoCo: LINE ≥70%, BRANCH ≥50%. Test SQL Server cần environment guard và **database kiểm thử riêng, có thể hủy**, theo [SQL Server runbook](docs/database/SQLSERVER_RUNBOOK.md). Không trỏ test vào database cần giữ.
 
@@ -129,7 +127,6 @@ src/main/java/com/medclinic/
   repository/       Truy vấn, khóa dữ liệu
   entity/, dto/     Mô hình lưu trữ và dữ liệu form/API
   security/, config/, event/, validation/, util/
-  generator/        Công cụ offline tái tạo DOCX/diagram
 src/main/resources/
   application.yml   Nhiều profile trong cùng một file
   templates/        Thymeleaf theo vai trò
@@ -141,16 +138,28 @@ ops/                Script kiểm chứng và vận hành
 docs/               Đặc tả, mô hình, báo cáo và kịch bản bảo vệ
 ```
 
-`target`, `output`, `tmp`, backup, uploads, secret và bằng chứng thô là dữ liệu local/sinh tự động. [Báo cáo dọn repo](docs/REPO_CLEANUP_2026-10-10.md) ghi các file đã loại bỏ và cách khôi phục bản sao local.
+### Những file đưa lên GitHub
+
+| Giữ trong repo | Mục đích |
+| --- | --- |
+| `src/main`, `src/test`, `pom.xml` | Chạy ứng dụng và kiểm thử; gồm asset local, font và license đi kèm. |
+| `.github/workflows`, `.gitignore`, `.gitattributes` | CI, quy tắc bỏ qua file và chuẩn hóa file văn bản. |
+| `Dockerfile`, `compose.yml`, `.dockerignore`, `.env*.example`, `docker`, `deploy`, `ops` | Mẫu cấu hình, triển khai, backup/restore và kiểm chứng. |
+| `README.md`, `LICENSE`, `DESIGN.md`, tài liệu thiết kế/vận hành trong `docs` | Cài đặt, kiến trúc, dữ liệu, UI và thuyết trình. |
+| `MedClinic.eapx`, XML mô hình, diagram, `docs/generated/*.docx` | Mô hình và báo cáo phục vụ môn học. |
+
+`target`, `output`, `tmp`, `.codex`, `.impeccable`, `.vscode`, rubric Excel, generator nội bộ, backup, uploads, `.env` và ảnh/log nghiệm thu là dữ liệu local được ignore. Giữ `.env` và backup đang có trên máy. Khi clone repo, chạy theo README và tạo cấu hình riêng từ file mẫu.
+
+Đợt dọn 15/10/2026 bỏ **150 file (khoảng 5,24 MiB)** khỏi cây Git: 115 file bằng chứng nghiệm thu cũ và 35 tài liệu tasklist/review/bàn giao, bản thuyết trình trùng, brief/prompt thiết kế. Nội dung bảo vệ cần dùng đã hợp nhất vào hướng dẫn thuyết trình; test source và tài liệu nghiệp vụ vẫn được giữ. Tại thời điểm hoàn tất dọn, thêm hai tài liệu hướng dẫn thuyết trình/kiểm thử, còn 407 file thay vì 555 file; các tài liệu bổ sung sau đó được tính riêng. File đã commit trước đó có thể tra lại trong lịch sử Git; đợt dọn không thay đổi lịch sử nên dung lượng clone còn bao gồm các phiên bản cũ.
 
 ## Tài liệu
 
-- [Nghiệm thu sửa chín vấn đề](docs/PROJECT_REVIEW_FIX_ACCEPTANCE_2026-10-10.md), [review ban đầu](docs/PROJECT_REVIEW_2026-10-10.md).
-- [Tasklist xử lý 9 vấn đề](docs/PROJECT_REVIEW_TASKLIST_2026-10-10.md): thứ tự ưu tiên, tiêu chí hoàn tất và kiểm thử.
-- [Kịch bản thuyết trình một người](docs/PRESENTATION_SCRIPT_2026-10-10.md): lời thoại, thao tác demo, phản biện và phương án dự phòng.
+- [Hướng dẫn thuyết trình môn Lập trình Web](docs/HUONG_DAN_THUYET_TRINH.md): rubric, dàn ý, lời thoại, demo, code và phản biện.
+- [Kịch bản quay video](docs/KICH_BAN_QUAY_VIDEO.md): bản đầy đủ theo nhóm chức năng trên SQL Server, có con trỏ, OTP và lời gợi ý để tự lồng tiếng.
+- [Kiểm thử](docs/KIEM_THU.md), [truy vết yêu cầu đến code/test](docs/04_RTM_MATRIX.md).
 - [Yêu cầu](docs/01_SRS_IEEE830.md), [UML](docs/02_UML_DESIGN.md), [dữ liệu](docs/03_DATABASE_DESIGN_3NF.md), [kiến trúc](docs/05_SYSTEM_ARCHITECTURE.md).
-- [Hệ thống giao diện hiện tại](DESIGN.md); báo cáo UI theo ngày trong `docs` là lịch sử của phiên bản lúc kiểm tra.
-- [SQL Server runbook](docs/database/SQLSERVER_RUNBOOK.md), [provision admin](docs/database/PRODUCTION_ADMIN_PROVISIONING.md), [chính sách bằng chứng](docs/evidence/README.md).
+- [Hệ thống giao diện hiện tại](DESIGN.md), [thiết kế UI/UX](docs/06_UI_UX_DESIGN.md).
+- [SQL Server runbook](docs/database/SQLSERVER_RUNBOOK.md), [provision admin](docs/database/PRODUCTION_ADMIN_PROVISIONING.md), [chuẩn bị tích hợp](docs/INTEGRATION_PREPARATION_2026-10-03.md).
 
 Triển khai ngoài local cần `sqlserver,prod`, HTTPS/SMTP/database credentials, `APP_WEBSITE` và remember-me key từ môi trường. Xem [.env.production.example](.env.production.example) và runbook. V7/V9 dừng nâng cấp nếu dữ liệu cũ có điện thoại trùng/sai hoặc giá lẻ; cần xử lý dữ liệu trước migration. Tích hợp thực tế vẫn cần nghiệm thu riêng.
 

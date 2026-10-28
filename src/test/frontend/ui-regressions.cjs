@@ -409,3 +409,21 @@ test('all templates resolve UI, QR scanner and realtime libraries locally withou
     assert.ok([...visited].some(p => p.endsWith('Geist-Variable.woff2')));
     assert.ok([...visited].some(p => p.endsWith('bootstrap-icons.woff2')));
 });
+
+
+test('design system themes table-warning for dark mode and templates enforce stock max, QR scan debounce and admin self-lock guard', () => {
+    const css = fs.readFileSync('src/main/resources/static/css/medclinic-design-system.css', 'utf8');
+    assert.match(css, /\.table-warning\s*\{[^}]*--bs-table-bg:\s*var\(--mc-warning-soft\)/);
+    assert.match(css, /\.table-warning\s*\{[^}]*--bs-table-color:\s*var\(--mc-text\)/);
+
+    const examineHtml = fs.readFileSync('src/main/resources/templates/doctor/examine.html', 'utf8');
+    assert.match(examineHtml, /qtyInput\.max\s*=\s*selectedOpt\.dataset\.stock/);
+
+    const receptionHtml = fs.readFileSync('src/main/resources/templates/staff/reception.html', 'utf8');
+    assert.match(receptionHtml, /isSubmittingScan/);
+    assert.match(receptionHtml, /bootstrap\.Modal\.getOrCreateInstance\(document\.getElementById\('ticketModal'\)\)/);
+
+    const adminUsersHtml = fs.readFileSync('src/main/resources/templates/admin/users.html', 'utf8');
+    assert.match(adminUsersHtml, /u\.username\s*!=\s*#authentication\.name/);
+    assert.match(adminUsersHtml, /#lists\.isEmpty\(users\)/);
+});

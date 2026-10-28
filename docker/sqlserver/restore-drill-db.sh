@@ -24,7 +24,8 @@ WITH MOVE N'medclinic_db' TO N'/var/opt/mssql/data/${DRILL_DB}.mdf',
 DBCC CHECKDB ([$DRILL_DB]) WITH NO_INFOMSGS;
 DECLARE @tables int;
 SELECT @tables = COUNT(*) FROM [$DRILL_DB].sys.tables WHERE is_ms_shipped = 0;
-IF @tables < 18 THROW 51000, 'Restore drill found too few application tables', 1;
+IF @tables < 22 THROW 51000, 'Restore drill found too few application tables', 1;
 ALTER DATABASE [$DRILL_DB] SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
 DROP DATABASE [$DRILL_DB];
 "
+rm -f "$SOURCE"

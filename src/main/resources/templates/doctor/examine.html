@@ -362,12 +362,12 @@ document.addEventListener('DOMContentLoaded', function () {
         select.addEventListener('change', function () {
             const selectedOpt = this.options[this.selectedIndex];
             if (this.value) {
-                unitText.textContent = selectedOpt.dataset.unit;
+                unitText.textContent = selectedOpt.dataset.unit; qtyInput.max = selectedOpt.dataset.stock;
                 const price = parseFloat(selectedOpt.dataset.price || 0);
                 const qty = parseInt(qtyInput.value || 1);
                 priceText.textContent = window.MedClinic.money(price * qty);
             } else {
-                unitText.textContent = '--';
+                unitText.textContent = '--'; qtyInput.removeAttribute('max');
                 priceText.textContent = '0 đ';
             }
             calculateTotalPrice();
