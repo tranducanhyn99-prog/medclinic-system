@@ -2,7 +2,7 @@
 **Dự án:** MedClinic - Phòng Khám Tư Nhân  
 **Mục đích:** Đảm bảo 100% yêu cầu chức năng (FR) trong SRS được ánh xạ tới Sơ đồ Use Case, Bảng CSDL, Lớp Service/Controller và Kế hoạch kiểm thử.  
 
-Các cột kiểm thử dùng tên class/method trong source. Service unit test, portal render và E2E có phạm vi khác nhau; một dòng được ánh xạ không tự chứng minh mọi nhánh nghiệp vụ đã được nghiệm thu qua browser. Xem [cách chạy và kết quả kiểm thử](KIEM_THU.md); các test SQL Server có điều kiện phải được đọc riêng với số test đã thực thi.
+Các cột kiểm thử dùng tên class/method trong source. Service unit test, portal render và E2E có phạm vi khác nhau; một dòng được ánh xạ không tự chứng minh mọi nhánh nghiệp vụ đã được nghiệm thu qua browser. Các test SQL Server có điều kiện phải được đọc riêng với số test đã thực thi.
 
 ---
 

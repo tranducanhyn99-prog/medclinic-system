@@ -7,7 +7,7 @@ Chọn bác sĩ và giờ khám → Nhận phiếu hẹn QR → Tiếp nhận, c
 → Bác sĩ khám và kê đơn → Tạo hóa đơn → Thu ngân → Xem hồ sơ, tải PDF
 ```
 
-Đây là ứng dụng học tập và demo do **một người thực hiện**. [Hướng dẫn thuyết trình](docs/HUONG_DAN_THUYET_TRINH.md) gồm dàn ý 15 phút, lời thoại, demo bốn vai trò, code minh họa và câu hỏi phản biện, bám năm tiêu chí rubric môn Lập trình Web.
+Đây là ứng dụng học tập và demo do **một người thực hiện**.
 
 ## Giao diện
 
@@ -112,7 +112,7 @@ node --test src/test/frontend/ui-regressions.cjs
 node ops/check-doc-links.cjs
 ```
 
-Xem [hướng dẫn và kết quả kiểm thử](docs/KIEM_THU.md) để phân biệt test đã chạy, test SQL Server có điều kiện và kiểm tra trình duyệt. Test skipped không tính thành pass.
+Phân biệt rõ test đã chạy, test SQL Server có điều kiện và kiểm tra trình duyệt. Test skipped không tính thành pass.
 
 Gate JaCoCo: LINE ≥70%, BRANCH ≥50%. Test SQL Server cần environment guard và **database kiểm thử riêng, có thể hủy**, theo [SQL Server runbook](docs/database/SQLSERVER_RUNBOOK.md). Không trỏ test vào database cần giữ.
 
@@ -154,9 +154,7 @@ docs/               Đặc tả, mô hình, báo cáo và kịch bản bảo v�
 
 ## Tài liệu
 
-- [Hướng dẫn thuyết trình môn Lập trình Web](docs/HUONG_DAN_THUYET_TRINH.md): rubric, dàn ý, lời thoại, demo, code và phản biện.
-- [Kịch bản quay video](docs/KICH_BAN_QUAY_VIDEO.md): bản đầy đủ theo nhóm chức năng trên SQL Server, có con trỏ, OTP và lời gợi ý để tự lồng tiếng.
-- [Kiểm thử](docs/KIEM_THU.md), [truy vết yêu cầu đến code/test](docs/04_RTM_MATRIX.md).
+- [Ma trận truy vết yêu cầu (RTM)](docs/04_RTM_MATRIX.md).
 - [Yêu cầu](docs/01_SRS_IEEE830.md), [UML](docs/02_UML_DESIGN.md), [dữ liệu](docs/03_DATABASE_DESIGN_3NF.md), [kiến trúc](docs/05_SYSTEM_ARCHITECTURE.md).
 - [Hệ thống giao diện hiện tại](DESIGN.md), [thiết kế UI/UX](docs/06_UI_UX_DESIGN.md).
 - [SQL Server runbook](docs/database/SQLSERVER_RUNBOOK.md), [Google OAuth](docs/GOOGLE_LOGIN_SETUP.md), [Gmail OTP](docs/GMAIL_OTP_SETUP.md).

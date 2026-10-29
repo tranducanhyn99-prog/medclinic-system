@@ -76,7 +76,7 @@ Production dùng callback HTTPS của domain thật, credentials trong secret ma
 
 Test callback dùng token RSA ký bằng khóa local để chạy authorization → callback → session và từ chối nonce sai/chữ ký giả. Test account phủ quyền, email trùng, khóa/mở khóa, Workspace và callback đồng thời. Enabled thiếu credentials làm startup fail; disabled không yêu cầu credentials.
 
-Kết quả lần chạy hiện tại được tổng hợp trong [hướng dẫn kiểm thử](KIEM_THU.md). Các class dưới đây giữ trong source để chạy lại; test SQL Server cần environment guard và database riêng.
+Các class dưới đây giữ trong source để chạy lại; test SQL Server cần environment guard và database riêng.
 
 - [GoogleLoginIntegrationTest](../src/test/java/com/medclinic/GoogleLoginIntegrationTest.java)
 - [GoogleCallbackProtocolIntegrationTest](../src/test/java/com/medclinic/GoogleCallbackProtocolIntegrationTest.java)

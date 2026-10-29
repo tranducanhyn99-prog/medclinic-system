@@ -50,4 +50,4 @@ OTP gửi cùng Gmail đã dùng đăng nhập là bước xác nhận bổ sung
 
 ## Kiểm chứng
 
-Callback Google có test dùng JWT RSA local cho bước chờ OTP, quyền truy cập, CSRF/session, mã sai/gửi lại, tài khoản khóa và lỗi phát hành challenge. Xem [cách chạy và kết quả kiểm thử](KIEM_THU.md). Gửi OTP qua Gmail thật cần thử lại với cấu hình SMTP của môi trường đang dùng; test local không xác nhận thư đã đến hộp thư.
+Callback Google có test dùng JWT RSA local cho bước chờ OTP, quyền truy cập, CSRF/session, mã sai/gửi lại, tài khoản khóa và lỗi phát hành challenge. Gửi OTP qua Gmail thật cần thử lại với cấu hình SMTP của môi trường đang dùng; test local không xác nhận thư đã đến hộp thư.

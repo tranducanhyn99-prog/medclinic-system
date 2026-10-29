@@ -123,7 +123,7 @@ Các kiểm chứng trọng yếu gồm:
 
 Lần nghiệm thu 23/09/2026 dùng container SQL Server 2022 (engine 16.0). Kiểm tra lại phiên bản engine và kết quả test ở từng môi trường triển khai.
 
-Test điện thoại và thanh toán mới dùng database riêng `medclinic_phone_it` và `medclinic_payments_it`; đổi `DB_URL` tương ứng và chạy lần lượt `SqlServerPhoneUniquenessIntegrationTest`, `SqlServerBankPaymentConcurrencyIntegrationTest`. Cả hai từ chối URL không trỏ đúng database local dành cho test. Xem [hướng dẫn kiểm thử](../KIEM_THU.md).
+Test điện thoại và thanh toán mới dùng database riêng `medclinic_phone_it` và `medclinic_payments_it`; đổi `DB_URL` tương ứng và chạy lần lượt `SqlServerPhoneUniquenessIntegrationTest`, `SqlServerBankPaymentConcurrencyIntegrationTest`. Cả hai từ chối URL không trỏ đúng database local dành cho test.
 
 Test Google dùng local `medclinic_google_it` với V1–V10 + Hibernate validate; chạy `SqlServerGoogleLoginIntegrationTest`. Client giả lập trong test không cần secret thật. Bật tính năng trên app theo [hướng dẫn Google OAuth](../GOOGLE_LOGIN_SETUP.md); bật flag mà thiếu credentials sẽ làm startup fail.
 
@@ -138,7 +138,7 @@ $env:DB_URL = 'jdbc:sqlserver://localhost:14333;databaseName=medclinic_google_ot
 mvn '-Dtest=SqlServerGoogleCallbackProtocolIntegrationTest' test
 ```
 
-Đổi port theo SQL Server local. Guard của từng lớp chỉ chấp nhận localhost/127.0.0.1 và đúng tên database trên. Bộ này giả lập email/Google; kết quả và phạm vi xem [kiểm thử](../KIEM_THU.md).
+Đổi port theo SQL Server local. Guard của từng lớp chỉ chấp nhận localhost/127.0.0.1 và đúng tên database trên. Bộ này giả lập email/Google.
 
 ## 7. Production handoff
 
