@@ -30,7 +30,7 @@ class DataInitializerBootstrapTest {
     @Test
     void devBootstrapSeedsCompleteAndUniqueDoctorProfiles() {
         var doctors = doctorProfileRepository.findAll();
-        assertTrue(doctors.size() >= 6);
+        assertTrue(doctors.size() >= 12);
         assertEquals(doctors.size(), new HashSet<>(doctors.stream().map(DoctorProfile::getLicenseNumber).toList()).size());
         assertTrue(doctors.stream().allMatch(doctor -> doctor.getLicenseNumber() != null && !doctor.getLicenseNumber().isBlank()
                 && doctor.getTitle() != null && doctor.getExperienceYears() != null && doctor.getConsultationFee() != null));
@@ -40,7 +40,9 @@ class DataInitializerBootstrapTest {
     void seededSchedulesIncludeTheLastBookableBusinessDay() {
         var lastDay = java.time.LocalDate.now(businessClock).plusDays(14);
         for (var doctor : doctorProfileRepository.findAll()) {
-            if (java.util.Set.of("doctor", "doc_mai", "doc_nam", "doc_ha", "doc_bao", "doc_tuan")
+            if (java.util.Set.of(
+                    "doctor", "doc_mai", "doc_nam", "doc_ha", "doc_bao", "doc_tuan",
+                    "doc_linh", "doc_khoa", "doc_lan", "doc_duc", "doc_trang", "doc_minh")
                     .contains(doctor.getUser().getUsername())) {
                 assertEquals(2, schedules.findByDoctorIdAndWorkDateBetweenWithTimeSlots(doctor.getId(), lastDay, lastDay).size());
             }

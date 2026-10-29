@@ -57,7 +57,7 @@ public class DataInitializer implements CommandLineRunner {
         Specialty spTaiMuiHong = initSpecialty("Chuyên Khoa Tai Mũi Họng", "Nội soi chẩn đoán viêm xoang, viêm họng hạt, viêm tai giữa, khàn tiếng và polyp thanh quản.", "bi-headset");
         Specialty spXuongKhop = initSpecialty("Chuyên Khoa Cơ Xương Khớp", "Điều trị thoái hóa khớp, thoát vị đĩa đệm, viêm khớp dạng thấp, loãng xương và đau thần kinh tọa.", "bi-activity");
 
-        // 4. Doctors
+        // 4. Doctors (12 Doctors linked 1-1 to User accounts across 6 Specialties)
         DoctorProfile doc1 = initDoctor("doctor", "123456", "Nguyễn Văn Hùng", "hung.nguyen@medclinic.vn", "0911000001",
                 spTimMach, "PGS.TS", 18, new BigDecimal("350000"),
                 "Nguyên Trưởng khoa Tim mạch Bệnh viện Chợ Rẫy, hơn 18 năm kinh nghiệm điều trị tim mạch can thiệp và tăng huyết áp.",
@@ -88,10 +88,40 @@ public class DataInitializer implements CommandLineRunner {
                 "Tiến sĩ Y khoa, tu nghiệp tại CHLB Đức, chuyên gia đầu ngành về thoái hóa khớp và phẫu thuật nội soi khớp.",
                 "/images/doctors/doctor_tuan.jpg", Gender.MALE);
 
+        DoctorProfile doc7 = initDoctor("doc_linh", "123456", "Hoàng Phương Linh", "linh.hoang@medclinic.vn", "0911000007",
+                spTimMach, "TS.BS", 14, new BigDecimal("320000"),
+                "Tiến sĩ Y khoa chuyên ngành Nội Tim mạch, chuyên sâu siêu âm tim Doppler và điều trị suy tim, rối loạn nhịp.",
+                "/images/doctors/doctor_linh.jpg", Gender.FEMALE);
+
+        DoctorProfile doc8 = initDoctor("doc_khoa", "123456", "Ngô Đăng Khoa", "khoa.ngo@medclinic.vn", "0911000008",
+                spRangHamMat, "BS.CKII", 16, new BigDecimal("300000"),
+                "Bác sĩ Chuyên khoa II Răng Hàm Mặt, chuyên gia phẫu thuật cấy ghép Implant kỹ thuật số và tiểu phẫu răng khôn.",
+                "/images/doctors/doctor_khoa.jpg", Gender.MALE);
+
+        DoctorProfile doc9 = initDoctor("doc_lan", "123456", "Bùi Ngọc Lan", "lan.bui@medclinic.vn", "0911000009",
+                spDaLieu, "ThS.BS", 11, new BigDecimal("250000"),
+                "Thạc sĩ Bác sĩ Da liễu thẩm mỹ nội khoa, chuyên điều trị sẹo rỗ, sắc tố da bằng Laser và viêm da dị ứng.",
+                "/images/doctors/doctor_lan.jpg", Gender.FEMALE);
+
+        DoctorProfile doc10 = initDoctor("doc_duc", "123456", "Phan Minh Đức", "duc.phan@medclinic.vn", "0911000010",
+                spNhiKhoa, "BS.CKII", 17, new BigDecimal("280000"),
+                "Nguyên Phó trưởng khoa Hô hấp - Tiêu hóa Nhi, hơn 17 năm kinh nghiệm khám và điều trị bệnh lý hô hấp trẻ em.",
+                "/images/doctors/doctor_duc.jpg", Gender.MALE);
+
+        DoctorProfile doc11 = initDoctor("doc_trang", "123456", "Đỗ Huyền Trang", "trang.do@medclinic.vn", "0911000011",
+                spTaiMuiHong, "ThS.BS", 9, new BigDecimal("220000"),
+                "Thạc sĩ Bác sĩ chuyên khoa Tai Mũi Họng, chuyên nội soi chẩn đoán sớm bệnh lý thanh quản, viêm tai giữa và viêm xoang.",
+                "/images/doctors/doctor_trang.jpg", Gender.FEMALE);
+
+        DoctorProfile doc12 = initDoctor("doc_minh", "123456", "Trương Quang Minh", "minh.truong@medclinic.vn", "0911000012",
+                spXuongKhop, "BS.CKI", 13, new BigDecimal("260000"),
+                "Bác sĩ Chuyên khoa I Cơ Xương Khớp và Phục hồi chức năng, chuyên điều trị đau cột sống cổ - thắt lưng và chấn thương thể thao.",
+                "/images/doctors/doctor_minh.jpg", Gender.MALE);
+
         markSeedAccountsOtpBypass();
 
         // 5. Generate 14-day Schedules & Slots for Doctors
-        List<DoctorProfile> allDoctors = List.of(doc1, doc2, doc3, doc4, doc5, doc6);
+        List<DoctorProfile> allDoctors = List.of(doc1, doc2, doc3, doc4, doc5, doc6, doc7, doc8, doc9, doc10, doc11, doc12);
         LocalDate today = LocalDate.now(businessClock);
         for (DoctorProfile doc : allDoctors) {
             for (int i = 0; i <= 14; i++) {
@@ -133,7 +163,11 @@ public class DataInitializer implements CommandLineRunner {
     }
 
     private void markSeedAccountsOtpBypass() {
-        List<String> usernames = List.of("admin", "staff", "patient", "doctor", "doc_mai", "doc_nam", "doc_ha", "doc_bao", "doc_tuan");
+        List<String> usernames = List.of(
+                "admin", "staff", "patient",
+                "doctor", "doc_mai", "doc_nam", "doc_ha", "doc_bao", "doc_tuan",
+                "doc_linh", "doc_khoa", "doc_lan", "doc_duc", "doc_trang", "doc_minh"
+        );
         for (String username : usernames) {
             userRepository.findByUsername(username).ifPresent(user -> {
                 if (!Boolean.TRUE.equals(user.getOtpBypass()) || !Boolean.TRUE.equals(user.getEmailVerified())) {
@@ -240,4 +274,3 @@ public class DataInitializer implements CommandLineRunner {
         medicineRepository.saveAll(medicines);
     }
 }
-

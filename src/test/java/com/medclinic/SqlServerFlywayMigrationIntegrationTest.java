@@ -54,8 +54,8 @@ class SqlServerFlywayMigrationIntegrationTest {
                 assertEquals("SQL", historyType(jdbc, "8"));
                 assertEquals("SQL", historyType(jdbc, "9"));
                 assertEquals("SQL", historyType(jdbc, "10"));
-                assertEquals(9, jdbc.queryForObject("select count(*) from users", Integer.class));
-                assertEquals(6, jdbc.queryForObject("select count(*) from doctor_profiles", Integer.class));
+                assertEquals(15, jdbc.queryForObject("select count(*) from users", Integer.class));
+                assertEquals(12, jdbc.queryForObject("select count(*) from doctor_profiles", Integer.class));
             }
 
             recreateMigrationDatabase(masterJdbc);
