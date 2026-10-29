@@ -58,7 +58,7 @@ Mở [localhost:8080](http://localhost:8080). Profile mặc định là `dev`. *
 | --- | --- | --- |
 | `patient` | Bệnh nhân | `123456` |
 | `staff` | Lễ tân | `123456` |
-| `doctor` | Bác sĩ | `123456` |
+| `doctor`, `doc_mai`, `doc_nam`, `doc_ha`, `doc_bao`, `doc_tuan`, `doc_linh`, `doc_khoa`, `doc_lan`, `doc_duc`, `doc_trang`, `doc_minh` | 12 Bác sĩ ([SQL seed](docs/database/SQLSERVER_SEED_DOCTORS.sql)) | `123456` |
 | `admin` | Quản trị viên | `123456` |
 
 Seed trong `dev`/`demo` bỏ qua OTP khi dùng mật khẩu; Google luôn yêu cầu OTP. Nút điền nhanh chỉ hiện ở `dev`. `dev` không gửi email: đăng ký tài khoản mới vẫn cần OTP, nên demo đăng ký/magic link/reset mật khẩu bằng Mailpit bên dưới hoặc cấu hình Gmail SMTP.
