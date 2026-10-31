@@ -72,3 +72,5 @@ Mau_Thiet_Ke_Du_Lieu/
 # Course grading sheet supplied locally
 /LTWEB_CuoiKy*.xlsx
 /MedClinic_*.docx
+/docs/generated/MedClinic_HuongDan_Setup_UngDung.docx
+/docs/generated/MedClinic_TaiLieu_HuongDan_XayDung_ChucNang.docx

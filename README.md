@@ -189,9 +189,6 @@ Quy trình tích hợp liên tục (CI) được định nghĩa tại [.github/w
   - [Ma trận Truy vết Yêu cầu (RTM)](docs/04_RTM_MATRIX.md)
   - [Kiến trúc Hệ thống & Bảo mật](docs/05_SYSTEM_ARCHITECTURE.md)
   - [Hệ thống Thiết kế Giao diện (Design System)](DESIGN.md) & [Đặc tả UI/UX](docs/06_UI_UX_DESIGN.md)
-- **Tài liệu Hướng dẫn & Vận hành Đầy đủ (`.docx`):**
-  - [Tài liệu Hướng dẫn Xây dựng Từng Chức năng (`MedClinic_TaiLieu_HuongDan_XayDung_ChucNang.docx`)](docs/generated/MedClinic_TaiLieu_HuongDan_XayDung_ChucNang.docx)
-  - [Cẩm nang Cài đặt và Vận hành Hệ thống (`MedClinic_HuongDan_Setup_UngDung.docx`)](docs/generated/MedClinic_HuongDan_Setup_UngDung.docx)
 
 ---
 
