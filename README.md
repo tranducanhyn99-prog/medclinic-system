@@ -1,86 +1,109 @@
-# MedClinic — Quản lý và đặt lịch khám
+# MedClinic — Nền tảng Quản lý Phòng khám Đa khoa & Đặt lịch Khám Trực tuyến
 
-Đồ án môn **Lập trình Web**: kết nối đặt lịch, tiếp nhận, khám, kê đơn và thu ngân trong một ứng dụng web với bốn vai trò: **bệnh nhân, bác sĩ, lễ tân và quản trị viên**.
+![Java 21](https://img.shields.io/badge/Java-21_LTS-ED8B00?style=flat-square&logo=openjdk&logoColor=white)
+![Spring Boot 4.1.1](https://img.shields.io/badge/Spring_Boot-4.1.1-6DB33F?style=flat-square&logo=springboot&logoColor=white)
+![Spring Security 7](https://img.shields.io/badge/Spring_Security-7.0-6DB33F?style=flat-square&logo=springsecurity&logoColor=white)
+![SQL Server 2022](https://img.shields.io/badge/SQL_Server-2022-CC2927?style=flat-square&logo=microsoftsqlserver&logoColor=white)
+![Flyway V1-V10](https://img.shields.io/badge/Flyway-V1--V10-CC0200?style=flat-square&logo=flyway&logoColor=white)
+![License: MIT](https://img.shields.io/badge/License-MIT-0284C7?style=flat-square)
+
+**MedClinic** là hệ thống quản lý vận hành phòng khám đa khoa và đặt lịch khám bệnh trực tuyến khép kín, kết nối xuyên suốt bốn phân hệ nghiệp vụ: **Cổng Bệnh nhân (`PATIENT`)**, **Quầy Tiếp nhận & Thu ngân (`STAFF`)**, **Không gian Khám Lâm sàng (`DOCTOR`)** và **Trung tâm Quản trị (`ADMIN`)**.
+
+Nền tảng số hóa toàn bộ hành trình khám chữa bệnh từ lúc tìm kiếm bác sĩ, khóa khung giờ đặt lịch trực tuyến, tiếp nhận bằng mã QR tại quầy, điều phối hàng đợi khám thời gian thực qua WebSocket, ghi nhận bệnh án điện tử và kê đơn trừ kho tự động, đến thanh toán đa phương thức (Tiền mặt / VietQR Webhook) và xuất chứng từ PDF Unicode.
 
 ```text
-Chọn bác sĩ và giờ khám → Nhận phiếu hẹn QR → Tiếp nhận, cấp STT
-→ Bác sĩ khám và kê đơn → Tạo hóa đơn → Thu ngân → Xem hồ sơ, tải PDF
+Đặt lịch trực tuyến (4 bước) ──► Phát hành thẻ hẹn QR ──► Quét QR Check-in & Cấp STT
+                                                                  │
+Xuất Bệnh án & Hóa đơn PDF ◄── Thu ngân / Đối soát VietQR ◄── Bác sĩ khám & Kê đơn (WebSocket)
 ```
 
-Đây là ứng dụng học tập và demo do **một người thực hiện**.
+---
 
-## Giao diện
+## Giao diện Sản phẩm
 
-Xanh lam y khoa, nền trắng sạch, font Geist local và chế độ sáng/tối. Ảnh chụp ở lượt thiết kế ngày 09/10/2026.
+Giao diện được xây dựng theo ngôn ngữ thiết kế y khoa hiện đại ([DESIGN.md](DESIGN.md)) với bảng màu xanh lam lâm sàng (`#0284C7`), kiểu chữ Geist hiển thị sắc nét số liệu y tế và hỗ trợ chuyển đổi giao diện Sáng / Tối (Light / Dark Mode).
 
-![Trang chủ MedClinic](docs/assets/readme/home.png)
+| Trang chủ & Cổng thông tin Phòng khám | Đăng nhập Đa phương thức & Xác thực 2 lớp |
+| :---: | :---: |
+| ![Trang chủ MedClinic](docs/assets/readme/home.png) | ![Đăng nhập MedClinic](docs/assets/readme/login.png) |
 
-![Đăng nhập MedClinic](docs/assets/readme/login.png)
+---
 
-## Chức năng
+## Phân hệ Chức năng Cốt lõi
 
-| Vai trò | Chức năng |
-| --- | --- |
-| Bệnh nhân | Tìm bác sĩ theo chuyên khoa, mức phí và từ khóa; đặt/hủy lịch; xem phiếu hẹn QR, trạng thái, hồ sơ; tải đơn thuốc/hóa đơn PDF. |
-| Lễ tân | Tra cứu lịch, quét QR bằng camera hoặc nhập mã; cấp STT; đăng ký vãng lai; thu tiền mặt; tạo chuyển khoản và đối soát khi đã cấu hình. |
-| Bác sĩ | Xem hàng chờ và cập nhật WebSocket; bắt đầu khám; xem lịch sử bệnh nhân; ghi kết quả, kê thuốc, hoàn tất ca; xem lịch trực; xem lại bệnh án hoàn tất của mình, phân trang và tải đơn thuốc. |
-| Quản trị viên | Quản lý chuyên khoa, bác sĩ, tài khoản, thuốc; nhập kho và xem lịch sử tồn kho; xem thống kê lịch hẹn/doanh thu. |
+| Phân hệ | Đối tượng | Tính năng Nghiệp vụ Chính |
+| :--- | :--- | :--- |
+| **Patient Portal** | Bệnh nhân | • Tìm kiếm bác sĩ theo chuyên khoa, khoảng giá khám và từ khóa.<br>• Đặt lịch khám 4 bước trực quan, tự động kiểm tra xung đột lịch hẹn.<br>• Quản lý phiếu hẹn điện tử kèm mã QR định danh, hủy lịch hợp lệ.<br>• Tra cứu lịch sử bệnh án, toa thuốc và tải về đơn thuốc / hóa đơn PDF tiếng Việt. |
+| **Reception & Billing** | Lễ tân & Thu ngân | • Tiếp nhận bệnh nhân bằng camera quét mã QR (ZXing) hoặc mã lịch hẹn.<br>• Cấp số thứ tự khám (STT) tự động theo ngày và đăng ký khám khách vãng lai (Walk-in).<br>• Thu ngân tiền mặt hoặc khởi tạo mã thanh toán chuyển khoản VietQR.<br>• Tự động đối soát giao dịch ngân hàng qua Webhook xác thực chữ ký `HMAC-SHA256`. |
+| **Clinical Workspace** | Bác sĩ Chuyên khoa | • Bảng điều khiển hàng đợi khám cập nhật thời gian thực qua WebSocket (`STOMP / SockJS`).<br>• Tiếp nhận ca khám, tra cứu tiền sử bệnh lý và lịch sử dùng thuốc của bệnh nhân.<br>• Ghi nhận triệu chứng, chẩn đoán lâm sàng, chỉ định điều trị và kê đơn thuốc.<br>• Xem lịch trực cá nhân 7 ngày, tra cứu danh sách bệnh án đã hoàn tất và xuất đơn thuốc PDF. |
+| **Admin Console** | Quản trị viên | • Dashboard thống kê KPI thời gian thực: doanh thu, lưu lượng lịch hẹn, tỷ lệ hoàn tất khám.<br>• Quản lý danh mục chuyên khoa, hồ sơ bác sĩ, khung giờ làm việc và tài khoản người dùng.<br>• Quản lý danh mục thuốc, nhập kho bổ sung và đối chiếu sổ cái biến động tồn kho (`InventoryTransaction`).<br>• Giám sát nhật ký kiểm toán nghiệp vụ (`BusinessAuditLog`). |
 
-Backend khóa khung giờ để tránh đặt trùng, kiểm tra bác sĩ phụ trách và trạng thái ca khám. Khi hoàn tất khám, bệnh án, đơn thuốc, xuất kho và hóa đơn được ghi trong cùng transaction. Spring Security bảo vệ route; service và luồng đọc phiếu hẹn/PDF có thêm kiểm tra quyền.
+---
 
-**Thanh toán:** tiền mặt có sẵn. VietQR chỉ bật khi cấu hình đủ; tạo QR chưa xác nhận hóa đơn đã trả tiền. Callback kiểm tra HMAC và mã giao dịch. Ngân hàng thật chưa được xác nhận trong lượt review này.
+## Điểm nhấn Kỹ thuật & Kiến trúc
 
-**Google:** bệnh nhân có thể đăng ký/đăng nhập qua Google sau khi cấu hình OAuth Client, rồi xác nhận OTP email trước khi vào tài khoản. Email đã xác thực của bệnh nhân active được liên kết; tài khoản mới chỉ có quyền bệnh nhân. Nút mặc định ẩn khi chưa bật `GOOGLE_LOGIN_ENABLED`. Xem [hướng dẫn Google OAuth](docs/GOOGLE_LOGIN_SETUP.md) và [cấu hình Gmail gửi OTP thật](docs/GMAIL_OTP_SETUP.md).
+### 1. Kiểm soát Đồng thời & Toàn vẹn Giao dịch (Concurrency & ACID)
+- **Chống đặt trùng khung giờ (Double-Booking Prevention):** Kết hợp khóa bi quan `PESSIMISTIC_WRITE` (`UPDLOCK, ROWLOCK` trên SQL Server) và khóa lạc quan `@Version` trên thực thể `TimeSlot`, kết hợp kiểm tra chồng lấn khung giờ của cùng bệnh nhân.
+- **Cấp phát STT & Mã hóa đơn độc lập:** Sử dụng giao dịch cô lập `Propagation.REQUIRES_NEW` trên bảng `daily_queue_counters` và `invoice_code_reservations` để đảm bảo số thứ tự và mã hóa đơn tăng tuần tự, không bị trùng lặp dưới tải đồng thời cao.
+- **Chống Deadlock khi kê đơn trừ tồn kho:** Khi bác sĩ hoàn tất khám, hệ thống gom nhóm số lượng thuốc theo `TreeMap<Long, Integer>` (sắp xếp tăng dần theo `medicineId`) trước khi khóa bản ghi tồn kho, triệt tiêu nguy cơ khóa chéo (Circular Wait Deadlock) và ghi nhận đồng bộ Bệnh án + Đơn thuốc + Phiếu xuất kho + Hóa đơn trong cùng một giao dịch.
 
-## Công nghệ
+### 2. Bảo mật Đa lớp (Defense-in-Depth Security)
+- **Xác thực 2 bước (2FA OTP & Magic Link):** Hỗ trợ xác thực đăng ký, đăng nhập và khôi phục mật khẩu bằng mã OTP 6 chữ số (băm `BCrypt`, hiệu lực 5 phút, giới hạn số lần thử) hoặc liên kết Magic Link (`SHA-256`).
+- **Tích hợp Google OAuth 2.0 (OIDC):** Cho phép bệnh nhân đăng ký/đăng nhập nhanh bằng tài khoản Google (`@gmail.com`) kết hợp bước xác minh OTP bảo vệ tài khoản.
+- **Kiểm soát truy cập tức thời:** Bộ lọc `ActiveAccountFilter` thu hồi phiên làm việc ngay lập tức nếu tài khoản bị khóa; `RateLimitFilter` giới hạn tần suất yêu cầu theo IP/Endpoint (hỗ trợ cả `InMemoryRateLimitStore` và `JdbcSqlServerRateLimitStore`).
+- **Bảo vệ chống IDOR & Replay Attack:** Mọi truy vấn hồ sơ bệnh án, đơn thuốc PDF và phiếu hẹn đều kiểm tra quyền sở hữu ở tầng Service; cổng Webhook ngân hàng xác thực chữ ký `HMAC-SHA256` bằng thuật toán so sánh hằng số thời gian (`MessageDigest.isEqual`) và lưu vết chống phát lại (`bank_payment_webhook_events`).
 
-| Phần | Công nghệ trong source |
-| --- | --- |
-| Backend | Java 21, Spring Boot 4.1.1, Spring MVC, Spring Security, Bean Validation |
-| Giao diện | Thymeleaf Layout, Bootstrap, JavaScript, Chart.js, Geist; thư viện/font local |
-| Dữ liệu | JPA/Hibernate; H2 cho dev/test; SQL Server và Flyway V1–V10 |
-| Realtime, xuất file | WebSocket/STOMP/SockJS, ZXing QR, OpenPDF và font Unicode |
-| Kiểm thử, vận hành | JUnit, Mockito, MockMvc, Node test runner, JaCoCo, Maven, Docker Compose, GitHub Actions |
+![Kiến trúc phân quyền RBAC](docs/diagrams/diagram_rbac.png)
 
-Phiên bản backend nằm trong [pom.xml](pom.xml). Mô hình chính là **Controller → Service → Repository → Database**. Thymeleaf render HTML; chọn giờ và cập nhật hàng chờ sử dụng JavaScript/API.
+---
 
-## Chạy nhanh — H2
+## Công nghệ Sử dụng
 
-Cần **JDK 21** và **Maven** trong `PATH`; cần **Node.js 22** để chạy regression frontend. Tại thư mục chứa `pom.xml`:
+| Tầng Kiến trúc | Công nghệ & Thư viện |
+| :--- | :--- |
+| **Core Backend** | Java 21 LTS, Spring Boot 4.1.1, Spring Web MVC, Spring Security 7, Jakarta Bean Validation |
+| **Persistence & DB** | Spring Data JPA / Hibernate, Microsoft SQL Server 2022, Flyway Migration (`V1`–`V10`), H2 Database (Dev/Test) |
+| **Frontend & UI** | Thymeleaf 3.1 + Layout Dialect, Bootstrap 5, Vanilla ES6 JavaScript, Chart.js, Geist Typography |
+| **Realtime & Media** | Spring WebSocket (`STOMP` / `SockJS`), Google ZXing 3.5 (QR Code), OpenPDF 2.0 (Unicode PDF Rendering) |
+| **DevOps & Quality** | Docker & Docker Compose, Apache Maven, JUnit 5, Mockito, Spring Security Test, Node Test Runner, JaCoCo, GitHub Actions CI |
+
+---
+
+## Hướng dẫn Khởi chạy Nhanh
+
+### Yêu cầu Môi trường
+- **JDK 21 LTS** và **Apache Maven 3.9+** (hoặc dùng `./mvnw` đi kèm dự án).
+- **Docker Desktop** (nếu khởi chạy cụm SQL Server 2022 + Mailpit bằng Docker Compose).
+- **Node.js 20+** (tùy chọn, dùng để chạy bộ kiểm thử hồi quy giao diện).
+
+### Chế độ 1: Khởi chạy tức thì với H2 In-Memory (Development / Quick Demo)
+
+Chế độ mặc định (`dev`) sử dụng cơ sở dữ liệu H2 trong bộ nhớ RAM và tự động nạp sẵn dữ liệu mẫu gồm 6 chuyên khoa, 12 bác sĩ, 20 danh mục thuốc cùng lịch khám 14 ngày:
 
 ```powershell
 mvn spring-boot:run
 ```
 
-Mở [localhost:8080](http://localhost:8080). Profile mặc định là `dev`. **Dừng ứng dụng sẽ mất dữ liệu H2 trong RAM**; lần chạy tiếp theo tạo lại seed.
+Sau khi ứng dụng khởi động, truy cập tại **[http://localhost:8080](http://localhost:8080)**.
 
-| Tài khoản | Vai trò | Mật khẩu demo |
-| --- | --- | --- |
-| `patient` | Bệnh nhân | `123456` |
-| `staff` | Lễ tân | `123456` |
-| `doctor`, `doc_mai`, `doc_nam`, `doc_ha`, `doc_bao`, `doc_tuan`, `doc_linh`, `doc_khoa`, `doc_lan`, `doc_duc`, `doc_trang`, `doc_minh` | 12 Bác sĩ ([SQL seed](docs/database/SQLSERVER_SEED_DOCTORS.sql)) | `123456` |
-| `admin` | Quản trị viên | `123456` |
+#### Danh sách Tài khoản Mặc định (Môi trường Demo)
 
-Seed trong `dev`/`demo` bỏ qua OTP khi dùng mật khẩu; Google luôn yêu cầu OTP. Nút điền nhanh chỉ hiện ở `dev`. `dev` không gửi email: đăng ký tài khoản mới vẫn cần OTP, nên demo đăng ký/magic link/reset mật khẩu bằng Mailpit bên dưới hoặc cấu hình Gmail SMTP.
+| Vai trò | Tên đăng nhập (`username`) | Mật khẩu | Phân hệ truy cập |
+| :--- | :--- | :--- | :--- |
+| **Bệnh nhân** | `patient` | `123456` | Đặt lịch khám, Thẻ hẹn QR, Hồ sơ bệnh án (`/patient/**`) |
+| **Lễ tân & Thu ngân** | `staff` | `123456` | Quét QR Check-in, Cấp STT, Thu ngân & VietQR (`/staff/**`) |
+| **Bác sĩ Chuyên khoa** | `doctor` *(hoặc `doc_mai`, `doc_nam`, `doc_ha`, `doc_bao`, `doc_tuan`, `doc_linh`, `doc_khoa`, `doc_lan`, `doc_duc`, `doc_trang`, `doc_minh`)* | `123456` | Hàng đợi khám WebSocket, Khám lâm sàng & Kê đơn (`/doctor/**`) |
+| **Quản trị viên** | `admin` | `123456` | Dashboard KPI, Quản lý Bác sĩ, Chuyên khoa, Kho thuốc (`/admin/**`) |
 
-H2 console: `/h2-console`, URL `jdbc:h2:mem:medclinic_db`, user `sa`, password trống. Chỉ dùng cấu hình này trên máy phát triển.
+> **Lưu ý chế độ Demo:** Ở hồ sơ `dev`/`demo`, hệ thống cho phép tiếp nhận và xử lý lịch khám sớm trong khung **+14 ngày** để thuận tiện kiểm thử toàn trình bất kỳ lúc nào. Để bật chế độ kiểm tra đúng ngày khám thực tế, đặt biến môi trường `$env:DEMO_EARLY_CLINICAL_PROCESSING = 'false'` trước khi chạy.
 
-### Ngày khám khi demo
+---
 
-`dev`/`demo` cho tiếp nhận và khám lịch từ hôm nay đến **ngày +14**, giữ ngày hẹn và STT theo ngày. Có thể chọn ngày mai nếu giờ khám hôm nay đã qua. Khám vãng lai vẫn chỉ tiếp nhận hôm nay.
+### Chế độ 2: Triển khai Chuẩn Sản xuất với Docker Compose (SQL Server 2022 + Mailpit)
 
-Muốn kiểm tra quy tắc đúng ngày:
+Cụm Docker Compose khởi chạy tự động 4 container: ứng dụng Spring Boot (`medclinic-app`), cơ sở dữ liệu Microsoft SQL Server 2022 (`medclinic-sqlserver`), tác vụ khởi tạo DB (`medclinic-sqlserver-init`) và máy chủ hộp thư SMTP (`medclinic-mailpit`).
 
-```powershell
-$env:DEMO_EARLY_CLINICAL_PROCESSING = 'false'
-mvn spring-boot:run
-```
-
-Ngoài `dev`/`demo`, xử lý ca khám luôn yêu cầu hôm nay.
-
-## Demo SQL Server + email bằng Docker
-
-Cần Docker Desktop với Linux containers:
+**Bước 1:** Tạo tệp cấu hình `.env` từ tệp mẫu `.env.example`:
 
 ```powershell
 if (-not (Test-Path -LiteralPath .env)) {
@@ -88,79 +111,90 @@ if (-not (Test-Path -LiteralPath .env)) {
 }
 ```
 
-Giữ `.env` đang có nếu đã cấu hình. Điền `MSSQL_SA_PASSWORD` đủ mạnh và `REMEMBER_ME_KEY` ngẫu nhiên nếu còn trống, rồi chạy:
+*(Đảm bảo khai báo `MSSQL_SA_PASSWORD` đủ độ mạnh theo quy tắc SQL Server và chuỗi khóa `REMEMBER_ME_KEY` trong tệp `.env`).*
+
+**Bước 2:** Khởi chạy toàn bộ cụm dịch vụ:
 
 ```powershell
 docker compose up --build -d
 ```
 
-| Dịch vụ | Địa chỉ |
-| --- | --- |
-| MedClinic | [localhost:8080](http://localhost:8080) |
-| Mailpit — email demo | [localhost:8025](http://localhost:8025) |
-| SQL Server | `localhost:14333` hoặc `SQLSERVER_HOST_PORT` đã cấu hình |
+| Dịch vụ | Địa chỉ Truy cập | Mô tả |
+| :--- | :--- | :--- |
+| **MedClinic Web App** | [http://localhost:8080](http://localhost:8080) | Giao diện ứng dụng chính (kích hoạt profile `sqlserver,demo`) |
+| **Mailpit Web UI** | [http://localhost:8025](http://localhost:8025) | Hộp thư điện tử thu nhận email OTP 6 số, Magic Link và thông báo lịch hẹn |
+| **SQL Server 2022** | `localhost:14333` | Cổng kết nối JDBC/SSMS tới cơ sở dữ liệu (schema do Flyway `V1`–`V10` quản lý) |
 
-Compose dùng `sqlserver,demo`, các cổng host bind loopback; Flyway quản lý schema, Hibernate validate. Volume giữ database/avatar. `docker compose down` giữ volume; thêm `-v` xóa dữ liệu volume. Không dùng cấu hình demo với dữ liệu thật.
+### Tích hợp Dịch vụ Bên ngoài (Tùy chọn)
+- **Đăng nhập Google OAuth 2.0 (OIDC):** Xem hướng dẫn chi tiết tại [docs/GOOGLE_LOGIN_SETUP.md](docs/GOOGLE_LOGIN_SETUP.md).
+- **Gửi email OTP thật qua Gmail SMTP:** Xem hướng dẫn cấu hình App Password tại [docs/GMAIL_OTP_SETUP.md](docs/GMAIL_OTP_SETUP.md).
+- **Vận hành, Sao lưu & Phục hồi SQL Server:** Xem quy trình quản trị CSDL tại [docs/database/SQLSERVER_RUNBOOK.md](docs/database/SQLSERVER_RUNBOOK.md).
+- **Triển khai Môi trường Production (`sqlserver,prod`):** Tham khảo mẫu biến môi trường bảo mật tại [.env.production.example](.env.production.example).
 
-Docker Compose đọc `.env`; `mvn spring-boot:run` **không tự đọc `.env`**. Không commit file đã điền secret.
+---
 
-## Kiểm thử
+## Kiểm thử & Đảm bảo Chất lượng (QA)
+
+Hệ thống được bảo vệ bởi bộ kiểm thử tự động đa tầng và cổng kiểm soát độ phủ mã nguồn **JaCoCo** (yêu cầu tối thiểu `LINE >= 70%`, `BRANCH >= 50%`):
 
 ```powershell
+# 1. Chạy toàn bộ Unit Test, Integration Test và kiểm tra ngưỡng độ phủ JaCoCo
 mvn --batch-mode --no-transfer-progress clean verify
+
+# 2. Chạy bộ kiểm thử hồi quy giao diện người dùng (Frontend UI Regression)
 node --test src/test/frontend/ui-regressions.cjs
+
+# 3. Kiểm tra tính toàn vẹn liên kết tài liệu kỹ thuật
 node ops/check-doc-links.cjs
 ```
 
-Phân biệt rõ test đã chạy, test SQL Server có điều kiện và kiểm tra trình duyệt. Test skipped không tính thành pass.
+Quy trình tích hợp liên tục (CI) được định nghĩa tại [.github/workflows/ci.yml](.github/workflows/ci.yml), tự động kiểm định mỗi khi có thay đổi mã nguồn.
 
-Gate JaCoCo: LINE ≥70%, BRANCH ≥50%. Test SQL Server cần environment guard và **database kiểm thử riêng, có thể hủy**, theo [SQL Server runbook](docs/database/SQLSERVER_RUNBOOK.md). Không trỏ test vào database cần giữ.
+---
 
-[CI](.github/workflows/ci.yml) chạy Maven, frontend regression và kiểm tra link. Local pass không có nghĩa các thay đổi chưa commit đã được CI trên GitHub kiểm tra.
-
-## Cấu trúc
+## Cấu trúc Thư mục Dự án
 
 ```text
-src/main/java/com/medclinic/
-  controller/       Nhận request, trả view/JSON/PDF
-  service/          Nghiệp vụ và transaction
-  repository/       Truy vấn, khóa dữ liệu
-  entity/, dto/     Mô hình lưu trữ và dữ liệu form/API
-  security/, config/, event/, validation/, util/
-src/main/resources/
-  application.yml   Nhiều profile trong cùng một file
-  templates/        Thymeleaf theo vai trò
-  static/           CSS, JS, ảnh, font và thư viện local
-  db/migration/     Migration SQL Server V1–V10
-src/test/           Test Java và frontend regression
-docker/, deploy/    Database, backup/restore, mẫu reverse proxy
-ops/                Script kiểm chứng và vận hành
-docs/               Đặc tả, mô hình, báo cáo và kịch bản bảo vệ
+├── src/main/java/com/medclinic/
+│   ├── config/          # Cấu hình bảo mật, WebSocket, Flyway, Rate Limit & Seed Data
+│   ├── controller/      # Các tầng điều phối Web SSR, REST API và xuất chứng từ PDF
+│   ├── dto/             # Đối tượng truyền tải dữ liệu và ràng buộc Bean Validation
+│   ├── entity/          # Mô hình thực thể JPA ánh xạ 21 bảng cơ sở dữ liệu
+│   ├── event/           # Sự kiện bất đồng bộ (Email thông báo, cập nhật hàng đợi)
+│   ├── repository/      # Truy vấn dữ liệu và khóa giao dịch đồng thời (PESSIMISTIC_WRITE)
+│   ├── security/        # Chuỗi bộ lọc xác thực, OAuth2/OIDC, OTP Challenge & RBAC
+│   ├── service/         # Tầng xử lý nghiệp vụ cốt lõi và quản lý Transaction
+│   └── validation/      # Các bộ kiểm tra hợp lệ dữ liệu chuyên biệt
+├── src/main/resources/
+│   ├── db/migration/    # 10 kịch bản Flyway Migration (V1–V10) cho SQL Server
+│   ├── static/          # Tài nguyên CSS, JS, Font chữ Geist, biểu tượng và ảnh bác sĩ
+│   ├── templates/       # Giao diện Thymeleaf phân tách theo 4 vai trò người dùng
+│   └── application.yml  # Cấu hình đa môi trường (dev, demo, sqlserver, prod)
+├── src/test/            # Bộ kiểm thử JUnit 5, MockMvc, SQL Server Concurrency & UI Tests
+├── docker/ & deploy/    # Kịch bản khởi tạo container, sao lưu/phục hồi và cấu hình Nginx
+├── ops/                 # Công cụ kiểm tra tự động và vận hành hệ thống
+└── docs/                # Tài liệu kiến trúc, đặc tả hệ thống và cẩm nang vận hành
 ```
 
-### Những file đưa lên GitHub
+---
 
-| Giữ trong repo | Mục đích |
-| --- | --- |
-| `src/main`, `src/test`, `pom.xml` | Chạy ứng dụng và kiểm thử; gồm asset local, font và license đi kèm. |
-| `.github/workflows`, `.gitignore`, `.gitattributes` | CI, quy tắc bỏ qua file và chuẩn hóa file văn bản. |
-| `Dockerfile`, `compose.yml`, `.dockerignore`, `.env*.example`, `docker`, `deploy`, `ops` | Mẫu cấu hình, triển khai, backup/restore và kiểm chứng. |
-| `README.md`, `LICENSE`, `DESIGN.md`, tài liệu thiết kế/vận hành trong `docs` | Cài đặt, kiến trúc, dữ liệu, UI và thuyết trình. |
-| `MedClinic.eapx`, diagram, `docs/generated/*.docx` | Mô hình và báo cáo phục vụ môn học. |
+## Tài liệu Kỹ thuật & Kiến trúc Hệ thống
 
-`target`, `output`, `tmp`, `.codex`, `.impeccable`, `.vscode`, rubric Excel, generator nội bộ, backup, uploads, `.env` và ảnh/log nghiệm thu là dữ liệu local được ignore. Giữ `.env` và backup đang có trên máy. Khi clone repo, chạy theo README và tạo cấu hình riêng từ file mẫu.
+![Lược đồ vật lý 21 bảng SQL Server](docs/diagrams/diagram_physical_schema.png)
 
-Đợt dọn 15/10/2026 bỏ **150 file (khoảng 5,24 MiB)** khỏi cây Git: 115 file bằng chứng nghiệm thu cũ và 35 tài liệu tasklist/review/bàn giao, bản thuyết trình trùng, brief/prompt thiết kế. Nội dung bảo vệ cần dùng đã hợp nhất vào hướng dẫn thuyết trình; test source và tài liệu nghiệp vụ vẫn được giữ. Tại thời điểm hoàn tất dọn, thêm hai tài liệu hướng dẫn thuyết trình/kiểm thử, còn 407 file thay vì 555 file; các tài liệu bổ sung sau đó được tính riêng. File đã commit trước đó có thể tra lại trong lịch sử Git; đợt dọn không thay đổi lịch sử nên dung lượng clone còn bao gồm các phiên bản cũ.
+- **Đặc tả & Thiết kế Hệ thống:**
+  - [Đặc tả Yêu cầu Phần mềm (SRS — IEEE 830)](docs/01_SRS_IEEE830.md)
+  - [Thiết kế UML & Luồng Nghiệp vụ](docs/02_UML_DESIGN.md)
+  - [Thiết kế Cơ sở Dữ liệu Chuẩn 3NF (21 Bảng)](docs/03_DATABASE_DESIGN_3NF.md)
+  - [Ma trận Truy vết Yêu cầu (RTM)](docs/04_RTM_MATRIX.md)
+  - [Kiến trúc Hệ thống & Bảo mật](docs/05_SYSTEM_ARCHITECTURE.md)
+  - [Hệ thống Thiết kế Giao diện (Design System)](DESIGN.md) & [Đặc tả UI/UX](docs/06_UI_UX_DESIGN.md)
+- **Tài liệu Hướng dẫn & Vận hành Đầy đủ (`.docx`):**
+  - [Tài liệu Hướng dẫn Xây dựng Từng Chức năng (`MedClinic_TaiLieu_HuongDan_XayDung_ChucNang.docx`)](docs/generated/MedClinic_TaiLieu_HuongDan_XayDung_ChucNang.docx)
+  - [Cẩm nang Cài đặt và Vận hành Hệ thống (`MedClinic_HuongDan_Setup_UngDung.docx`)](docs/generated/MedClinic_HuongDan_Setup_UngDung.docx)
 
-## Tài liệu
+---
 
-- [Ma trận truy vết yêu cầu (RTM)](docs/04_RTM_MATRIX.md).
-- [Yêu cầu](docs/01_SRS_IEEE830.md), [UML](docs/02_UML_DESIGN.md), [dữ liệu](docs/03_DATABASE_DESIGN_3NF.md), [kiến trúc](docs/05_SYSTEM_ARCHITECTURE.md).
-- [Hệ thống giao diện hiện tại](DESIGN.md), [thiết kế UI/UX](docs/06_UI_UX_DESIGN.md).
-- [SQL Server runbook](docs/database/SQLSERVER_RUNBOOK.md), [Google OAuth](docs/GOOGLE_LOGIN_SETUP.md), [Gmail OTP](docs/GMAIL_OTP_SETUP.md).
+## Giấy phép (License)
 
-Triển khai ngoài local cần `sqlserver,prod`, HTTPS/SMTP/database credentials, `APP_WEBSITE` và remember-me key từ môi trường. Xem [.env.production.example](.env.production.example) và runbook. V7/V9 dừng nâng cấp nếu dữ liệu cũ có điện thoại trùng/sai hoặc giá lẻ; cần xử lý dữ liệu trước migration. Tích hợp thực tế vẫn cần nghiệm thu riêng.
-
-## Giấy phép
-
-[MIT License](LICENSE). Giữ license đi kèm font và thư viện trong thư mục nguồn. Dữ liệu seed chỉ phục vụ demo.
+Dự án được phân phối dưới giấy phép **[MIT License](LICENSE)**.

@@ -1,7 +1,7 @@
 # TÀI LIỆU THIẾT KẾ SƠ ĐỒ UML (UML DESIGN DOCUMENT)
 **Dự án:** MedClinic - Phòng Khám Tư Nhân  
 **Chuẩn thiết kế:** UML 2.5 (Render trực quan bằng Mermaid)  
-**Học phần:** Lập trình Web & Công nghệ Phần mềm  
+**Phân hệ:** Nền tảng Quản lý Phòng khám Đa khoa & Đặt lịch Khám Trực tuyến  
 
 ---
 

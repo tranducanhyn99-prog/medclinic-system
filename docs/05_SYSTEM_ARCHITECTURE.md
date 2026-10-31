@@ -1,7 +1,7 @@
 # TÀI LIỆU KIẾN TRÚC HỆ THỐNG (SYSTEM ARCHITECTURE DOCUMENT)
 **Dự án:** MedClinic - Phòng Khám Tư Nhân  
 **Phiên bản:** 1.1 (12/10/2026)
-**Học phần:** Lập trình Web & Công nghệ Phần mềm  
+**Phân hệ:** Kiến trúc Phân tầng, Bảo mật Đa lớp & Tích hợp Hệ thống  
 
 ---
 

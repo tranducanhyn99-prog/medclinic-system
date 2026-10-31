@@ -70,4 +70,5 @@ Mau_Thiet_Ke_Du_Lieu/
 /.github/modernize/
 /src/main/java/com/medclinic/generator/
 # Course grading sheet supplied locally
-/LTWEB_CuoiKy(Rubric)_*.xlsx
+/LTWEB_CuoiKy*.xlsx
+/MedClinic_*.docx

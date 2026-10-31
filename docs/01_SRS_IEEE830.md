@@ -1,15 +1,15 @@
 # ĐẶC TẢ YÊU CẦU PHẦN MỀM (SOFTWARE REQUIREMENTS SPECIFICATION - SRS)
 **Tên dự án:** Hệ thống Quản lý và Đặt lịch khám Phòng khám Tư nhân (MedClinic)  
 **Tiêu chuẩn áp dụng:** IEEE Std 830-1998  
-**Học phần:** Lập trình Web & Công nghệ Phần mềm  
-**Phiên bản:** 1.2 (Đồng bộ implementation - 12/10/2026)<br>
+**Phân hệ:** Nền tảng Quản lý Phòng khám Đa khoa & Đặt lịch Khám Trực tuyến  
+**Phiên bản:** 1.2 (Production Specification)<br>
 
 ---
 
 ## 1. GIỚI THIỆU (INTRODUCTION)
 
 ### 1.1. Mục đích tài liệu (Purpose)
-Tài liệu này xác định và đặc tả toàn bộ các yêu cầu chức năng (Functional Requirements - FR), yêu cầu phi chức năng (Non-Functional Requirements - NFR), cùng các ràng buộc thiết kế cho dự án **Hệ thống Quản lý và Đặt lịch khám Phòng khám Tư nhân (MedClinic)**. Tài liệu là căn cứ pháp lý và kỹ thuật cho việc thiết kế kiến trúc, xây dựng cơ sở dữ liệu, phát triển mã nguồn, kiểm thử và nghiệm thu đồ án.
+Tài liệu này xác định và đặc tả toàn bộ các yêu cầu chức năng (Functional Requirements - FR), yêu cầu phi chức năng (Non-Functional Requirements - NFR), cùng các ràng buộc thiết kế cho dự án **Hệ thống Quản lý và Đặt lịch khám Phòng khám Tư nhân (MedClinic)**. Tài liệu là căn cứ pháp lý và kỹ thuật cho việc thiết kế kiến trúc, xây dựng cơ sở dữ liệu, phát triển mã nguồn, kiểm thử và nghiệm thu hệ thống.
 
 ### 1.2. Phạm vi sản phẩm (Scope)
 MedClinic là giải pháp chuyển đổi số toàn diện cho phòng khám đa khoa tư nhân, giải quyết bài toán quản lý quy trình khám chữa bệnh từ khâu tiếp cận người bệnh đến quản lý chuyên môn và thu ngân:
@@ -108,7 +108,7 @@ Hệ thống được phát triển theo mô hình kiến trúc phân tầng chu
 ## 4. YÊU CẦU PHI CHỨC NĂNG (NON-FUNCTIONAL REQUIREMENTS)
 
 ### 4.1. Hiệu năng & Khả năng đáp ứng (Performance)
-- **NFR-PERF-01:** Với các trang công khai và portal, p95 thời gian tải tài liệu HTML sau warm-up dưới 1,5 giây trong môi trường nghiệm thu được ghi nhận (xem `docs/KIEM_THU.md`). Kết quả baseline phải kèm cấu hình môi trường; khi chưa có kết quả, yêu cầu ở trạng thái chưa xác minh.
+- **NFR-PERF-01:** Với các trang công khai và portal, p95 thời gian tải tài liệu HTML sau warm-up dưới 1,5 giây trong môi trường vận hành chuẩn (xem [SQL Server Runbook](database/SQLSERVER_RUNBOOK.md)). Kết quả baseline phải kèm cấu hình môi trường; khi chưa có kết quả, yêu cầu ở trạng thái chưa xác minh.
 - **NFR-PERF-02:** Email chạy bất đồng bộ sau commit; QR và PDF được sinh trong bộ nhớ/stream với kích thước hữu hạn, không tạo file tạm ngoài ý muốn.
 - **NFR-RT-01:** Kênh realtime hàng chờ dùng STOMP user destination theo session đã xác thực, chỉ broadcast sau commit thành công và client tự thử kết nối lại sau khi socket bị gián đoạn.
 

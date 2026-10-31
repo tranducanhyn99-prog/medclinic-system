@@ -2,7 +2,7 @@
 
 ## 1. Mục tiêu và phạm vi
 
-Tài liệu này mô tả giao diện của MedClinic theo vai trò, luồng tác vụ và trạng thái xử lý. Thiết kế bám SRS IEEE 830, UI guideline của đồ án và mã nguồn Thymeleaf hiện có. Mục tiêu là để bệnh nhân đặt lịch nhanh, nhân viên tiếp nhận chính xác, bác sĩ khám hiệu quả và quản trị viên vận hành dữ liệu an toàn.
+Tài liệu này mô tả giao diện của MedClinic theo vai trò, luồng tác vụ và trạng thái xử lý. Thiết kế bám sát đặc tả SRS IEEE 830, Hệ thống thiết kế ([DESIGN.md](../DESIGN.md)) và mã nguồn Thymeleaf hiện có. Mục tiêu là để bệnh nhân đặt lịch nhanh, nhân viên tiếp nhận chính xác, bác sĩ khám hiệu quả và quản trị viên vận hành dữ liệu an toàn.
 
 Nguyên tắc: hiển thị thông tin nghiệp vụ thay vì ID kỹ thuật; một hành động chính rõ ràng trên mỗi màn hình; mọi luồng quan trọng có trạng thái thành công, lỗi, rỗng và bị vô hiệu hóa khi chưa đủ điều kiện.
 

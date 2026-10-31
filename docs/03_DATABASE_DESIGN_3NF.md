@@ -1,6 +1,6 @@
 # THIẾT KẾ CƠ SỞ DỮ LIỆU & CHỨNG MINH CHUẨN HÓA 3NF (DATABASE DESIGN)
 **Dự án:** MedClinic - Phòng Khám Tư Nhân
-**Học phần:** Lập trình Web & Công nghệ Phần mềm
+**Phân hệ:** Kiến trúc Cơ sở Dữ liệu Quan hệ & Chuẩn hóa 3NF
 **Hệ quản trị CSDL mục tiêu:** Microsoft SQL Server (current/production); H2 Database chỉ dùng cho Dev/Test. MySQL là khả năng tương thích dự kiến trong roadmap tương lai.
 
 ---
