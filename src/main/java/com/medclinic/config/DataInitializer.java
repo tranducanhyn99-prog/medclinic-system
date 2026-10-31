@@ -591,28 +591,36 @@ public class DataInitializer implements CommandLineRunner {
     }
 
     private void initMedicines() {
-        if (medicineRepository.count() > 0) {
-            return;
-        }
-
         List<Medicine> medicines = List.of(
-                Medicine.builder().name("Paracetamol 500mg (Hasan)").unit("Viên").unitPrice(new BigDecimal("1500")).usageGuide("Hạ sốt, giảm đau từ nhẹ đến vừa. Uống sau khi ăn.").stockQuantity(2000).isActive(true).build(),
-                Medicine.builder().name("Augmentin 1g (Amoxicillin/Clavulanate)").unit("Viên").unitPrice(new BigDecimal("18500")).usageGuide("Kháng sinh điều trị nhiễm khuẩn đường hô hấp, tai mũi họng.").stockQuantity(500).isActive(true).build(),
-                Medicine.builder().name("Amlodipine 5mg").unit("Viên").unitPrice(new BigDecimal("3500")).usageGuide("Thuốc điều trị tăng huyết áp, đau thắt ngực. Uống buổi sáng.").stockQuantity(1200).isActive(true).build(),
-                Medicine.builder().name("Nexium Mups 40mg (Esomeprazole)").unit("Viên").unitPrice(new BigDecimal("24000")).usageGuide("Điều trị viêm loét dạ dày tá tràng, trào ngược GERD. Uống trước ăn 30p.").stockQuantity(600).isActive(true).build(),
-                Medicine.builder().name("Panadol Extra Đỏ").unit("Vỉ").unitPrice(new BigDecimal("22000")).usageGuide("Giảm đau đầu, đau cơ, hạ sốt nhanh chóng.").stockQuantity(800).isActive(true).build(),
-                Medicine.builder().name("Berberin 100mg").unit("Lọ").unitPrice(new BigDecimal("15000")).usageGuide("Điều trị tiêu chảy, kiết lỵ, viêm ruột.").stockQuantity(400).isActive(true).build(),
-                Medicine.builder().name("Cefuroxime 500mg").unit("Viên").unitPrice(new BigDecimal("12000")).usageGuide("Kháng sinh Cephalosporin thế hệ 2 điều trị nhiễm khuẩn.").stockQuantity(700).isActive(true).build(),
-                Medicine.builder().name("Gliclazide MR 60mg").unit("Viên").unitPrice(new BigDecimal("5000")).usageGuide("Thuốc hạ đường huyết cho người đái tháo đường type 2.").stockQuantity(900).isActive(true).build(),
-                Medicine.builder().name("Atorvastatin 20mg").unit("Viên").unitPrice(new BigDecimal("8000")).usageGuide("Hạ mỡ máu, giảm Cholesterol và phòng ngừa biến cố tim mạch.").stockQuantity(850).isActive(true).build(),
-                Medicine.builder().name("Klacid 500mg (Clarithromycin)").unit("Viên").unitPrice(new BigDecimal("32000")).usageGuide("Kháng sinh điều trị nhiễm khuẩn hô hấp và diệt vi khuẩn HP dạ dày.").stockQuantity(300).isActive(true).build(),
-                Medicine.builder().name("Eugica Đỏ (Viên nang mềm)").unit("Hộp").unitPrice(new BigDecimal("65000")).usageGuide("Bổ phế, giảm ho, long đờm, rát họng có nguồn gốc thảo dược.").stockQuantity(450).isActive(true).build(),
-                Medicine.builder().name("Vitamin C 500mg").unit("Tuýp").unitPrice(new BigDecimal("35000")).usageGuide("Tăng cường sức đề kháng, bổ sung vitamin C hằng ngày.").stockQuantity(600).isActive(true).build(),
-                Medicine.builder().name("Natri Clorid 0.9% (Nước muối sinh lý)").unit("Chai").unitPrice(new BigDecimal("10000")).usageGuide("Dùng nhỏ mắt, rửa mũi, súc miệng hàng ngày.").stockQuantity(1500).isActive(true).build(),
-                Medicine.builder().name("Salonpas Gel 30g").unit("Tuýp").unitPrice(new BigDecimal("42000")).usageGuide("Giảm đau nhức cơ bắp, đau khớp, bầm tím.").stockQuantity(350).isActive(true).build(),
-                Medicine.builder().name("Oresol 245mg").unit("Gói").unitPrice(new BigDecimal("4000")).usageGuide("Bù nước và điện giải khi bị sốt cao hoặc tiêu chảy.").stockQuantity(2000).isActive(true).build()
+                Medicine.builder().name("Paracetamol 500mg (Hasan)").unit("Viên").unitPrice(new BigDecimal("1500")).usageGuide("Hạ sốt, giảm đau từ nhẹ đến vừa. Uống sau khi ăn.").stockQuantity(2000).reorderLevel(50).isActive(true).build(),
+                Medicine.builder().name("Augmentin 1g (Amoxicillin/Clavulanate)").unit("Viên").unitPrice(new BigDecimal("18500")).usageGuide("Kháng sinh điều trị nhiễm khuẩn đường hô hấp, tai mũi họng.").stockQuantity(500).reorderLevel(50).isActive(true).build(),
+                Medicine.builder().name("Amlodipine 5mg").unit("Viên").unitPrice(new BigDecimal("3500")).usageGuide("Thuốc điều trị tăng huyết áp, đau thắt ngực. Uống buổi sáng.").stockQuantity(1200).reorderLevel(50).isActive(true).build(),
+                Medicine.builder().name("Nexium Mups 40mg (Esomeprazole)").unit("Viên").unitPrice(new BigDecimal("24000")).usageGuide("Điều trị viêm loét dạ dày tá tràng, trào ngược GERD. Uống trước ăn 30p.").stockQuantity(600).reorderLevel(50).isActive(true).build(),
+                Medicine.builder().name("Panadol Extra Đỏ").unit("Vỉ").unitPrice(new BigDecimal("22000")).usageGuide("Giảm đau đầu, đau cơ, hạ sốt nhanh chóng.").stockQuantity(800).reorderLevel(50).isActive(true).build(),
+                Medicine.builder().name("Berberin 100mg").unit("Lọ").unitPrice(new BigDecimal("15000")).usageGuide("Điều trị tiêu chảy, kiết lỵ, viêm ruột.").stockQuantity(400).reorderLevel(50).isActive(true).build(),
+                Medicine.builder().name("Cefuroxime 500mg").unit("Viên").unitPrice(new BigDecimal("12000")).usageGuide("Kháng sinh Cephalosporin thế hệ 2 điều trị nhiễm khuẩn.").stockQuantity(700).reorderLevel(50).isActive(true).build(),
+                Medicine.builder().name("Gliclazide MR 60mg").unit("Viên").unitPrice(new BigDecimal("5000")).usageGuide("Thuốc hạ đường huyết cho người đái tháo đường type 2.").stockQuantity(900).reorderLevel(50).isActive(true).build(),
+                Medicine.builder().name("Atorvastatin 20mg").unit("Viên").unitPrice(new BigDecimal("8000")).usageGuide("Hạ mỡ máu, giảm Cholesterol và phòng ngừa biến cố tim mạch.").stockQuantity(850).reorderLevel(50).isActive(true).build(),
+                Medicine.builder().name("Klacid 500mg (Clarithromycin)").unit("Viên").unitPrice(new BigDecimal("32000")).usageGuide("Kháng sinh điều trị nhiễm khuẩn hô hấp và diệt vi khuẩn HP dạ dày.").stockQuantity(18).reorderLevel(50).isActive(true).build(),
+                Medicine.builder().name("Eugica Đỏ (Viên nang mềm)").unit("Hộp").unitPrice(new BigDecimal("65000")).usageGuide("Bổ phế, giảm ho, long đờm, rát họng có nguồn gốc thảo dược.").stockQuantity(450).reorderLevel(50).isActive(true).build(),
+                Medicine.builder().name("Vitamin C 500mg").unit("Tuýp").unitPrice(new BigDecimal("35000")).usageGuide("Tăng cường sức đề kháng, bổ sung vitamin C hằng ngày.").stockQuantity(600).reorderLevel(50).isActive(true).build(),
+                Medicine.builder().name("Natri Clorid 0.9% (Nước muối sinh lý)").unit("Chai").unitPrice(new BigDecimal("10000")).usageGuide("Dùng nhỏ mắt, rửa mũi, súc miệng hàng ngày.").stockQuantity(1500).reorderLevel(50).isActive(true).build(),
+                Medicine.builder().name("Salonpas Gel 30g").unit("Tuýp").unitPrice(new BigDecimal("42000")).usageGuide("Giảm đau nhức cơ bắp, đau khớp, bầm tím.").stockQuantity(12).reorderLevel(50).isActive(true).build(),
+                Medicine.builder().name("Oresol 245mg").unit("Gói").unitPrice(new BigDecimal("4000")).usageGuide("Bù nước và điện giải khi bị sốt cao hoặc tiêu chảy.").stockQuantity(2000).reorderLevel(50).isActive(true).build(),
+                Medicine.builder().name("Ventolin Inhaler 100mcg (Xịt cắt cơn hen)").unit("Chai").unitPrice(new BigDecimal("115000")).usageGuide("Xịt giãn phế quản cắt cơn co thắt phế quản cấp ở bệnh nhân hen suyễn, COPD.").stockQuantity(8).reorderLevel(30).isActive(true).build(),
+                Medicine.builder().name("Medrol 16mg (Methylprednisolone)").unit("Vỉ").unitPrice(new BigDecimal("48000")).usageGuide("Kháng viêm, ức chế miễn dịch điều trị viêm khớp, dị ứng nặng. Uống sau ăn sáng.").stockQuantity(25).reorderLevel(40).isActive(true).build(),
+                Medicine.builder().name("Tamiflu 75mg (Oseltamivir)").unit("Viên").unitPrice(new BigDecimal("45000")).usageGuide("Thuốc kháng virus đặc trị cúm A và cúm B. Uống 1 viên x 2 lần/ngày trong 5 ngày.").stockQuantity(0).reorderLevel(30).isActive(true).build()
         );
 
-        medicineRepository.saveAll(medicines);
+        for (Medicine seed : medicines) {
+            medicineRepository.findByName(seed.getName()).ifPresentOrElse(existing -> {
+                if (seed.getStockQuantity() <= seed.getReorderLevel()) {
+                    existing.setStockQuantity(seed.getStockQuantity());
+                    existing.setReorderLevel(seed.getReorderLevel());
+                    existing.setIsActive(true);
+                    medicineRepository.save(existing);
+                }
+            }, () -> medicineRepository.save(seed));
+        }
     }
 }
