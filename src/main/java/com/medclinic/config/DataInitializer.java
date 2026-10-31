@@ -1,21 +1,24 @@
 package com.medclinic.config;
 
 import com.medclinic.entity.*;
-import com.medclinic.enums.Gender;
-import com.medclinic.enums.RoleType;
-import com.medclinic.enums.ShiftType;
+import com.medclinic.enums.*;
 import com.medclinic.repository.*;
 import com.medclinic.service.ScheduleService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Profile;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
-import org.springframework.context.annotation.Profile;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 @Slf4j
@@ -28,10 +31,20 @@ public class DataInitializer implements CommandLineRunner {
     private final UserRepository userRepository;
     private final SpecialtyRepository specialtyRepository;
     private final DoctorProfileRepository doctorProfileRepository;
+    private final DoctorScheduleRepository doctorScheduleRepository;
+    private final TimeSlotRepository timeSlotRepository;
+    private final AppointmentRepository appointmentRepository;
+    private final MedicalRecordRepository medicalRecordRepository;
+    private final InvoiceRepository invoiceRepository;
+    private final DailyQueueCounterRepository dailyQueueCounterRepository;
     private final ScheduleService scheduleService;
     private final MedicineRepository medicineRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JdbcTemplate jdbcTemplate;
     private final java.time.Clock businessClock;
+
+    @Value("${app.demo.seed-appointments:false}")
+    private boolean seedAppointments;
 
     @Override
     @Transactional
@@ -47,7 +60,7 @@ public class DataInitializer implements CommandLineRunner {
         // 2. Default Users
         initUser("admin", "123456", "Quản Trị Viên Hệ Thống", "admin@medclinic.vn", "0900000001", roleAdmin);
         initUser("staff", "123456", "Nguyễn Thị Lễ Tân", "staff@medclinic.vn", "0900000002", roleStaff);
-        initUser("patient", "123456", "Trần Văn Bệnh Nhân", "patient@medclinic.vn", "0912345678", rolePatient);
+        User mainPatient = initUser("patient", "123456", "Trần Văn Bệnh Nhân", "patient@medclinic.vn", "0912345678", rolePatient);
 
         // 3. Specialties
         Specialty spTimMach = initSpecialty("Chuyên Khoa Tim Mạch", "Chẩn đoán, điều trị tăng huyết áp, bệnh mạch vành, rối loạn nhịp tim và bệnh van tim.", "bi-heart-pulse-fill");
@@ -134,7 +147,308 @@ public class DataInitializer implements CommandLineRunner {
         // 6. Medicines catalog
         initMedicines();
 
+        // 7. Seed 10 Sample Clinical Cases ordered strictly by time (08:00 -> 15:00)
+        if (seedAppointments && appointmentRepository.count() == 0) {
+            initSampleAppointments(rolePatient, mainPatient, doc1, doc2, doc3, doc6, today);
+        }
+
         log.info("Khởi tạo Seed Data thành công! Hệ thống MedClinic đã sẵn sàng.");
+    }
+
+    private void initSampleAppointments(
+            Role rolePatient,
+            User mainPatient,
+            DoctorProfile docHung,
+            DoctorProfile docMai,
+            DoctorProfile docNam,
+            DoctorProfile docTuan,
+            LocalDate today) {
+
+        User bnViet = initPatient("bn_viet", "Đặng Quốc Việt", "viet.dang@medclinic.vn", "0938112206", Gender.MALE, LocalDate.of(1972, 6, 30), rolePatient);
+        User bnLanAnh = initPatient("bn_lananh", "Bùi Thị Lan Anh", "lananh.bui@medclinic.vn", "0938112207", Gender.FEMALE, LocalDate.of(1998, 12, 9), rolePatient);
+        User bnDuyen = initPatient("bn_duyen", "Lê Thị Mỹ Duyên", "duyen.le@medclinic.vn", "0938112201", Gender.FEMALE, LocalDate.of(1995, 4, 12), rolePatient);
+        User bnBao = initPatient("bn_bao", "Hoàng Gia Bảo", "bao.hoang@medclinic.vn", "0938112205", Gender.MALE, LocalDate.of(1983, 2, 14), rolePatient);
+        User bnTam = initPatient("bn_tam", "Nguyễn Minh Tâm", "tam.nguyen@medclinic.vn", "0938112203", Gender.MALE, LocalDate.of(1976, 11, 5), rolePatient);
+        User bnThao = initPatient("bn_thao", "Võ Thị Thanh Thảo", "thao.vo@medclinic.vn", "0938112204", Gender.FEMALE, LocalDate.of(1992, 7, 18), rolePatient);
+        User bnKhang = initPatient("bn_khang", "Phạm Hoàng Khang", "khang.pham@medclinic.vn", "0938112202", Gender.MALE, LocalDate.of(1988, 9, 23), rolePatient);
+        User bnQuan = initPatient("bn_quan", "Trương Minh Quân", "quan.truong@medclinic.vn", "0938112208", Gender.MALE, LocalDate.of(1985, 3, 21), rolePatient);
+
+        List<Medicine> meds = medicineRepository.findAll();
+        Medicine amlodipine = meds.stream().filter(m -> m.getName().contains("Amlodipine")).findFirst().orElse(meds.get(0));
+        Medicine atorvastatin = meds.stream().filter(m -> m.getName().contains("Atorvastatin")).findFirst().orElse(meds.get(1));
+        Medicine panadol = meds.stream().filter(m -> m.getName().contains("Panadol")).findFirst().orElse(meds.get(2));
+        Medicine augmentin = meds.stream().filter(m -> m.getName().contains("Augmentin")).findFirst().orElse(meds.get(3));
+
+        LocalDate yesterday = today.minusDays(1);
+
+        // =====================================================================
+        // DÒNG THỜI GIAN CA SÁNG (08:00 -> 11:30):
+        // Các khung giờ đầu sáng đã khám xong (COMPLETED) -> Khung giờ giữa sáng đang khám (IN_PROGRESS)
+        // -> Khung giờ cuối sáng đã check-in đang ngồi chờ (CHECKED_IN)
+        // =====================================================================
+
+        // 1. [08:00 - 08:30] MED-DEMO-001 | STT-001 | ĐÃ KHÁM HOÀN TẤT (COMPLETED) + ĐÃ THU TIỀN (PAID lúc 08:28)
+        Appointment appt1 = createSeededAppointment(
+                "MED-DEMO-001", mainPatient, docHung, today, ShiftType.MORNING, LocalTime.of(8, 0),
+                "Đo huyết áp tại nhà tăng cao 150/95 mmHg, đau đầu nhẹ, kiểm tra tim mạch tổng quát",
+                AppointmentStatus.COMPLETED, "STT-001", 1L, true,
+                yesterday.atTime(15, 10), today.atTime(8, 22));
+        attachMedicalRecordAndInvoice(
+                appt1,
+                "Huyết áp đo tại phòng khám 150/95 mmHg, mạch 84 lần/phút, đau mỏi vùng gáy nhẹ, tiếng tim T1 T2 đều rõ.",
+                "Tăng huyết áp vô căn độ 1 (I10) kèm Rối loạn chuyển hóa Lipoprotein (E78).",
+                "Hạn chế ăn mặn (< 5g muối/ngày), tập thể dục nhẹ 30 phút/ngày, đo huyết áp sáng - tối.",
+                today.plusDays(14),
+                List.of(
+                        new SeedRxItem(amlodipine, 30, "1 viên / lần", "1 lần / ngày (Buổi sáng)", "Uống sau ăn sáng 30 phút"),
+                        new SeedRxItem(atorvastatin, 30, "1 viên / lần", "1 lần / ngày (Buổi tối)", "Uống sau ăn tối")
+                ),
+                "HD-DEMO-001",
+                PaymentStatus.PAID,
+                PaymentMethod.CASH,
+                today.atTime(8, 22),
+                today.atTime(8, 28));
+
+        // 2. [08:30 - 09:00] MED-DEMO-002 | STT-002 | ĐÃ KHÁM HOÀN TẤT (COMPLETED lúc 08:55) + CHỜ THU NGÂN (UNPAID)
+        Appointment appt2 = createSeededAppointment(
+                "MED-DEMO-002", bnViet, docHung, today, ShiftType.MORNING, LocalTime.of(8, 30),
+                "Đau thắt ngực ổn định khi đi bộ xa, tê mỏi vai trái, theo dõi thiếu máu cơ tim",
+                AppointmentStatus.COMPLETED, "STT-002", 2L, true,
+                yesterday.atTime(16, 5), today.atTime(8, 55));
+        attachMedicalRecordAndInvoice(
+                appt2,
+                "Đau tức sau xương ức từng cơn ngắn 3-5 phút khi gắng sức, giảm khi nghỉ ngơi; HA 140/90 mmHg, nhịp tim 78 chu kỳ/phút.",
+                "Cơn đau thắt ngực ổn định (I20.8) - Theo dõi bệnh tim thiếu máu cục bộ mạn tính.",
+                "Tránh vận động gắng sức đột ngột, kiêng rượu bia và thuốc lá, tái khám ngay nếu cơn đau kéo dài trên 15 phút.",
+                today.plusDays(7),
+                List.of(
+                        new SeedRxItem(amlodipine, 30, "1 viên / lần", "1 lần / ngày (Buổi sáng)", "Uống cố định vào 7h sáng"),
+                        new SeedRxItem(panadol, 2, "1 viên / lần", "Khi đau đầu nhiều (tối đa 2 lần/ngày)", "Uống sau khi ăn no")
+                ),
+                "HD-DEMO-002",
+                PaymentStatus.UNPAID,
+                PaymentMethod.CASH,
+                today.atTime(8, 55),
+                null);
+
+        // 3. [09:00 - 09:30] MED-DEMO-003 | Không cấp STT | ĐÃ HỦY (CANCELLED lúc 07:30 sáng trước giờ khám)
+        createSeededAppointment(
+                "MED-DEMO-003", bnLanAnh, docTuan, today, ShiftType.MORNING, LocalTime.of(9, 0),
+                "Đau mỏi vùng cột sống thắt lưng lan xuống chân trái (Bệnh nhân báo bận đột xuất xin hủy lịch lúc 07:30)",
+                AppointmentStatus.CANCELLED, null, null, false,
+                yesterday.atTime(17, 20), today.atTime(7, 30));
+
+        // 4. [09:30 - 10:00] MED-DEMO-004 | STT-003 | ĐÃ KHÁM HOÀN TẤT (COMPLETED lúc 09:52) + ĐÃ THU TIỀN (PAID lúc 09:58)
+        Appointment appt4 = createSeededAppointment(
+                "MED-DEMO-004", bnDuyen, docMai, today, ShiftType.MORNING, LocalTime.of(9, 30),
+                "Đau nhức răng hàm dưới bên phải khi ăn đồ lạnh, kiểm tra viêm tủy răng số 46",
+                AppointmentStatus.COMPLETED, "STT-003", 3L, true,
+                yesterday.atTime(18, 0), today.atTime(9, 52));
+        attachMedicalRecordAndInvoice(
+                appt4,
+                "Răng số 46 sâu ngà sâu sát tủy, gõ dọc đau nhẹ, lợi quanh cổ răng sưng đỏ nhẹ, chưa lung lay.",
+                "Viêm tủy răng có hồi phục răng 46 (K04.0) kèm viêm lợi khu trú.",
+                "Vệ sinh răng miệng bằng nước muối sinh lý sau ăn, tránh nhai đồ cứng bên phải, hẹn tái khám hàn phục hồi.",
+                today.plusDays(5),
+                List.of(
+                        new SeedRxItem(augmentin, 14, "1 viên / lần", "2 lần / ngày (Sáng, Tối)", "Uống ngay sau bữa ăn"),
+                        new SeedRxItem(panadol, 1, "1 viên / lần", "2 lần / ngày khi đau nhức", "Uống sau ăn no")
+                ),
+                "HD-DEMO-003",
+                PaymentStatus.PAID,
+                PaymentMethod.CASH,
+                today.atTime(9, 52),
+                today.atTime(9, 58));
+
+        // 5. [10:00 - 10:30] MED-DEMO-005 | STT-004 | ĐANG KHÁM (IN_PROGRESS — Bác sĩ Hùng bắt đầu khám lúc 10:05)
+        createSeededAppointment(
+                "MED-DEMO-005", bnBao, docHung, today, ShiftType.MORNING, LocalTime.of(10, 0),
+                "Chóng mặt khi thay đổi tư thế, mệt mỏi, tiền sử rối loạn lipid máu cần kiểm tra",
+                AppointmentStatus.IN_PROGRESS, "STT-004", 4L, true,
+                yesterday.atTime(19, 15), today.atTime(10, 5));
+
+        // 6. [10:30 - 11:00] MED-DEMO-006 | STT-005 | ĐÃ TIẾP NHẬN - CHỜ KHÁM (CHECKED_IN lúc 10:15, chờ sau STT-004)
+        createSeededAppointment(
+                "MED-DEMO-006", bnTam, docHung, today, ShiftType.MORNING, LocalTime.of(10, 30),
+                "Huyết áp tăng cao 155/95 mmHg kèm đau đầu vùng chẩm buổi sáng",
+                AppointmentStatus.CHECKED_IN, "STT-005", 5L, true,
+                yesterday.atTime(20, 0), today.atTime(10, 15));
+
+        // 7. [11:00 - 11:30] MED-DEMO-007 | STT-006 | ĐÃ TIẾP NHẬN - CHỜ KHÁM (CHECKED_IN lúc 10:45, chờ khám kế tiếp)
+        createSeededAppointment(
+                "MED-DEMO-007", bnThao, docHung, today, ShiftType.MORNING, LocalTime.of(11, 0),
+                "Nhịp tim nhanh 105 lần/phút, khó thở nhẹ khi leo cầu thang",
+                AppointmentStatus.CHECKED_IN, "STT-006", 6L, true,
+                today.atTime(7, 40), today.atTime(10, 45));
+
+        // =====================================================================
+        // DÒNG THỜI GIAN CA CHIỀU (13:30 -> 15:00):
+        // Vì là các khung giờ buổi chiều chưa diễn ra nên cả 3 ca đều ở trạng thái
+        // CHƯA TIẾP NHẬN (CONFIRMED — Chờ bệnh nhân đến quầy Lễ tân Check-in)
+        // =====================================================================
+
+        // 8. [13:30 - 14:00] MED-DEMO-008 | Chưa cấp STT | CHƯA TIẾP NHẬN (CONFIRMED — Lịch hẹn đầu giờ chiều)
+        createSeededAppointment(
+                "MED-DEMO-008", bnKhang, docHung, today, ShiftType.AFTERNOON, LocalTime.of(13, 30),
+                "Tái khám kiểm tra huyết áp định kỳ và siêu âm tim Doppler theo lịch hẹn chiều",
+                AppointmentStatus.CONFIRMED, null, null, true,
+                yesterday.atTime(21, 10), yesterday.atTime(21, 10));
+
+        // 9. [14:00 - 14:30] MED-DEMO-009 | Chưa cấp STT | CHƯA TIẾP NHẬN (CONFIRMED — Lịch hẹn chiều của patient)
+        createSeededAppointment(
+                "MED-DEMO-009", mainPatient, docNam, today, ShiftType.AFTERNOON, LocalTime.of(14, 0),
+                "Nổi mẩn đỏ ngứa dị ứng vùng cổ và hai cánh tay sau khi ăn hải sản",
+                AppointmentStatus.CONFIRMED, null, null, true,
+                today.atTime(8, 35), today.atTime(8, 35));
+
+        // 10. [14:30 - 15:00] MED-DEMO-010 | Chưa cấp STT | CHƯA TIẾP NHẬN (CONFIRMED — Lịch hẹn chiều Cơ Xương Khớp)
+        createSeededAppointment(
+                "MED-DEMO-010", bnQuan, docTuan, today, ShiftType.AFTERNOON, LocalTime.of(14, 30),
+                "Đau nhức khớp gối phải khi lên xuống cầu thang, cứng khớp buổi sáng",
+                AppointmentStatus.CONFIRMED, null, null, true,
+                today.atTime(9, 10), today.atTime(9, 10));
+
+        // Đồng bộ bộ đếm STT hàng ngày (nextSequence = 6) để lượt Check-in tiếp theo cấp STT-007
+        DailyQueueCounter counter = dailyQueueCounterRepository.findByQueueDateForUpdate(today)
+                .orElseGet(() -> DailyQueueCounter.builder().queueDate(today).nextSequence(6L).build());
+        counter.setNextSequence(6L);
+        dailyQueueCounterRepository.save(counter);
+
+        log.info("Đã khởi tạo 10 ca khám mẫu (MED-DEMO-001 .. MED-DEMO-010) theo đúng trình tự thời gian 08:00 -> 15:00!");
+    }
+
+    private record SeedRxItem(Medicine medicine, int quantity, String dosage, String frequency, String instructions) {}
+
+    private Appointment createSeededAppointment(
+            String bookingCode,
+            User patient,
+            DoctorProfile doctor,
+            LocalDate date,
+            ShiftType shift,
+            LocalTime startTime,
+            String reason,
+            AppointmentStatus status,
+            String queueNumber,
+            Long queueSequence,
+            boolean markSlotBooked,
+            LocalDateTime bookedAt,
+            LocalDateTime updatedAt) {
+        scheduleService.createOrGetSchedule(doctor.getId(), date, shift);
+        List<TimeSlot> availableSlots = timeSlotRepository.findAvailableSlotsByDoctorAndDate(
+                doctor.getId(), date, SlotStatus.AVAILABLE);
+        TimeSlot slot = availableSlots.stream()
+                .filter(s -> s.getStartTime().equals(startTime))
+                .findFirst()
+                .orElseGet(availableSlots::getFirst);
+        if (markSlotBooked) {
+            slot.setStatus(SlotStatus.BOOKED);
+            timeSlotRepository.save(slot);
+        }
+        Appointment saved = appointmentRepository.saveAndFlush(Appointment.builder()
+                .bookingCode(bookingCode)
+                .patient(patient)
+                .doctor(doctor)
+                .timeSlot(slot)
+                .appointmentDate(date)
+                .reason(reason)
+                .status(status)
+                .queueNumber(queueNumber)
+                .queueSequence(queueSequence)
+                .build());
+        jdbcTemplate.update(
+                "UPDATE appointments SET created_at = ?, updated_at = ? WHERE id = ?",
+                Timestamp.valueOf(bookedAt), Timestamp.valueOf(updatedAt), saved.getId());
+        return saved;
+    }
+
+    private void attachMedicalRecordAndInvoice(
+            Appointment appointment,
+            String symptoms,
+            String diagnosis,
+            String doctorNotes,
+            LocalDate reExamDate,
+            List<SeedRxItem> rxItems,
+            String invoiceCode,
+            PaymentStatus paymentStatus,
+            PaymentMethod paymentMethod,
+            LocalDateTime examinedAt,
+            LocalDateTime paidAt) {
+        MedicalRecord record = MedicalRecord.builder()
+                .appointment(appointment)
+                .doctor(appointment.getDoctor())
+                .patient(appointment.getPatient())
+                .symptoms(symptoms)
+                .diagnosis(diagnosis)
+                .doctorNotes(doctorNotes)
+                .reExamDate(reExamDate)
+                .build();
+
+        Prescription prescription = Prescription.builder()
+                .medicalRecord(record)
+                .doctorNotes(doctorNotes)
+                .build();
+
+        for (SeedRxItem item : rxItems) {
+            prescription.getItems().add(PrescriptionItem.builder()
+                    .prescription(prescription)
+                    .medicine(item.medicine())
+                    .quantity(item.quantity())
+                    .unitPriceAtTime(item.medicine().getUnitPrice())
+                    .dosage(item.dosage())
+                    .frequency(item.frequency())
+                    .instructions(item.instructions())
+                    .build());
+        }
+        record.setPrescription(prescription);
+        MedicalRecord savedRecord = medicalRecordRepository.saveAndFlush(record);
+        jdbcTemplate.update(
+                "UPDATE medical_records SET created_at = ? WHERE id = ?",
+                Timestamp.valueOf(examinedAt), savedRecord.getId());
+        if (savedRecord.getPrescription() != null && savedRecord.getPrescription().getId() != null) {
+            jdbcTemplate.update(
+                    "UPDATE prescriptions SET created_at = ? WHERE id = ?",
+                    Timestamp.valueOf(examinedAt), savedRecord.getPrescription().getId());
+        }
+
+        BigDecimal consultationFee = appointment.getDoctor().getConsultationFee();
+        BigDecimal medicineFee = prescription.calculateTotalMedicinePrice();
+        BigDecimal totalAmount = consultationFee.add(medicineFee);
+
+        Invoice savedInvoice = invoiceRepository.saveAndFlush(Invoice.builder()
+                .appointment(appointment)
+                .invoiceCode(invoiceCode)
+                .consultationFee(consultationFee)
+                .medicineFee(medicineFee)
+                .totalAmount(totalAmount)
+                .paymentMethod(paymentMethod)
+                .paymentStatus(paymentStatus)
+                .paidAt(paidAt)
+                .build());
+        jdbcTemplate.update(
+                "UPDATE invoices SET created_at = ?, paid_at = ? WHERE id = ?",
+                Timestamp.valueOf(examinedAt),
+                paidAt != null ? Timestamp.valueOf(paidAt) : null,
+                savedInvoice.getId());
+    }
+
+    private User initPatient(String username, String fullName, String email, String phone,
+                             Gender gender, LocalDate dob, Role rolePatient) {
+        return userRepository.findByUsername(username).orElseGet(() ->
+                userRepository.save(User.builder()
+                        .username(username)
+                        .password(passwordEncoder.encode("123456"))
+                        .fullName(fullName)
+                        .email(email)
+                        .phone(phone)
+                        .gender(gender)
+                        .dateOfBirth(dob)
+                        .address("TP. Hồ Chí Minh")
+                        .role(rolePatient)
+                        .emailVerified(true)
+                        .otpBypass(true)
+                        .isActive(true)
+                        .build())
+        );
     }
 
     private Role initRole(RoleType roleType, String description) {

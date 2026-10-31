@@ -108,7 +108,16 @@
 
                     <!-- Slots Selection -->
                     <div class="mb-4">
-                        <label class="form-label fw-semibold small mb-2">Chọn khung giờ còn trống <span class="text-danger">*</span></label>
+                        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
+                                <label class="form-label fw-semibold small mb-0">
+                                    Khung giờ khám trong ngày (30 phút/ca) <span class="text-danger">*</span>
+                                </label>
+                                <div class="mc-slot-legend" aria-label="Chú thích trạng thái khung giờ">
+                                    <span class="mc-slot-legend-item"><i class="bi bi-check-circle-fill" aria-hidden="true"></i> Còn trống</span>
+                                    <span class="mc-slot-legend-item"><i class="bi bi-lock-fill" aria-hidden="true"></i> Đã có người đặt</span>
+                                    <span class="mc-slot-legend-item"><i class="bi bi-clock-history" aria-hidden="true"></i> Đã qua giờ</span>
+                                </div>
+                            </div>
 
                         <div id="slotStatePrompt" role="status" aria-live="polite" class="alert alert-light border small text-muted text-center py-2">
                             Vui lòng chọn Bác sĩ và Ngày khám để hiển thị khung giờ.
@@ -152,7 +161,7 @@
 </div>
 
 <div layout:fragment="scripts">
-<script th:src="@{/js/slot-picker.js(v='3.0')}"></script>
+<script th:src="@{/js/slot-picker.js(v='4.0')}"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const specialtySelect = document.getElementById('specialtySelect');

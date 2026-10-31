@@ -236,10 +236,22 @@ a { text-underline-offset: .2em; }
 .mc-summary-row { display: flex; justify-content: space-between; gap: 1rem; padding-block: .75rem; border-bottom: 1px solid var(--mc-border); font-size: .875rem; }
 .mc-summary-row:last-of-type { border-bottom: 0; }
 .mc-summary-value { max-width: 65%; text-align: right; font-weight: 600; color: var(--mc-text); overflow-wrap: anywhere; }
-.slot-btn { min-height: 46px; padding: .65rem .5rem; border: 1px solid var(--mc-border-strong) !important; border-radius: var(--mc-radius-sm) !important; background: var(--mc-surface) !important; color: var(--mc-text) !important; font-size: .875rem; font-weight: 550; cursor: pointer; transition: background-color .18s ease, border-color .18s ease; }
+.slot-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .2rem; min-height: 58px; padding: .55rem .45rem; border: 1px solid var(--mc-border-strong) !important; border-radius: var(--mc-radius-sm) !important; background: var(--mc-surface) !important; color: var(--mc-text) !important; font-size: .875rem; font-weight: 550; cursor: pointer; transition: background-color .18s ease, border-color .18s ease; }
+.slot-btn-time { font-variant-numeric: tabular-nums; font-weight: 650; line-height: 1.2; }
+.slot-btn-status { display: inline-flex; align-items: center; gap: .25rem; font-size: .75rem; font-weight: 600; line-height: 1.15; }
+.slot-btn-available .slot-btn-status { color: var(--mc-success); }
 .slot-btn:hover:not(:disabled):not(.selected) { background: var(--mc-primary-soft) !important; border-color: var(--mc-primary) !important; }
 .slot-btn.selected { background: var(--mc-action-bg) !important; border-color: var(--mc-action-bg) !important; color: var(--mc-on-action) !important; }
+.slot-btn.selected .slot-btn-status { color: var(--mc-on-action); }
 .slot-btn:disabled { background: var(--mc-surface-subtle) !important; border-color: var(--mc-border) !important; color: var(--mc-text-muted) !important; opacity: 1; cursor: not-allowed; }
+.slot-btn-booked:disabled { border-style: dashed !important; border-color: var(--mc-danger) !important; background: var(--mc-surface-subtle) !important; }
+.slot-btn-booked .slot-btn-time { text-decoration: line-through; opacity: .75; }
+.slot-btn-booked .slot-btn-status { color: var(--mc-danger); }
+.slot-btn-expired .slot-btn-status { color: var(--mc-text-muted); }
+.mc-slot-legend { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem 1rem; font-size: .75rem; color: var(--mc-text-muted); }
+.mc-slot-legend-item { display: inline-flex; align-items: center; gap: .3rem; font-weight: 550; }
+.mc-slot-legend-item .bi-check-circle-fill { color: var(--mc-success); }
+.mc-slot-legend-item .bi-lock-fill { color: var(--mc-danger); }
 
 /* Provider information uses real portraits and comparison facts. */
 .mc-doctor-card { height: 100%; padding: 1.5rem; background: var(--mc-surface); border-block: 1px solid var(--mc-border); }

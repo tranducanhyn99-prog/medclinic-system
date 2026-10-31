@@ -22,7 +22,7 @@
 .mc-main-shell .navbar-med {
     padding: .7rem 0;
     border-bottom: 1px solid var(--mc-border);
-    background: var(--mc-bg);
+    background: var(--mc-surface);
 }
 .navbar-shell { min-height: 3rem; }
 .mc-main-shell .brand-name {
@@ -92,63 +92,372 @@
 .mc-main-shell .footer-med address p { margin: 0 0 .2rem; }
 .mc-main-shell .footer-bottom { display: flex; gap: .75rem 2rem; justify-content: space-between; padding: 1rem 0; border-top: 1px solid #446c84; color: #c6dce9; font-size: .75rem; }
 
-.mc-home-shell {
-    display: grid;
-    grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr);
-    grid-template-areas: "intro journey" "facts facts" "specialties specialties" "doctors doctors" "support support";
-    column-gap: 3.5rem;
-    padding-top: 3.5rem;
-    padding-bottom: 3rem;
+/* Homepage Architectural Backdrop & Surface Hierarchy */
+.mc-home-canvas {
+    position: relative;
+    background-color: var(--mc-bg);
+    background-image:
+        linear-gradient(to right, var(--mc-border) 1px, transparent 1px),
+        linear-gradient(to bottom, var(--mc-border) 1px, transparent 1px);
+    background-size: 48px 48px;
+    background-position: top center;
 }
-.mc-home-intro { grid-area: intro; padding-bottom: 3rem; }
-.mc-home-title { margin: 0 0 1.5rem; max-width: 18ch; font-size: clamp(2.2rem, 4.4vw, 3.6rem); font-weight: 650; letter-spacing: -.04em; line-height: 1.1; text-wrap: balance; }
-.mc-home-copy { max-width: 60ch; margin: 0 0 1.8rem; color: var(--mc-text-muted); font-size: 1.05rem; line-height: 1.7; }
-.mc-home-search label { display: block; margin-bottom: .5rem; font-size: .875rem; font-weight: 600; }
+.mc-home-canvas::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, var(--mc-primary-soft) 0%, var(--mc-bg) 420px, var(--mc-bg) 100%);
+    opacity: .88;
+    pointer-events: none;
+}
+.mc-home-shell {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: minmax(0, 1.55fr) minmax(0, 1.05fr);
+    grid-template-areas: "intro journey" "facts facts" "specialties specialties" "doctors doctors" "support support";
+    column-gap: 3rem;
+    padding-top: 3rem;
+    padding-bottom: 3.5rem;
+}
+.mc-home-intro {
+    grid-area: intro;
+    padding-bottom: 2.5rem;
+}
+.mc-home-status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: .55rem;
+    margin-bottom: 1.15rem;
+    padding: .38rem .85rem;
+    border: 1px solid var(--mc-border);
+    border-radius: 999px;
+    background: var(--mc-surface);
+    color: var(--mc-text-muted);
+    font-size: .8125rem;
+    font-weight: 550;
+}
+.mc-home-status-dot {
+    width: .5rem;
+    height: .5rem;
+    border-radius: 50%;
+    background: var(--mc-success);
+}
+.mc-home-title {
+    margin: 0 0 1.25rem;
+    max-width: 18ch;
+    font-size: clamp(2.2rem, 4.4vw, 3.6rem);
+    font-weight: 650;
+    letter-spacing: -.04em;
+    line-height: 1.1;
+    text-wrap: balance;
+}
+.mc-home-copy {
+    max-width: 60ch;
+    margin: 0 0 1.6rem;
+    color: var(--mc-text-muted);
+    font-size: 1.05rem;
+    line-height: 1.7;
+}
+.mc-home-search {
+    padding: 1.2rem 1.35rem;
+    border: 1px solid var(--mc-border);
+    border-radius: var(--mc-radius-md);
+    background: var(--mc-surface);
+}
+.mc-home-search label {
+    display: block;
+    margin-bottom: .55rem;
+    color: var(--mc-text);
+    font-size: .875rem;
+    font-weight: 600;
+}
+.mc-home-search label .bi { color: var(--mc-primary); }
 .mc-home-search-controls { display: flex; gap: .6rem; }
 .mc-home-search-controls .form-control { min-width: 0; min-height: 3rem; }
 .mc-home-search-controls .btn { flex-shrink: 0; }
-.mc-home-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem 1.5rem; margin-top: 1rem; }
-.mc-home-actions .btn { min-height: 3rem; padding-inline: 1.3rem; }
-.mc-home-text-link { color: var(--mc-primary); font-size: .875rem; font-weight: 550; text-decoration: none; }
+.mc-home-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem 1.5rem; margin-top: 1.15rem; }
+.mc-home-actions .btn { min-height: 3rem; padding-inline: 1.35rem; }
+.mc-home-text-link { color: var(--mc-primary); font-size: .875rem; font-weight: 600; text-decoration: none; }
 .mc-home-text-link:hover { color: var(--mc-primary-hover); text-decoration: underline; text-underline-offset: .25rem; }
 .mc-home-text-link .bi { margin-left: .3rem; }
-.mc-home-journey { grid-area: journey; margin-bottom: 3rem; padding-left: 2rem; border-left: 1px solid var(--mc-border); }
-.mc-home-journey h2 { margin: 0 0 1.5rem; font-size: 1.3rem; font-weight: 650; letter-spacing: -.025em; }
-.mc-home-steps { display: grid; gap: 1.4rem; padding: 0; margin: 0; list-style: none; }
-.mc-home-steps li { display: flex; align-items: flex-start; gap: 1rem; }
-.mc-home-step-number { flex: 0 0 2rem; color: var(--mc-primary); font-size: .875rem; font-weight: 600; font-variant-numeric: tabular-nums; }
-.mc-home-steps li h3 { font-size: .925rem; line-height: 1.4; }
-.mc-home-steps p { margin: 0; color: var(--mc-text-muted); font-size: .875rem; line-height: 1.55; }
-.mc-home-facts { grid-area: facts; display: flex; flex-wrap: wrap; gap: 1rem 2rem; padding: 1.2rem 0; border-block: 1px solid var(--mc-border); }
-.mc-home-facts p { margin: 0; color: var(--mc-text-muted); font-size: .875rem; }
-.mc-home-facts strong { color: var(--mc-text); font-weight: 650; font-variant-numeric: tabular-nums; }
-.mc-home-specialties { grid-area: specialties; padding-top: 2rem; }
-.mc-home-section-heading { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: .6rem 1rem; margin-bottom: 1.1rem; }
+
+/* Appointment Slip Journey Panel */
+.mc-home-journey {
+    grid-area: journey;
+    align-self: start;
+    margin-bottom: 2.5rem;
+    padding: 1.65rem 1.75rem;
+    border: 1px solid var(--mc-border);
+    border-radius: var(--mc-radius-md);
+    background: var(--mc-surface);
+}
+.mc-home-journey-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .75rem;
+    padding-bottom: 1rem;
+    margin-bottom: 1.25rem;
+    border-bottom: 1px solid var(--mc-border);
+}
+.mc-home-journey h2 { margin: 0; font-size: 1.125rem; font-weight: 650; letter-spacing: -.025em; }
+.mc-home-journey-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    padding: .25rem .6rem;
+    border-radius: var(--mc-radius-sm);
+    background: var(--mc-primary-soft);
+    color: var(--mc-primary);
+    font-size: .75rem;
+    font-weight: 600;
+}
+.mc-home-steps { display: grid; gap: 1.15rem; padding: 0; margin: 0; list-style: none; }
+.mc-home-steps li {
+    display: flex;
+    align-items: flex-start;
+    gap: .9rem;
+    padding-bottom: 1.05rem;
+    border-bottom: 1px dashed var(--mc-border);
+}
+.mc-home-steps li:last-child { padding-bottom: 0; border-bottom: 0; }
+.mc-home-step-number {
+    display: inline-grid;
+    place-items: center;
+    flex: 0 0 2.1rem;
+    width: 2.1rem;
+    height: 2.1rem;
+    border-radius: 50%;
+    background: var(--mc-primary-soft);
+    color: var(--mc-primary);
+    font-size: .8125rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+.mc-home-steps li h3 { font-size: .875rem; line-height: 1.35; }
+.mc-home-steps p { margin: 0; color: var(--mc-text-muted); font-size: .8125rem; line-height: 1.5; }
+
+/* Facts Ribbon */
+.mc-home-facts {
+    grid-area: facts;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+    padding: 1.15rem 1.5rem;
+    border: 1px solid var(--mc-border);
+    border-radius: var(--mc-radius-md);
+    background: var(--mc-surface);
+}
+.mc-home-fact-item {
+    display: flex;
+    align-items: center;
+    gap: .85rem;
+}
+.mc-home-fact-icon {
+    display: inline-grid;
+    place-items: center;
+    flex: 0 0 2.5rem;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: var(--mc-radius-sm);
+    background: var(--mc-primary-soft);
+    color: var(--mc-primary);
+    font-size: 1.15rem;
+}
+.mc-home-facts p { margin: 0; color: var(--mc-text-muted); font-size: .9rem; }
+.mc-home-facts strong { color: var(--mc-text); font-size: 1.05rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+
+/* Specialty Directory Tiles */
+.mc-home-specialties { grid-area: specialties; padding-top: 2.5rem; }
+.mc-home-section-heading { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: .6rem 1rem; margin-bottom: 1.25rem; }
 .mc-home-section-heading h2 { margin: 0; font-size: 1.55rem; font-weight: 650; letter-spacing: -.03em; }
-.mc-home-specialty-index { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); column-gap: 2rem; padding: 0; margin: 0; list-style: none; }
-.mc-home-specialty-index li { border-bottom: 1px solid var(--mc-border); }
-.mc-home-specialty-index a { display: flex; align-items: center; justify-content: space-between; gap: 1rem; min-height: 3.25rem; padding: .8rem 0; color: var(--mc-text); font-size: .95rem; text-decoration: none; transition: color 150ms ease; }
-.mc-home-specialty-index a:hover { color: var(--mc-primary); }
-.mc-home-specialty-index .bi { color: var(--mc-primary); }
-.mc-home-doctors { grid-area: doctors; padding-top: 2.5rem; }
-.mc-home-doctor-row { display: flex; align-items: center; gap: 1.5rem; padding: 1.25rem 0; border-top: 1px solid var(--mc-border); }
-.mc-home-doctor-row:last-child { border-bottom: 1px solid var(--mc-border); }
-.mc-home-doctor-portrait { display: grid; place-items: center; flex: 0 0 104px; width: 104px; height: 104px; overflow: hidden; border-radius: 4px; background: var(--mc-surface-subtle); color: var(--mc-primary); font-size: 2rem; }
+.mc-home-specialty-index {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+.mc-home-specialty-index li { display: flex; }
+.mc-home-specialty-index a {
+    display: flex;
+    align-items: flex-start;
+    gap: .95rem;
+    width: 100%;
+    padding: 1.15rem 1.25rem;
+    border: 1px solid var(--mc-border);
+    border-radius: var(--mc-radius-md);
+    background: var(--mc-surface);
+    color: var(--mc-text);
+    text-decoration: none;
+    transition: border-color 150ms ease, background-color 150ms ease;
+}
+.mc-home-specialty-index a:hover {
+    border-color: var(--mc-primary);
+    background: var(--mc-primary-soft);
+}
+.mc-home-specialty-icon {
+    display: inline-grid;
+    place-items: center;
+    flex: 0 0 2.6rem;
+    width: 2.6rem;
+    height: 2.6rem;
+    border-radius: var(--mc-radius-sm);
+    background: var(--mc-primary-soft);
+    color: var(--mc-primary);
+    font-size: 1.2rem;
+}
+.mc-home-specialty-index a:hover .mc-home-specialty-icon {
+    background: var(--mc-surface);
+}
+.mc-home-specialty-body {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: .25rem;
+}
+.mc-home-specialty-title {
+    font-size: 1rem;
+    font-weight: 650;
+    color: var(--mc-text);
+}
+.mc-home-specialty-desc {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    color: var(--mc-text-muted);
+    font-size: .8125rem;
+    line-height: 1.45;
+}
+.mc-home-specialty-arrow {
+    color: var(--mc-primary);
+    margin-top: .2rem;
+}
+
+/* Featured Doctors Grid */
+.mc-home-doctors { grid-area: doctors; padding-top: 2.75rem; }
+.mc-home-doctor-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+}
+.mc-home-doctor-row {
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+    padding: 1.15rem 1.25rem;
+    border: 1px solid var(--mc-border);
+    border-radius: var(--mc-radius-md);
+    background: var(--mc-surface);
+    transition: border-color 150ms ease;
+}
+.mc-home-doctor-row:hover { border-color: var(--mc-primary); }
+.mc-home-doctor-portrait {
+    display: grid;
+    place-items: center;
+    flex: 0 0 88px;
+    width: 88px;
+    height: 88px;
+    overflow: hidden;
+    border: 1px solid var(--mc-border);
+    border-radius: .5rem;
+    background: var(--mc-surface-subtle);
+    color: var(--mc-primary);
+    font-size: 1.75rem;
+}
 .mc-home-doctor-portrait img { width: 100%; height: 100%; object-fit: cover; }
 .mc-home-doctor-info { flex: 1; min-width: 0; }
-.mc-home-doctor-info h3 { margin: 0 0 .35rem; font-size: 1.15rem; font-weight: 650; line-height: 1.4; }
+.mc-home-doctor-info h3 { margin: 0 0 .25rem; font-size: 1.05rem; font-weight: 650; line-height: 1.35; }
 .mc-home-doctor-info h3 a { color: var(--mc-text); text-decoration: none; }
 .mc-home-doctor-info h3 a:hover { color: var(--mc-primary); text-decoration: underline; text-underline-offset: .2rem; }
-.mc-home-doctor-info p { margin: 0 0 .3rem; color: var(--mc-text-muted); font-size: .875rem; }
-.mc-home-doctor-details { display: flex; flex-wrap: wrap; gap: .25rem 1.5rem; }
-.mc-home-doctor-details strong { color: var(--mc-text); font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
-.mc-home-doctor-booking { display: inline-flex; align-items: center; gap: .8rem; flex-shrink: 0; min-height: 2.75rem; color: var(--mc-primary); font-size: .9rem; font-weight: 600; text-decoration: none; }
-.mc-home-doctor-booking:hover { color: var(--mc-primary-hover); text-decoration: underline; text-underline-offset: .25rem; }
-.mc-home-support { grid-area: support; display: flex; align-items: center; justify-content: space-between; gap: 1rem 2rem; padding-top: 2.5rem; }
-.mc-home-support h2 { margin: 0 0 .4rem; font-size: 1.1rem; font-weight: 650; }
+.mc-home-doctor-info p { margin: 0 0 .3rem; color: var(--mc-text-muted); font-size: .85rem; }
+.mc-home-doctor-specialty {
+    display: inline-block;
+    padding: .15rem .55rem;
+    border-radius: var(--mc-radius-sm);
+    background: var(--mc-primary-soft);
+    color: var(--mc-primary) !important;
+    font-size: .75rem !important;
+    font-weight: 600;
+}
+.mc-home-doctor-details { display: flex; flex-wrap: wrap; gap: .25rem 1rem; margin-top: .25rem !important; }
+.mc-home-doctor-details strong { color: var(--mc-text); font-weight: 650; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.mc-home-doctor-booking {
+    display: inline-flex;
+    align-items: center;
+    gap: .45rem;
+    flex-shrink: 0;
+    min-height: 2.5rem;
+    padding: .45rem .85rem;
+    border: 1px solid var(--mc-border);
+    border-radius: var(--mc-radius-sm);
+    background: var(--mc-surface-subtle);
+    color: var(--mc-primary);
+    font-size: .85rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background-color 150ms ease, border-color 150ms ease;
+}
+.mc-home-doctor-booking:hover {
+    border-color: var(--mc-primary);
+    background: var(--mc-primary-soft);
+    color: var(--mc-primary-hover);
+}
+
+/* Support Banner */
+.mc-home-support {
+    grid-area: support;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.25rem 2rem;
+    margin-top: 2.5rem;
+    padding: 1.5rem 1.75rem;
+    border: 1px solid var(--mc-border);
+    border-radius: var(--mc-radius-md);
+    background: var(--mc-surface);
+}
+.mc-home-support-copy {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+.mc-home-support-icon {
+    display: inline-grid;
+    place-items: center;
+    flex: 0 0 3rem;
+    width: 3rem;
+    height: 3rem;
+    border-radius: 50%;
+    background: var(--mc-primary-soft);
+    color: var(--mc-primary);
+    font-size: 1.35rem;
+}
+.mc-home-support h2 { margin: 0 0 .3rem; font-size: 1.1rem; font-weight: 650; }
 .mc-home-support p { margin: 0; color: var(--mc-text-muted); font-size: .875rem; }
-.mc-home-support-phone { display: inline-flex; align-items: center; gap: .6rem; min-height: 2.75rem; flex-shrink: 0; color: var(--mc-primary); font-size: 1.2rem; font-weight: 650; font-variant-numeric: tabular-nums; text-decoration: none; }
-.mc-home-support-phone:hover { color: var(--mc-primary-hover); text-decoration: underline; text-underline-offset: .25rem; }
+.mc-home-support-phone {
+    display: inline-flex;
+    align-items: center;
+    gap: .6rem;
+    min-height: 2.85rem;
+    padding: .5rem 1.15rem;
+    border-radius: var(--mc-radius-sm);
+    background: var(--mc-primary);
+    color: var(--mc-surface);
+    flex-shrink: 0;
+    font-size: 1.1rem;
+    font-weight: 650;
+    font-variant-numeric: tabular-nums;
+    text-decoration: none;
+}
+.mc-home-support-phone:hover {
+    background: var(--mc-primary-hover);
+    color: var(--mc-surface);
+}
 
 @media (min-width: 1200px) { .mc-main-shell .nav-menu-toggle { display: none; } }
 @media (max-width: 1199.98px) {
@@ -160,15 +469,16 @@
     .mc-main-shell .auth-actions { flex: 1; }
     .mc-main-shell .auth-actions .btn { flex: 1; justify-content: center; }
     .mc-home-shell { column-gap: 2rem; }
-    .mc-home-journey { padding-left: 1.5rem; }
     .mc-home-title { font-size: clamp(2.1rem, 4.3vw, 3.1rem); }
 }
 @media (max-width: 991.98px) {
     .mc-home-shell { grid-template-columns: 1fr; grid-template-areas: "intro" "facts" "specialties" "doctors" "journey" "support"; padding-top: 2rem; }
     .mc-home-title { max-width: 22ch; font-size: clamp(2rem, 5.5vw, 3rem); }
-    .mc-home-intro { padding-bottom: 2rem; }
-    .mc-home-journey { margin: 0; padding: 2.5rem 0 0; border-left: 0; }
-    .mc-home-steps { grid-template-columns: 1fr 1fr; }
+    .mc-home-intro { padding-bottom: 1.5rem; }
+    .mc-home-journey { margin: 2rem 0 0; }
+    .mc-home-facts { grid-template-columns: 1fr; }
+    .mc-home-specialty-index { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .mc-home-doctor-list { grid-template-columns: 1fr; }
     .mc-footer-content { grid-template-columns: 1fr; gap: 1.5rem; }
     .mc-main-shell .footer-bottom { flex-direction: column; }
 }
@@ -182,22 +492,21 @@
     .mc-home-actions { gap: .8rem; }
     .mc-home-actions .btn { width: 100%; justify-content: center; }
     .mc-home-actions .mc-home-text-link { display: inline-flex; align-items: center; min-height: 2.75rem; }
-    .mc-home-facts { gap: .5rem; flex-direction: column; }
     .mc-home-section-heading h2 { font-size: 1.35rem; }
-    .mc-home-specialty-index { grid-template-columns: 1fr 1fr; column-gap: 1.25rem; }
-    .mc-home-specialty-index a { font-size: .875rem; }
+    .mc-home-specialty-index { grid-template-columns: 1fr; }
     .mc-home-doctor-row { display: grid; grid-template-columns: 72px minmax(0, 1fr); align-items: start; gap: .75rem 1rem; }
     .mc-home-doctor-portrait { width: 72px; height: 88px; }
     .mc-home-doctor-info h3 { font-size: 1rem; }
     .mc-home-doctor-details { flex-direction: column; }
-    .mc-home-doctor-booking { grid-column: 2; }
-    .mc-home-steps { grid-template-columns: 1fr; gap: 1.25rem; }
+    .mc-home-doctor-booking { grid-column: 2; justify-self: start; }
     .mc-home-support { flex-direction: column; align-items: flex-start; }
 }
 @media (prefers-reduced-motion: reduce) {
     html { scroll-behavior: auto; }
     .mc-main-shell .nav-link-med,
-    .mc-home-specialty-index a { transition: none; }
+    .mc-home-specialty-index a,
+    .mc-home-doctor-row,
+    .mc-home-doctor-booking { transition: none; }
 }
 
 @font-face {

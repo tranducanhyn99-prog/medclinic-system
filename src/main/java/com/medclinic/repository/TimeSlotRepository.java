@@ -29,5 +29,11 @@ public interface TimeSlotRepository extends JpaRepository<TimeSlot, Long> {
                                                     @Param("workDate") LocalDate workDate,
                                                     @Param("status") SlotStatus status);
 
+    @Query("SELECT t FROM TimeSlot t " +
+           "JOIN t.schedule s " +
+           "WHERE s.doctor.id = :doctorId " +
+           "AND s.workDate = :workDate " +
+           "ORDER BY t.startTime ASC")
+    List<TimeSlot> findAllSlotsByDoctorAndDate(@Param("doctorId") Long doctorId,
+                                               @Param("workDate") LocalDate workDate);
 }
-

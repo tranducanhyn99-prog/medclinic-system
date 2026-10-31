@@ -1,5 +1,6 @@
 package com.medclinic.service;
 
+import com.medclinic.dto.SlotDto;
 import com.medclinic.entity.DoctorProfile;
 import com.medclinic.entity.DoctorSchedule;
 import com.medclinic.entity.TimeSlot;
@@ -85,6 +86,36 @@ public class ScheduleService {
         LocalTime now = LocalTime.now(businessClock);
         return timeSlotRepository.findAvailableSlotsByDoctorAndDate(doctorId, date, SlotStatus.AVAILABLE)
                 .stream().filter(slot -> !date.equals(today) || slot.getStartTime().isAfter(now)).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<SlotDto> getDisplaySlotDtos(Long doctorId, LocalDate date) {
+        LocalDate today = LocalDate.now(businessClock);
+        DoctorProfile doctor = doctorProfileRepository.findById(doctorId)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy hồ sơ bác sĩ"));
+        if (!com.medclinic.util.DoctorAvailability.acceptsBookings(doctor)
+                || date == null || date.isBefore(today) || date.isAfter(today.plusDays(14))) {
+            return List.of();
+        }
+        LocalTime now = LocalTime.now(businessClock);
+        return timeSlotRepository.findAllSlotsByDoctorAndDate(doctorId, date).stream()
+                .map(slot -> {
+                    String displayStatus;
+                    if (slot.getStatus() != SlotStatus.AVAILABLE) {
+                        displayStatus = "BOOKED";
+                    } else if (date.equals(today) && !slot.getStartTime().isAfter(now)) {
+                        displayStatus = "EXPIRED";
+                    } else {
+                        displayStatus = "AVAILABLE";
+                    }
+                    return SlotDto.builder()
+                            .id(slot.getId())
+                            .startTime(slot.getStartTime().toString())
+                            .endTime(slot.getEndTime().toString())
+                            .status(displayStatus)
+                            .build();
+                })
+                .toList();
     }
 
 }

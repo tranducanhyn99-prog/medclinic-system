@@ -7,116 +7,143 @@
 </head>
 <body>
 <div layout:fragment="content">
-    <div class="container mc-public-shell mc-home-shell">
-        <section class="mc-home-intro" aria-labelledby="homeHeroTitle">
-            <h1 id="homeHeroTitle" class="mc-home-title">Một lịch hẹn rõ ràng.<br>Chủ động trước buổi khám.</h1>
-            <p class="mc-home-copy">Chọn bác sĩ, ngày và khung giờ còn trống. Nhận phiếu hẹn QR để tiếp nhận tại quầy và theo dõi hồ sơ sau buổi khám.</p>
-
-            <form class="mc-home-search" th:action="@{/doctors}" method="get" role="search">
-                <label for="homeDoctorSearch">Tìm bác sĩ hoặc chuyên khoa</label>
-                <div class="mc-home-search-controls">
-                    <input id="homeDoctorSearch" name="keyword" type="search" class="form-control"
-                           placeholder="Tên bác sĩ, chức danh, chuyên khoa…" autocomplete="off">
-                    <button type="submit" class="btn btn-med-outline">Tìm bác sĩ</button>
+    <div class="mc-home-canvas">
+        <div class="container mc-public-shell mc-home-shell">
+            <section class="mc-home-intro" aria-labelledby="homeHeroTitle">
+                <div class="mc-home-status-pill">
+                    <span class="mc-home-status-dot" aria-hidden="true"></span>
+                    <span>Hệ thống đặt lịch &amp; tiếp nhận QR trực tuyến — Thứ 2 đến Thứ 7 (08:00 – 17:30)</span>
                 </div>
-            </form>
-            <div class="mc-home-actions">
-                <a th:href="@{/patient/booking}" class="btn btn-med-primary">Đặt lịch khám <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
-                <a th:href="@{/patient/appointments}" class="mc-home-text-link">Xem lịch hẹn của tôi</a>
+                <h1 id="homeHeroTitle" class="mc-home-title">Một lịch hẹn rõ ràng.<br>Chủ động trước buổi khám.</h1>
+                <p class="mc-home-copy">Chọn bác sĩ, ngày và khung giờ còn trống. Nhận phiếu hẹn QR để tiếp nhận tại quầy và theo dõi hồ sơ sau buổi khám.</p>
+
+                <form class="mc-home-search" th:action="@{/doctors}" method="get" role="search">
+                    <label for="homeDoctorSearch"><i class="bi bi-search me-1" aria-hidden="true"></i> Tìm bác sĩ hoặc chuyên khoa</label>
+                    <div class="mc-home-search-controls">
+                        <input id="homeDoctorSearch" name="keyword" type="search" class="form-control"
+                               placeholder="Tên bác sĩ, chức danh, chuyên khoa…" autocomplete="off">
+                        <button type="submit" class="btn btn-med-outline">Tìm bác sĩ</button>
+                    </div>
+                </form>
+                <div class="mc-home-actions">
+                    <a th:href="@{/patient/booking}" class="btn btn-med-primary">Đặt lịch khám <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+                    <a th:href="@{/patient/appointments}" class="mc-home-text-link">Xem lịch hẹn của tôi <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+                </div>
+            </section>
+
+            <section class="mc-home-journey" aria-labelledby="processTitle">
+                <div class="mc-home-journey-header">
+                    <h2 id="processTitle">Buổi khám của bạn</h2>
+                    <span class="mc-home-journey-tag"><i class="bi bi-qr-code-scan" aria-hidden="true"></i> Quy trình 4 bước</span>
+                </div>
+                <ol class="mc-home-steps">
+                    <li>
+                        <span class="mc-home-step-number" aria-hidden="true">01</span>
+                        <div>
+                            <h3 class="h6 fw-bold mb-2">Chọn bác sĩ và giờ khám</h3>
+                            <p>Tìm bác sĩ phù hợp và chọn khung giờ 30 phút còn trống.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <span class="mc-home-step-number" aria-hidden="true">02</span>
+                        <div>
+                            <h3 class="h6 fw-bold mb-2">Nhận phiếu hẹn QR</h3>
+                            <p>Phiếu hẹn và mã QR được lưu trong tài khoản của bạn.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <span class="mc-home-step-number" aria-hidden="true">03</span>
+                        <div>
+                            <h3 class="h6 fw-bold mb-2">Tiếp nhận tại quầy</h3>
+                            <p>Xuất trình phiếu hẹn để nhân viên cấp số thứ tự khám.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <span class="mc-home-step-number" aria-hidden="true">04</span>
+                        <div>
+                            <h3 class="h6 fw-bold mb-2">Khám và xem hồ sơ</h3>
+                            <p>Tra cứu kết quả và đơn thuốc sau khi bác sĩ lưu hồ sơ.</p>
+                        </div>
+                    </li>
+                </ol>
+            </section>
+
+            <div class="mc-home-facts" aria-label="Thông tin đặt lịch MedClinic">
+                <div class="mc-home-fact-item">
+                    <span class="mc-home-fact-icon" aria-hidden="true"><i class="bi bi-hospital"></i></span>
+                    <p><strong th:text="${#lists.size(specialties)}">6</strong> chuyên khoa đang hoạt động</p>
+                </div>
+                <div class="mc-home-fact-item">
+                    <span class="mc-home-fact-icon" aria-hidden="true"><i class="bi bi-person-vcard"></i></span>
+                    <p><strong th:text="${#lists.size(featuredDoctors)}">12</strong> bác sĩ chuyên khoa giàu kinh nghiệm</p>
+                </div>
+                <div class="mc-home-fact-item">
+                    <span class="mc-home-fact-icon" aria-hidden="true"><i class="bi bi-clock-history"></i></span>
+                    <p>Khung giờ khám tiêu chuẩn <strong>30 phút / ca</strong></p>
+                </div>
             </div>
-        </section>
 
-        <section class="mc-home-journey" aria-labelledby="processTitle">
-            <h2 id="processTitle">Buổi khám của bạn</h2>
-            <ol class="mc-home-steps">
-                <li>
-                    <span class="mc-home-step-number" aria-hidden="true">01</span>
-                    <div>
-                        <h3 class="h6 fw-bold mb-2">Chọn bác sĩ và giờ khám</h3>
-                        <p>Tìm bác sĩ phù hợp và chọn khung giờ 30 phút còn trống.</p>
-                    </div>
-                </li>
-                <li>
-                    <span class="mc-home-step-number" aria-hidden="true">02</span>
-                    <div>
-                        <h3 class="h6 fw-bold mb-2">Nhận phiếu hẹn QR</h3>
-                        <p>Phiếu hẹn và mã QR được lưu trong tài khoản của bạn.</p>
-                    </div>
-                </li>
-                <li>
-                    <span class="mc-home-step-number" aria-hidden="true">03</span>
-                    <div>
-                        <h3 class="h6 fw-bold mb-2">Tiếp nhận tại quầy</h3>
-                        <p>Xuất trình phiếu hẹn để nhân viên cấp số thứ tự khám.</p>
-                    </div>
-                </li>
-                <li>
-                    <span class="mc-home-step-number" aria-hidden="true">04</span>
-                    <div>
-                        <h3 class="h6 fw-bold mb-2">Khám và xem hồ sơ</h3>
-                        <p>Tra cứu kết quả và đơn thuốc sau khi bác sĩ lưu hồ sơ.</p>
-                    </div>
-                </li>
-            </ol>
-        </section>
+            <section class="mc-home-specialties" th:if="${!#lists.isEmpty(specialties)}" aria-labelledby="homeSpecialtiesTitle">
+                <div class="mc-home-section-heading">
+                    <h2 id="homeSpecialtiesTitle">Chọn chuyên khoa</h2>
+                    <a th:href="@{/doctors}" class="mc-home-text-link">Xem tất cả bác sĩ <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+                </div>
+                <ul class="mc-home-specialty-index">
+                    <li th:each="specialty : ${specialties}">
+                        <a th:href="@{/doctors(specialtyId=${specialty.id})}">
+                            <span class="mc-home-specialty-icon" aria-hidden="true">
+                                <i th:class="${'bi ' + (specialty.icon != null and !specialty.icon.isBlank() ? specialty.icon : 'bi-heart-pulse-fill')}"></i>
+                            </span>
+                            <span class="mc-home-specialty-body">
+                                <strong class="mc-home-specialty-title" th:text="${#strings.replace(specialty.name, 'Chuyên Khoa ', '')}">Chuyên khoa</strong>
+                                <small class="mc-home-specialty-desc" th:text="${specialty.description}">Mô tả chuyên khoa</small>
+                            </span>
+                            <i class="bi bi-arrow-right mc-home-specialty-arrow" aria-hidden="true"></i>
+                        </a>
+                    </li>
+                </ul>
+            </section>
 
-        <div class="mc-home-facts" aria-label="Thông tin đặt lịch MedClinic">
-            <p><strong th:text="${#lists.size(specialties)}">0</strong> chuyên khoa đang hoạt động</p>
-            <p><strong th:text="${#lists.size(featuredDoctors)}">0</strong> bác sĩ đang hoạt động</p>
-            <p>Khung giờ khám <strong>30 phút</strong></p>
+            <section class="mc-home-doctors" th:if="${!#lists.isEmpty(featuredDoctors)}" aria-labelledby="featuredDoctorsTitle">
+                <div class="mc-home-section-heading">
+                    <h2 id="featuredDoctorsTitle">Gặp bác sĩ của bạn</h2>
+                    <a th:href="@{/doctors}" class="mc-home-text-link">Xem toàn bộ bác sĩ <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+                </div>
+                <div class="mc-home-doctor-list">
+                    <article class="mc-home-doctor-row" th:each="doctor, iterStat : ${featuredDoctors}" th:if="${iterStat.index < 6}">
+                        <div class="mc-home-doctor-portrait">
+                            <img th:if="${doctor.user.avatarUrl != null and !doctor.user.avatarUrl.isBlank()}"
+                                 th:src="@{/api/public/doctors/{id}/avatar(id=${doctor.id},size=128)}"
+                                 th:srcset="@{/api/public/doctors/{id}/avatar(id=${doctor.id},size=128)} + ' 128w, ' + @{/api/public/doctors/{id}/avatar(id=${doctor.id},size=256)} + ' 256w, ' + @{/api/public/doctors/{id}/avatar(id=${doctor.id},size=512)} + ' 512w'"
+                                 sizes="(max-width: 575px) 72px, 104px" width="128" height="128" data-doctor-avatar
+                                 th:alt="${'Ảnh bác sĩ ' + doctor.user.fullName}" loading="lazy">
+                            <span data-avatar-fallback th:hidden="${doctor.user.avatarUrl != null and !doctor.user.avatarUrl.isBlank()}"
+                                  th:text="${#strings.substring(doctor.user.fullName, 0, 1)}" aria-hidden="true">B</span>
+                        </div>
+                        <div class="mc-home-doctor-info">
+                            <h3><a th:href="@{/doctors/{id}(id=${doctor.id})}" th:text="${doctor.title + ' ' + doctor.user.fullName}">Bác sĩ</a></h3>
+                            <p class="mc-home-doctor-specialty" th:text="${doctor.specialty.name}">Chuyên khoa</p>
+                            <p class="mc-home-doctor-details">
+                                <span><i class="bi bi-award me-1" aria-hidden="true"></i><span th:text="${doctor.experienceYears + ' năm kinh nghiệm'}">Kinh nghiệm</span></span>
+                                <span>Phí khám <strong th:text="${@money.vnd(doctor.consultationFee)}">Phí khám</strong></span>
+                            </p>
+                        </div>
+                        <a th:href="@{/patient/booking(doctorId=${doctor.id})}" class="mc-home-doctor-booking">Xem lịch khám <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+                    </article>
+                </div>
+            </section>
+
+            <section class="mc-home-support" aria-labelledby="hotlineCalloutTitle">
+                <div class="mc-home-support-copy">
+                    <span class="mc-home-support-icon" aria-hidden="true"><i class="bi bi-headset"></i></span>
+                    <div>
+                        <h2 id="hotlineCalloutTitle">Cần hướng dẫn đặt lịch hoặc tư vấn chuyên khoa?</h2>
+                        <p>Tổng đài lễ tân MedClinic sẵn sàng hỗ trợ tra cứu lịch bác sĩ và hướng dẫn thủ tục trước khi đến khám.</p>
+                    </div>
+                </div>
+                <a href="tel:19006868" class="mc-home-support-phone"><i class="bi bi-telephone-fill" aria-hidden="true"></i> 1900 6868</a>
+            </section>
         </div>
-
-        <section class="mc-home-specialties" th:if="${!#lists.isEmpty(specialties)}" aria-labelledby="homeSpecialtiesTitle">
-            <div class="mc-home-section-heading">
-                <h2 id="homeSpecialtiesTitle">Chọn chuyên khoa</h2>
-                <a th:href="@{/doctors}" class="mc-home-text-link">Xem tất cả bác sĩ <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
-            </div>
-            <ul class="mc-home-specialty-index">
-                <li th:each="specialty : ${specialties}">
-                    <a th:href="@{/doctors(specialtyId=${specialty.id})}">
-                        <span th:text="${#strings.replace(specialty.name, 'Chuyên Khoa ', '')}">Chuyên khoa</span>
-                        <i class="bi bi-arrow-right" aria-hidden="true"></i>
-                    </a>
-                </li>
-            </ul>
-        </section>
-
-        <section class="mc-home-doctors" th:if="${!#lists.isEmpty(featuredDoctors)}" aria-labelledby="featuredDoctorsTitle">
-            <div class="mc-home-section-heading">
-                <h2 id="featuredDoctorsTitle">Gặp bác sĩ của bạn</h2>
-                <a th:href="@{/doctors}" class="mc-home-text-link">Xem toàn bộ bác sĩ <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
-            </div>
-            <div class="mc-home-doctor-list">
-                <article class="mc-home-doctor-row" th:each="doctor, iterStat : ${featuredDoctors}" th:if="${iterStat.index < 3}">
-                    <div class="mc-home-doctor-portrait">
-                        <img th:if="${doctor.user.avatarUrl != null and !doctor.user.avatarUrl.isBlank()}"
-                             th:src="@{/api/public/doctors/{id}/avatar(id=${doctor.id},size=128)}"
-                             th:srcset="@{/api/public/doctors/{id}/avatar(id=${doctor.id},size=128)} + ' 128w, ' + @{/api/public/doctors/{id}/avatar(id=${doctor.id},size=256)} + ' 256w, ' + @{/api/public/doctors/{id}/avatar(id=${doctor.id},size=512)} + ' 512w'"
-                             sizes="(max-width: 575px) 72px, 104px" width="128" height="128" data-doctor-avatar
-                             th:alt="${'Ảnh bác sĩ ' + doctor.user.fullName}" loading="lazy">
-                        <span data-avatar-fallback th:hidden="${doctor.user.avatarUrl != null and !doctor.user.avatarUrl.isBlank()}"
-                              th:text="${#strings.substring(doctor.user.fullName, 0, 1)}" aria-hidden="true">B</span>
-                    </div>
-                    <div class="mc-home-doctor-info">
-                        <h3><a th:href="@{/doctors/{id}(id=${doctor.id})}" th:text="${doctor.title + ' ' + doctor.user.fullName}">Bác sĩ</a></h3>
-                        <p th:text="${doctor.specialty.name}">Chuyên khoa</p>
-                        <p class="mc-home-doctor-details">
-                            <span th:text="${doctor.experienceYears + ' năm kinh nghiệm'}">Kinh nghiệm</span>
-                            <span>Phí khám <strong th:text="${@money.vnd(doctor.consultationFee)}">Phí khám</strong></span>
-                        </p>
-                    </div>
-                    <a th:href="@{/patient/booking(doctorId=${doctor.id})}" class="mc-home-doctor-booking">Xem lịch khám <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
-                </article>
-            </div>
-        </section>
-
-        <section class="mc-home-support" aria-labelledby="hotlineCalloutTitle">
-            <div>
-                <h2 id="hotlineCalloutTitle">Cần hướng dẫn đặt lịch?</h2>
-                <p>Liên hệ phòng khám để được hỗ trợ trước khi đến khám.</p>
-            </div>
-            <a href="tel:19006868" class="mc-home-support-phone"><i class="bi bi-telephone" aria-hidden="true"></i> 1900 6868</a>
-        </section>
     </div>
 </div>
 </body>

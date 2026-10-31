@@ -17,8 +17,13 @@ public class ApiController {
     private final ScheduleService scheduleService;
 
     @GetMapping("/doctors/{doctorId}/slots")
-    public List<SlotDto> getDoctorSlots(@PathVariable Long doctorId, @RequestParam String date) {
+    public List<SlotDto> getDoctorSlots(@PathVariable Long doctorId,
+                                        @RequestParam String date,
+                                        @RequestParam(required = false, defaultValue = "false") boolean includeBooked) {
         LocalDate scheduleDate = LocalDate.parse(date);
+        if (includeBooked) {
+            return scheduleService.getDisplaySlotDtos(doctorId, scheduleDate);
+        }
         return scheduleService.getAvailableSlots(doctorId, scheduleDate).stream()
                 .map(slot -> SlotDto.builder()
                         .id(slot.getId())
@@ -27,5 +32,9 @@ public class ApiController {
                         .status(slot.getStatus().name())
                         .build())
                 .collect(Collectors.toList());
+    }
+
+    public List<SlotDto> getDoctorSlots(Long doctorId, String date) {
+        return getDoctorSlots(doctorId, date, false);
     }
 }
