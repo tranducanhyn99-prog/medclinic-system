@@ -175,12 +175,27 @@ public class AppointmentService {
         Appointment appointment = appointmentRepository.findByIdForUpdate(appointmentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy cuộc hẹn"));
 
+        if (appointment.getStatus() == AppointmentStatus.NO_SHOW) {
+            throw new BusinessLogicException("Lịch hẹn này đã quá giờ khám và chuyển sang trạng thái Quá giờ (Vắng mặt).");
+        }
+
         if (appointment.getStatus() != AppointmentStatus.CONFIRMED) {
             throw new BusinessLogicException("Chỉ có thể check-in cho cuộc hẹn đã xác nhận");
         }
 
         com.medclinic.util.ClinicalDatePolicy.requireProcessableDate(
                 appointment.getAppointmentDate(), businessClock, earlyClinicalProcessing);
+
+        LocalDate today = LocalDate.now(businessClock);
+        if (today.equals(appointment.getAppointmentDate())
+                && appointment.getTimeSlot() != null
+                && appointment.getTimeSlot().getEndTime() != null
+                && appointment.getTimeSlot().getEndTime().isBefore(LocalTime.now(businessClock))) {
+            appointment.setStatus(AppointmentStatus.NO_SHOW);
+            appointmentRepository.save(appointment);
+            throw new BusinessLogicException("Lịch hẹn đã quá giờ khám quy định và tự động chuyển sang trạng thái Quá giờ (Vắng mặt).");
+        }
+
         long nextSequence = dailyQueueCounterAllocator.allocateNext(appointment.getAppointmentDate());
         String queueNumber = String.format("STT-%02d", nextSequence);
         appointment.setQueueNumber(queueNumber);
@@ -190,6 +205,25 @@ public class AppointmentService {
         Appointment saved = appointmentRepository.save(appointment);
         publishQueueChange(saved, DoctorQueueChangedEvent.ChangeType.CHECKED_IN);
         return saved;
+    }
+
+    /**
+     * Tự động chuyển các lịch hẹn CONFIRMED trong ngày hôm nay đã qua giờ kết thúc (endTime < hiện tại)
+     * sang trạng thái NO_SHOW ("Quá giờ (Vắng mặt)").
+     */
+    @Transactional
+    public int expireOverdueTodayAppointments() {
+        LocalDate today = LocalDate.now(businessClock);
+        LocalTime now = LocalTime.now(businessClock);
+        List<Appointment> overdue = appointmentRepository.findOverdueConfirmedForDate(today, now);
+        if (overdue == null || overdue.isEmpty()) {
+            return 0;
+        }
+        for (Appointment appointment : overdue) {
+            appointment.setStatus(AppointmentStatus.NO_SHOW);
+        }
+        appointmentRepository.saveAll(overdue);
+        return overdue.size();
     }
 
     @Transactional(readOnly = true)

@@ -147,9 +147,11 @@ public class DataInitializer implements CommandLineRunner {
         // 6. Medicines catalog
         initMedicines();
 
-        // 7. Seed 10 Sample Clinical Cases ordered strictly by time (08:00 -> 15:00)
+        // 7. Seed 10 Sample Clinical Cases ordered strictly by time (08:00 -> 17:30)
         if (seedAppointments && appointmentRepository.count() == 0) {
             initSampleAppointments(rolePatient, mainPatient, doc1, doc2, doc3, doc6, today);
+        } else if (seedAppointments) {
+            syncLateAfternoonDemoSlots(today);
         }
 
         log.info("Khởi tạo Seed Data thành công! Hệ thống MedClinic đã sẵn sàng.");
@@ -287,23 +289,23 @@ public class DataInitializer implements CommandLineRunner {
         // CHƯA TIẾP NHẬN (CONFIRMED — Chờ bệnh nhân đến quầy Lễ tân Check-in)
         // =====================================================================
 
-        // 8. [13:30 - 14:00] MED-DEMO-008 | Chưa cấp STT | CHƯA TIẾP NHẬN (CONFIRMED — Lịch hẹn đầu giờ chiều)
+        // 8. [13:30 - 14:00] MED-DEMO-008 | Chưa cấp STT | Lịch đầu giờ chiều (sẽ tự động chuyển sang NO_SHOW khi qua 14:00)
         createSeededAppointment(
                 "MED-DEMO-008", bnKhang, docHung, today, ShiftType.AFTERNOON, LocalTime.of(13, 30),
                 "Tái khám kiểm tra huyết áp định kỳ và siêu âm tim Doppler theo lịch hẹn chiều",
                 AppointmentStatus.CONFIRMED, null, null, true,
                 yesterday.atTime(21, 10), yesterday.atTime(21, 10));
 
-        // 9. [14:00 - 14:30] MED-DEMO-009 | Chưa cấp STT | CHƯA TIẾP NHẬN (CONFIRMED — Lịch hẹn chiều của patient)
+        // 9. [16:30 - 17:00] MED-DEMO-009 | Chưa cấp STT | CHƯA TIẾP NHẬN (CONFIRMED — Lịch hẹn chiều của patient)
         createSeededAppointment(
-                "MED-DEMO-009", mainPatient, docNam, today, ShiftType.AFTERNOON, LocalTime.of(14, 0),
+                "MED-DEMO-009", mainPatient, docNam, today, ShiftType.AFTERNOON, LocalTime.of(16, 30),
                 "Nổi mẩn đỏ ngứa dị ứng vùng cổ và hai cánh tay sau khi ăn hải sản",
                 AppointmentStatus.CONFIRMED, null, null, true,
                 today.atTime(8, 35), today.atTime(8, 35));
 
-        // 10. [14:30 - 15:00] MED-DEMO-010 | Chưa cấp STT | CHƯA TIẾP NHẬN (CONFIRMED — Lịch hẹn chiều Cơ Xương Khớp)
+        // 10. [17:00 - 17:30] MED-DEMO-010 | Chưa cấp STT | CHƯA TIẾP NHẬN (CONFIRMED — Lịch hẹn chiều Cơ Xương Khớp)
         createSeededAppointment(
-                "MED-DEMO-010", bnQuan, docTuan, today, ShiftType.AFTERNOON, LocalTime.of(14, 30),
+                "MED-DEMO-010", bnQuan, docTuan, today, ShiftType.AFTERNOON, LocalTime.of(17, 0),
                 "Đau nhức khớp gối phải khi lên xuống cầu thang, cứng khớp buổi sáng",
                 AppointmentStatus.CONFIRMED, null, null, true,
                 today.atTime(9, 10), today.atTime(9, 10));
@@ -314,7 +316,42 @@ public class DataInitializer implements CommandLineRunner {
         counter.setNextSequence(6L);
         dailyQueueCounterRepository.save(counter);
 
-        log.info("Đã khởi tạo 10 ca khám mẫu (MED-DEMO-001 .. MED-DEMO-010) theo đúng trình tự thời gian 08:00 -> 15:00!");
+        log.info("Đã khởi tạo 10 ca khám mẫu (MED-DEMO-001 .. MED-DEMO-010) theo đúng trình tự thời gian 08:00 -> 17:30!");
+    }
+
+    private void syncLateAfternoonDemoSlots(LocalDate today) {
+        relocateDemoSlotIfNeeded("MED-DEMO-009", today, LocalTime.of(16, 30));
+        relocateDemoSlotIfNeeded("MED-DEMO-010", today, LocalTime.of(17, 0));
+        List<Appointment> overdue = appointmentRepository.findOverdueConfirmedForDate(today, LocalTime.now(businessClock));
+        if (!overdue.isEmpty()) {
+            overdue.forEach(a -> a.setStatus(AppointmentStatus.NO_SHOW));
+            appointmentRepository.saveAll(overdue);
+        }
+    }
+
+    private void relocateDemoSlotIfNeeded(String bookingCode, LocalDate today, LocalTime targetStart) {
+        appointmentRepository.findByBookingCode(bookingCode)
+                .flatMap(found -> appointmentRepository.findById(found.getId()))
+                .ifPresent(apt -> {
+                    if (apt.getTimeSlot() != null && !targetStart.equals(apt.getTimeSlot().getStartTime())) {
+                        TimeSlot oldSlot = apt.getTimeSlot();
+                        List<TimeSlot> allSlots = timeSlotRepository.findAllSlotsByDoctorAndDate(apt.getDoctor().getId(), today);
+                        allSlots.stream()
+                                .filter(s -> targetStart.equals(s.getStartTime()))
+                                .findFirst()
+                                .ifPresent(newSlot -> {
+                                    oldSlot.setStatus(SlotStatus.AVAILABLE);
+                                    timeSlotRepository.save(oldSlot);
+                                    newSlot.setStatus(SlotStatus.BOOKED);
+                                    timeSlotRepository.save(newSlot);
+                                    apt.setTimeSlot(newSlot);
+                                    if (apt.getStatus() == AppointmentStatus.NO_SHOW) {
+                                        apt.setStatus(AppointmentStatus.CONFIRMED);
+                                    }
+                                    appointmentRepository.save(apt);
+                                });
+                    }
+                });
     }
 
     private record SeedRxItem(Medicine medicine, int quantity, String dosage, String frequency, String instructions) {}

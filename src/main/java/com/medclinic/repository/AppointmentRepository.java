@@ -10,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
 import jakarta.persistence.LockModeType;
@@ -43,6 +44,12 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
     @Query("SELECT a FROM Appointment a WHERE a.id = :id")
     Optional<Appointment> findByIdForUpdate(@Param("id") Long id);
 
+    @EntityGraph(attributePaths = {"timeSlot"})
+    @Query("SELECT a FROM Appointment a WHERE a.appointmentDate = :date " +
+           "AND a.status = com.medclinic.enums.AppointmentStatus.CONFIRMED " +
+           "AND a.timeSlot.endTime < :now")
+    List<Appointment> findOverdueConfirmedForDate(@Param("date") LocalDate date, @Param("now") LocalTime now);
+
     @Query("SELECT a FROM Appointment a " +
            "WHERE a.appointmentDate = :date AND (LOWER(a.bookingCode) = LOWER(:keyword) " +
            "OR a.patient.phone = :keyword " +
@@ -63,4 +70,3 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
     @Query("SELECT a.doctor.specialty.name, COUNT(a) FROM Appointment a GROUP BY a.doctor.specialty.name")
     List<Object[]> countAppointmentsBySpecialtyGroup();
 }
-

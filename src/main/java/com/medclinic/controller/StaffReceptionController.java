@@ -38,6 +38,7 @@ public class StaffReceptionController {
             @RequestParam(value = "keyword", required = false) String keyword,
             @RequestParam(value = "status", required = false, defaultValue = "ALL") String status,
             Model model) {
+        appointmentService.expireOverdueTodayAppointments();
         java.util.List<com.medclinic.entity.Appointment> todayAppointments = appointmentService.findTodayAppointments();
         java.util.List<com.medclinic.entity.Appointment> appointments = todayAppointments;
 
@@ -63,6 +64,9 @@ public class StaffReceptionController {
         long countCancelled = todayAppointments.stream()
                 .filter(appointment -> appointment.getStatus() == com.medclinic.enums.AppointmentStatus.CANCELLED)
                 .count();
+        long countNoShow = todayAppointments.stream()
+                .filter(appointment -> appointment.getStatus() == com.medclinic.enums.AppointmentStatus.NO_SHOW)
+                .count();
 
         if (!"ALL".equalsIgnoreCase(status)) {
             appointments = appointments.stream()
@@ -78,10 +82,12 @@ public class StaffReceptionController {
         model.addAttribute("countInProgress", countInProgress);
         model.addAttribute("countCompleted", countCompleted);
         model.addAttribute("countCancelled", countCancelled);
+        model.addAttribute("countNoShow", countNoShow);
         return "staff/reception";
     }
     @GetMapping("/reception/search")
     public String searchAppointments(@RequestParam("keyword") String keyword, Model model) {
+        appointmentService.expireOverdueTodayAppointments();
         model.addAttribute("appointments", appointmentService.searchForReception(keyword, LocalDate.now(businessClock)));
         model.addAttribute("keyword", keyword);
         return "staff/reception";

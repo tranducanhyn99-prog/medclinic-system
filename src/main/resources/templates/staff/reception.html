@@ -108,8 +108,9 @@
             <select name="status" id="receptionHistoryFilter" class="form-select">
                 <option value="ALL" th:selected="${currentStatus == 'ALL'}" th:text="${(clinicalDemoMode == true ? 'Tất cả lịch demo (' : 'Tất cả hôm nay (') + countAll + ')'}">Tất cả hôm nay</option>
                 <option value="COMPLETED" th:selected="${currentStatus == 'COMPLETED'}" th:text="${'Đã khám xong (' + countCompleted + ')'}">Đã khám xong</option>
+                <option value="NO_SHOW" th:selected="${currentStatus == 'NO_SHOW'}" th:text="${'Quá giờ / Vắng mặt (' + (countNoShow != null ? countNoShow : 0) + ')'}">Quá giờ / Vắng mặt</option>
                 <option value="CANCELLED" th:selected="${currentStatus == 'CANCELLED'}" th:text="${'Đã hủy (' + countCancelled + ')'}">Đã hủy</option>
-                <option value="" disabled th:if="${currentStatus != 'ALL' and currentStatus != 'COMPLETED' and currentStatus != 'CANCELLED'}" selected>Tất cả / lịch sử</option>
+                <option value="" disabled th:if="${currentStatus != 'ALL' and currentStatus != 'COMPLETED' and currentStatus != 'NO_SHOW' and currentStatus != 'CANCELLED'}" selected>Tất cả / lịch sử</option>
             </select>
             <button class="btn btn-outline-secondary" type="submit">Xem</button>
         </form>
@@ -208,11 +209,13 @@
                                       th:classappend="${apt.status.name() == 'CONFIRMED' ? 'bg-primary-subtle text-primary border border-primary' :
                                                        (apt.status.name() == 'CHECKED_IN' ? 'bg-warning-subtle text-warning border border-warning' :
                                                        (apt.status.name() == 'IN_PROGRESS' ? 'bg-info-subtle text-info border border-info' :
-                                                       (apt.status.name() == 'COMPLETED' ? 'bg-success-subtle text-success border border-success' : 'bg-danger-subtle text-danger border border-danger')))}">
+                                                       (apt.status.name() == 'COMPLETED' ? 'bg-success-subtle text-success border border-success' :
+                                                       (apt.status.name() == 'NO_SHOW' ? 'bg-secondary-subtle text-dark border border-secondary' : 'bg-danger-subtle text-danger border border-danger'))))}">
                                     <i th:class="${apt.status.name() == 'CONFIRMED' ? 'bi bi-clock me-1' :
                                                  (apt.status.name() == 'CHECKED_IN' ? 'bi bi-person-check-fill me-1' :
                                                  (apt.status.name() == 'IN_PROGRESS' ? 'bi bi-heart-pulse-fill me-1' :
-                                                 (apt.status.name() == 'COMPLETED' ? 'bi bi-check-circle-fill me-1' : 'bi bi-x-circle-fill me-1')))}"></i>
+                                                 (apt.status.name() == 'COMPLETED' ? 'bi bi-check-circle-fill me-1' :
+                                                 (apt.status.name() == 'NO_SHOW' ? 'bi bi-clock-history me-1' : 'bi bi-x-circle-fill me-1'))))}"></i>
                                     <span th:text="${apt.status.name() == 'CONFIRMED' ? 'Chờ tiếp nhận' : apt.status.displayName}">Đã tiếp nhận</span>
                                 </span>
                             </td>
@@ -254,6 +257,20 @@
                                     <a th:href="@{/staff/billing}" class="btn btn-sm btn-outline-success">
                                         <i class="bi bi-credit-card me-1"></i> Thu viện phí
                                     </a>
+                                </div>
+
+                                <!-- If NO_SHOW -->
+                                <div th:if="${apt.status.name() == 'NO_SHOW'}">
+                                    <span class="badge bg-secondary-subtle text-secondary border border-secondary px-2.5 py-1.5">
+                                        <i class="bi bi-calendar-x me-1"></i> Quá giờ — Không tiếp nhận
+                                    </span>
+                                </div>
+
+                                <!-- If CANCELLED -->
+                                <div th:if="${apt.status.name() == 'CANCELLED'}">
+                                    <span class="badge bg-danger-subtle text-danger border border-danger px-2.5 py-1.5">
+                                        <i class="bi bi-x-circle me-1"></i> Đã hủy lịch
+                                    </span>
                                 </div>
                             </td>
 

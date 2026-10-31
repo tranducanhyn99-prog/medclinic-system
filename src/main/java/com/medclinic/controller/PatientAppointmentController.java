@@ -33,6 +33,7 @@ public class PatientAppointmentController {
 
     @GetMapping("/appointments")
     public String listAppointments(@AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
+        appointmentService.expireOverdueTodayAppointments();
         List<Appointment> appointments = appointmentService.findByPatient(userDetails.getId());
         model.addAttribute("appointments", appointments);
         return "patient/appointments";
@@ -40,6 +41,7 @@ public class PatientAppointmentController {
 
     @GetMapping("/appointments/{id}")
     public String appointmentDetail(@PathVariable Long id, @AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
+        appointmentService.expireOverdueTodayAppointments();
         Appointment appointment = appointmentService.findById(id);
         
         if (!appointment.getPatient().getId().equals(userDetails.getId())) {

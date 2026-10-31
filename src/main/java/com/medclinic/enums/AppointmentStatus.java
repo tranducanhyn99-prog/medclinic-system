@@ -6,7 +6,7 @@ public enum AppointmentStatus {
     IN_PROGRESS("Đang khám", "badge bg-secondary"),
     COMPLETED("Đã hoàn tất", "badge bg-success"),
     CANCELLED("Đã hủy", "badge bg-danger"),
-    NO_SHOW("Vắng mặt", "badge bg-dark");
+    NO_SHOW("Quá giờ (Vắng mặt)", "badge bg-dark");
 
     private final String displayName;
     private final String badgeClass;
@@ -24,4 +24,3 @@ public enum AppointmentStatus {
         return badgeClass;
     }
 }
-
