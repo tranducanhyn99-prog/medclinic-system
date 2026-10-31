@@ -147,14 +147,38 @@ public class DataInitializer implements CommandLineRunner {
         // 6. Medicines catalog
         initMedicines();
 
-        // 7. Seed 10 Sample Clinical Cases ordered strictly by time (08:00 -> 17:30)
-        if (seedAppointments && appointmentRepository.count() == 0) {
+        // 7. Seed 10 Sample Clinical Cases ordered strictly by time (08:30 -> 17:30)
+        if (seedAppointments) {
+            cleanupExistingDemoAppointments();
             initSampleAppointments(rolePatient, mainPatient, doc1, doc2, doc3, doc6, today);
-        } else if (seedAppointments) {
-            syncLateAfternoonDemoSlots(today);
         }
 
         log.info("Khởi tạo Seed Data thành công! Hệ thống MedClinic đã sẵn sàng.");
+    }
+
+    private void cleanupExistingDemoAppointments() {
+        jdbcTemplate.update(
+                "UPDATE time_slots SET status = 'AVAILABLE' WHERE id IN (" +
+                "SELECT time_slot_id FROM appointments WHERE booking_code LIKE 'MED-DEMO-%' AND time_slot_id IS NOT NULL)");
+        jdbcTemplate.update(
+                "DELETE FROM prescription_items WHERE prescription_id IN (" +
+                "SELECT p.id FROM prescriptions p JOIN medical_records mr ON p.medical_record_id = mr.id " +
+                "JOIN appointments a ON mr.appointment_id = a.id WHERE a.booking_code LIKE 'MED-DEMO-%')");
+        jdbcTemplate.update(
+                "DELETE FROM prescriptions WHERE medical_record_id IN (" +
+                "SELECT mr.id FROM medical_records mr JOIN appointments a ON mr.appointment_id = a.id " +
+                "WHERE a.booking_code LIKE 'MED-DEMO-%')");
+        jdbcTemplate.update(
+                "DELETE FROM medical_records WHERE appointment_id IN (" +
+                "SELECT id FROM appointments WHERE booking_code LIKE 'MED-DEMO-%')");
+        jdbcTemplate.update(
+                "DELETE FROM bank_transfer_payments WHERE invoice_id IN (" +
+                "SELECT i.id FROM invoices i JOIN appointments a ON i.appointment_id = a.id " +
+                "WHERE a.booking_code LIKE 'MED-DEMO-%')");
+        jdbcTemplate.update(
+                "DELETE FROM invoices WHERE appointment_id IN (" +
+                "SELECT id FROM appointments WHERE booking_code LIKE 'MED-DEMO-%')");
+        jdbcTemplate.update("DELETE FROM appointments WHERE booking_code LIKE 'MED-DEMO-%'");
     }
 
     private void initSampleAppointments(
@@ -184,17 +208,17 @@ public class DataInitializer implements CommandLineRunner {
         LocalDate yesterday = today.minusDays(1);
 
         // =====================================================================
-        // DÒNG THỜI GIAN CA SÁNG (08:00 -> 11:30):
-        // Các khung giờ đầu sáng đã khám xong (COMPLETED) -> Khung giờ giữa sáng đang khám (IN_PROGRESS)
-        // -> Khung giờ cuối sáng đã check-in đang ngồi chờ (CHECKED_IN)
+        // PHẦN 1: CÁC CA ĐÃ DIỄN RA TRONG BUỔI SÁNG & ĐẦU GIỜ CHIỀU (08:30 -> 16:00)
+        // Bao gồm: Đã hoàn tất + Đã thu tiền (PAID), Đã hủy (CANCELLED),
+        // Quá giờ / Vắng mặt (NO_SHOW), và Vừa khám xong chờ thu ngân (UNPAID).
         // =====================================================================
 
-        // 1. [08:00 - 08:30] MED-DEMO-001 | STT-001 | ĐÃ KHÁM HOÀN TẤT (COMPLETED) + ĐÃ THU TIỀN (PAID lúc 08:28)
+        // 1. [08:30 - 09:00] MED-DEMO-001 | STT-01 | ĐÃ KHÁM HOÀN TẤT (COMPLETED lúc 08:52) + ĐÃ THU TIỀN (PAID lúc 08:58)
         Appointment appt1 = createSeededAppointment(
-                "MED-DEMO-001", mainPatient, docHung, today, ShiftType.MORNING, LocalTime.of(8, 0),
+                "MED-DEMO-001", mainPatient, docHung, today, ShiftType.MORNING, LocalTime.of(8, 30),
                 "Đo huyết áp tại nhà tăng cao 150/95 mmHg, đau đầu nhẹ, kiểm tra tim mạch tổng quát",
-                AppointmentStatus.COMPLETED, "STT-001", 1L, true,
-                yesterday.atTime(15, 10), today.atTime(8, 22));
+                AppointmentStatus.COMPLETED, "STT-01", 1L, true,
+                yesterday.atTime(15, 10), today.atTime(8, 52));
         attachMedicalRecordAndInvoice(
                 appt1,
                 "Huyết áp đo tại phòng khám 150/95 mmHg, mạch 84 lần/phút, đau mỏi vùng gáy nhẹ, tiếng tim T1 T2 đều rõ.",
@@ -208,46 +232,24 @@ public class DataInitializer implements CommandLineRunner {
                 "HD-DEMO-001",
                 PaymentStatus.PAID,
                 PaymentMethod.CASH,
-                today.atTime(8, 22),
-                today.atTime(8, 28));
+                today.atTime(8, 52),
+                today.atTime(8, 58));
 
-        // 2. [08:30 - 09:00] MED-DEMO-002 | STT-002 | ĐÃ KHÁM HOÀN TẤT (COMPLETED lúc 08:55) + CHỜ THU NGÂN (UNPAID)
-        Appointment appt2 = createSeededAppointment(
-                "MED-DEMO-002", bnViet, docHung, today, ShiftType.MORNING, LocalTime.of(8, 30),
-                "Đau thắt ngực ổn định khi đi bộ xa, tê mỏi vai trái, theo dõi thiếu máu cơ tim",
-                AppointmentStatus.COMPLETED, "STT-002", 2L, true,
-                yesterday.atTime(16, 5), today.atTime(8, 55));
-        attachMedicalRecordAndInvoice(
-                appt2,
-                "Đau tức sau xương ức từng cơn ngắn 3-5 phút khi gắng sức, giảm khi nghỉ ngơi; HA 140/90 mmHg, nhịp tim 78 chu kỳ/phút.",
-                "Cơn đau thắt ngực ổn định (I20.8) - Theo dõi bệnh tim thiếu máu cục bộ mạn tính.",
-                "Tránh vận động gắng sức đột ngột, kiêng rượu bia và thuốc lá, tái khám ngay nếu cơn đau kéo dài trên 15 phút.",
-                today.plusDays(7),
-                List.of(
-                        new SeedRxItem(amlodipine, 30, "1 viên / lần", "1 lần / ngày (Buổi sáng)", "Uống cố định vào 7h sáng"),
-                        new SeedRxItem(panadol, 2, "1 viên / lần", "Khi đau đầu nhiều (tối đa 2 lần/ngày)", "Uống sau khi ăn no")
-                ),
-                "HD-DEMO-002",
-                PaymentStatus.UNPAID,
-                PaymentMethod.CASH,
-                today.atTime(8, 55),
-                null);
-
-        // 3. [09:00 - 09:30] MED-DEMO-003 | Không cấp STT | ĐÃ HỦY (CANCELLED lúc 07:30 sáng trước giờ khám)
+        // 2. [09:30 - 10:00] MED-DEMO-002 | Không cấp STT | ĐÃ HỦY (CANCELLED lúc 08:15 sáng trước giờ hẹn)
         createSeededAppointment(
-                "MED-DEMO-003", bnLanAnh, docTuan, today, ShiftType.MORNING, LocalTime.of(9, 0),
-                "Đau mỏi vùng cột sống thắt lưng lan xuống chân trái (Bệnh nhân báo bận đột xuất xin hủy lịch lúc 07:30)",
+                "MED-DEMO-002", bnLanAnh, docTuan, today, ShiftType.MORNING, LocalTime.of(9, 30),
+                "Đau mỏi vùng cột sống thắt lưng lan xuống chân trái (Bệnh nhân báo bận đột xuất xin hủy lịch lúc 08:15)",
                 AppointmentStatus.CANCELLED, null, null, false,
-                yesterday.atTime(17, 20), today.atTime(7, 30));
+                yesterday.atTime(16, 20), today.atTime(8, 15));
 
-        // 4. [09:30 - 10:00] MED-DEMO-004 | STT-003 | ĐÃ KHÁM HOÀN TẤT (COMPLETED lúc 09:52) + ĐÃ THU TIỀN (PAID lúc 09:58)
-        Appointment appt4 = createSeededAppointment(
-                "MED-DEMO-004", bnDuyen, docMai, today, ShiftType.MORNING, LocalTime.of(9, 30),
+        // 3. [10:30 - 11:00] MED-DEMO-003 | STT-02 | ĐÃ KHÁM HOÀN TẤT (COMPLETED lúc 10:54) + ĐÃ THU TIỀN (PAID lúc 11:00)
+        Appointment appt3 = createSeededAppointment(
+                "MED-DEMO-003", bnDuyen, docMai, today, ShiftType.MORNING, LocalTime.of(10, 30),
                 "Đau nhức răng hàm dưới bên phải khi ăn đồ lạnh, kiểm tra viêm tủy răng số 46",
-                AppointmentStatus.COMPLETED, "STT-003", 3L, true,
-                yesterday.atTime(18, 0), today.atTime(9, 52));
+                AppointmentStatus.COMPLETED, "STT-02", 2L, true,
+                yesterday.atTime(18, 0), today.atTime(10, 54));
         attachMedicalRecordAndInvoice(
-                appt4,
+                appt3,
                 "Răng số 46 sâu ngà sâu sát tủy, gõ dọc đau nhẹ, lợi quanh cổ răng sưng đỏ nhẹ, chưa lung lay.",
                 "Viêm tủy răng có hồi phục răng 46 (K04.0) kèm viêm lợi khu trú.",
                 "Vệ sinh răng miệng bằng nước muối sinh lý sau ăn, tránh nhai đồ cứng bên phải, hẹn tái khám hàn phục hồi.",
@@ -256,102 +258,91 @@ public class DataInitializer implements CommandLineRunner {
                         new SeedRxItem(augmentin, 14, "1 viên / lần", "2 lần / ngày (Sáng, Tối)", "Uống ngay sau bữa ăn"),
                         new SeedRxItem(panadol, 1, "1 viên / lần", "2 lần / ngày khi đau nhức", "Uống sau ăn no")
                 ),
-                "HD-DEMO-003",
+                "HD-DEMO-002",
                 PaymentStatus.PAID,
                 PaymentMethod.CASH,
-                today.atTime(9, 52),
-                today.atTime(9, 58));
+                today.atTime(10, 54),
+                today.atTime(11, 0));
 
-        // 5. [10:00 - 10:30] MED-DEMO-005 | STT-004 | ĐANG KHÁM (IN_PROGRESS — Bác sĩ Hùng bắt đầu khám lúc 10:05)
+        // 4. [13:30 - 14:00] MED-DEMO-004 | Không cấp STT | QUÁ GIỜ / VẮNG MẶT (NO_SHOW — Quá 14:00 không tới tiếp nhận)
         createSeededAppointment(
-                "MED-DEMO-005", bnBao, docHung, today, ShiftType.MORNING, LocalTime.of(10, 0),
+                "MED-DEMO-004", bnKhang, docHung, today, ShiftType.AFTERNOON, LocalTime.of(13, 30),
+                "Tái khám kiểm tra huyết áp định kỳ và siêu âm tim Doppler (Quá giờ hẹn 14:00 bệnh nhân không tới tiếp nhận)",
+                AppointmentStatus.NO_SHOW, null, null, true,
+                yesterday.atTime(20, 30), today.atTime(14, 0));
+
+        // 5. [15:30 - 16:00] MED-DEMO-005 | STT-03 | ĐÃ KHÁM HOÀN TẤT (COMPLETED vừa xong lúc 15:56) + CHỜ THU NGÂN (UNPAID)
+        Appointment appt5 = createSeededAppointment(
+                "MED-DEMO-005", bnViet, docHung, today, ShiftType.AFTERNOON, LocalTime.of(15, 30),
+                "Đau thắt ngực ổn định khi đi bộ xa, tê mỏi vai trái, theo dõi thiếu máu cơ tim",
+                AppointmentStatus.COMPLETED, "STT-03", 3L, true,
+                yesterday.atTime(21, 15), today.atTime(15, 56));
+        attachMedicalRecordAndInvoice(
+                appt5,
+                "Đau tức sau xương ức từng cơn ngắn 3-5 phút khi gắng sức, giảm khi nghỉ ngơi; HA 140/90 mmHg, nhịp tim 78 chu kỳ/phút.",
+                "Cơn đau thắt ngực ổn định (I20.8) - Theo dõi bệnh tim thiếu máu cục bộ mạn tính.",
+                "Tránh vận động gắng sức đột ngột, kiêng rượu bia và thuốc lá, tái khám ngay nếu cơn đau kéo dài trên 15 phút.",
+                today.plusDays(7),
+                List.of(
+                        new SeedRxItem(amlodipine, 30, "1 viên / lần", "1 lần / ngày (Buổi sáng)", "Uống cố định vào 7h sáng"),
+                        new SeedRxItem(panadol, 2, "1 viên / lần", "Khi đau đầu nhiều (tối đa 2 lần/ngày)", "Uống sau khi ăn no")
+                ),
+                "HD-DEMO-003",
+                PaymentStatus.UNPAID,
+                PaymentMethod.CASH,
+                today.atTime(15, 56),
+                null);
+
+        // =====================================================================
+        // PHẦN 2: CÁC CA ĐANG DIỄN RA & SẮP TỚI CUỐI CHIỀU (16:00 -> 17:30)
+        // Khớp trực tiếp với khung giờ hiện tại (~16:20):
+        // - Ca 16:00 - 16:30 đang khám trong buồng khám (IN_PROGRESS)
+        // - 2 ca 16:30 - 17:00 bệnh nhân đến sớm 10-15 phút đã Check-in ngồi chờ (CHECKED_IN)
+        // - 2 ca 17:00 - 17:30 cuối chiều chưa tới giờ nên đang Chờ tiếp nhận (CONFIRMED)
+        // =====================================================================
+
+        // 6. [16:00 - 16:30] MED-DEMO-006 | STT-04 | ĐANG KHÁM (IN_PROGRESS — Bác sĩ Hùng gọi vào khám lúc 16:05)
+        createSeededAppointment(
+                "MED-DEMO-006", bnBao, docHung, today, ShiftType.AFTERNOON, LocalTime.of(16, 0),
                 "Chóng mặt khi thay đổi tư thế, mệt mỏi, tiền sử rối loạn lipid máu cần kiểm tra",
-                AppointmentStatus.IN_PROGRESS, "STT-004", 4L, true,
-                yesterday.atTime(19, 15), today.atTime(10, 5));
+                AppointmentStatus.IN_PROGRESS, "STT-04", 4L, true,
+                today.atTime(8, 20), today.atTime(16, 5));
 
-        // 6. [10:30 - 11:00] MED-DEMO-006 | STT-005 | ĐÃ TIẾP NHẬN - CHỜ KHÁM (CHECKED_IN lúc 10:15, chờ sau STT-004)
+        // 7. [16:30 - 17:00] MED-DEMO-007 | STT-05 | ĐÃ TIẾP NHẬN - CHỜ KHÁM (CHECKED_IN lúc 16:12, chờ sau STT-04)
         createSeededAppointment(
-                "MED-DEMO-006", bnTam, docHung, today, ShiftType.MORNING, LocalTime.of(10, 30),
-                "Huyết áp tăng cao 155/95 mmHg kèm đau đầu vùng chẩm buổi sáng",
-                AppointmentStatus.CHECKED_IN, "STT-005", 5L, true,
-                yesterday.atTime(20, 0), today.atTime(10, 15));
+                "MED-DEMO-007", bnTam, docHung, today, ShiftType.AFTERNOON, LocalTime.of(16, 30),
+                "Huyết áp tăng cao 155/95 mmHg kèm đau đầu vùng chẩm",
+                AppointmentStatus.CHECKED_IN, "STT-05", 5L, true,
+                today.atTime(9, 10), today.atTime(16, 12));
 
-        // 7. [11:00 - 11:30] MED-DEMO-007 | STT-006 | ĐÃ TIẾP NHẬN - CHỜ KHÁM (CHECKED_IN lúc 10:45, chờ khám kế tiếp)
+        // 8. [16:30 - 17:00] MED-DEMO-008 | STT-06 | ĐÃ TIẾP NHẬN - CHỜ KHÁM (CHECKED_IN lúc 16:16 tại phòng Răng Hàm Mặt)
         createSeededAppointment(
-                "MED-DEMO-007", bnThao, docHung, today, ShiftType.MORNING, LocalTime.of(11, 0),
-                "Nhịp tim nhanh 105 lần/phút, khó thở nhẹ khi leo cầu thang",
-                AppointmentStatus.CHECKED_IN, "STT-006", 6L, true,
-                today.atTime(7, 40), today.atTime(10, 45));
+                "MED-DEMO-008", bnThao, docMai, today, ShiftType.AFTERNOON, LocalTime.of(16, 30),
+                "Ê buốt răng cửa hàm trên, kiểm tra men răng và lấy cao răng siêu âm",
+                AppointmentStatus.CHECKED_IN, "STT-06", 6L, true,
+                today.atTime(10, 5), today.atTime(16, 16));
 
-        // =====================================================================
-        // DÒNG THỜI GIAN CA CHIỀU (13:30 -> 15:00):
-        // Vì là các khung giờ buổi chiều chưa diễn ra nên cả 3 ca đều ở trạng thái
-        // CHƯA TIẾP NHẬN (CONFIRMED — Chờ bệnh nhân đến quầy Lễ tân Check-in)
-        // =====================================================================
-
-        // 8. [13:30 - 14:00] MED-DEMO-008 | Chưa cấp STT | Lịch đầu giờ chiều (sẽ tự động chuyển sang NO_SHOW khi qua 14:00)
+        // 9. [17:00 - 17:30] MED-DEMO-009 | Chưa cấp STT | CHƯA TIẾP NHẬN (CONFIRMED — Lịch hẹn cuối chiều 17:00 của BS. Hùng)
         createSeededAppointment(
-                "MED-DEMO-008", bnKhang, docHung, today, ShiftType.AFTERNOON, LocalTime.of(13, 30),
-                "Tái khám kiểm tra huyết áp định kỳ và siêu âm tim Doppler theo lịch hẹn chiều",
+                "MED-DEMO-009", bnQuan, docHung, today, ShiftType.AFTERNOON, LocalTime.of(17, 0),
+                "Nhịp tim nhanh 102 lần/phút, hồi hộp đánh trống ngực khi làm việc căng thẳng",
                 AppointmentStatus.CONFIRMED, null, null, true,
-                yesterday.atTime(21, 10), yesterday.atTime(21, 10));
+                today.atTime(11, 30), today.atTime(11, 30));
 
-        // 9. [16:30 - 17:00] MED-DEMO-009 | Chưa cấp STT | CHƯA TIẾP NHẬN (CONFIRMED — Lịch hẹn chiều của patient)
+        // 10. [17:00 - 17:30] MED-DEMO-010 | Chưa cấp STT | CHƯA TIẾP NHẬN (CONFIRMED — Lịch hẹn cuối chiều 17:00 của patient)
         createSeededAppointment(
-                "MED-DEMO-009", mainPatient, docNam, today, ShiftType.AFTERNOON, LocalTime.of(16, 30),
+                "MED-DEMO-010", mainPatient, docNam, today, ShiftType.AFTERNOON, LocalTime.of(17, 0),
                 "Nổi mẩn đỏ ngứa dị ứng vùng cổ và hai cánh tay sau khi ăn hải sản",
                 AppointmentStatus.CONFIRMED, null, null, true,
-                today.atTime(8, 35), today.atTime(8, 35));
+                today.atTime(14, 20), today.atTime(14, 20));
 
-        // 10. [17:00 - 17:30] MED-DEMO-010 | Chưa cấp STT | CHƯA TIẾP NHẬN (CONFIRMED — Lịch hẹn chiều Cơ Xương Khớp)
-        createSeededAppointment(
-                "MED-DEMO-010", bnQuan, docTuan, today, ShiftType.AFTERNOON, LocalTime.of(17, 0),
-                "Đau nhức khớp gối phải khi lên xuống cầu thang, cứng khớp buổi sáng",
-                AppointmentStatus.CONFIRMED, null, null, true,
-                today.atTime(9, 10), today.atTime(9, 10));
-
-        // Đồng bộ bộ đếm STT hàng ngày (nextSequence = 6) để lượt Check-in tiếp theo cấp STT-007
+        // Đồng bộ bộ đếm STT hàng ngày (nextSequence = 6) để lượt Check-in tiếp theo cấp STT-07
         DailyQueueCounter counter = dailyQueueCounterRepository.findByQueueDateForUpdate(today)
                 .orElseGet(() -> DailyQueueCounter.builder().queueDate(today).nextSequence(6L).build());
         counter.setNextSequence(6L);
         dailyQueueCounterRepository.save(counter);
 
-        log.info("Đã khởi tạo 10 ca khám mẫu (MED-DEMO-001 .. MED-DEMO-010) theo đúng trình tự thời gian 08:00 -> 17:30!");
-    }
-
-    private void syncLateAfternoonDemoSlots(LocalDate today) {
-        relocateDemoSlotIfNeeded("MED-DEMO-009", today, LocalTime.of(16, 30));
-        relocateDemoSlotIfNeeded("MED-DEMO-010", today, LocalTime.of(17, 0));
-        List<Appointment> overdue = appointmentRepository.findOverdueConfirmedForDate(today, LocalTime.now(businessClock));
-        if (!overdue.isEmpty()) {
-            overdue.forEach(a -> a.setStatus(AppointmentStatus.NO_SHOW));
-            appointmentRepository.saveAll(overdue);
-        }
-    }
-
-    private void relocateDemoSlotIfNeeded(String bookingCode, LocalDate today, LocalTime targetStart) {
-        appointmentRepository.findByBookingCode(bookingCode)
-                .flatMap(found -> appointmentRepository.findById(found.getId()))
-                .ifPresent(apt -> {
-                    if (apt.getTimeSlot() != null && !targetStart.equals(apt.getTimeSlot().getStartTime())) {
-                        TimeSlot oldSlot = apt.getTimeSlot();
-                        List<TimeSlot> allSlots = timeSlotRepository.findAllSlotsByDoctorAndDate(apt.getDoctor().getId(), today);
-                        allSlots.stream()
-                                .filter(s -> targetStart.equals(s.getStartTime()))
-                                .findFirst()
-                                .ifPresent(newSlot -> {
-                                    oldSlot.setStatus(SlotStatus.AVAILABLE);
-                                    timeSlotRepository.save(oldSlot);
-                                    newSlot.setStatus(SlotStatus.BOOKED);
-                                    timeSlotRepository.save(newSlot);
-                                    apt.setTimeSlot(newSlot);
-                                    if (apt.getStatus() == AppointmentStatus.NO_SHOW) {
-                                        apt.setStatus(AppointmentStatus.CONFIRMED);
-                                    }
-                                    appointmentRepository.save(apt);
-                                });
-                    }
-                });
+        log.info("Đã khởi tạo 10 ca khám mẫu (MED-DEMO-001 .. MED-DEMO-010) khớp hoàn toàn với thời gian hiện tại (08:30 -> 17:30)!");
     }
 
     private record SeedRxItem(Medicine medicine, int quantity, String dosage, String frequency, String instructions) {}
